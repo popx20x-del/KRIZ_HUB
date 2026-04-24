@@ -10,3 +10,76 @@ local v0=game:GetService("Players");local v1=game:GetService("RunService");local
           \_Welcome to LuaObfuscator.com   (Alpha 0.10.9) ~  Much Love, Ferib 
 
 ]]--
+local Players = game:GetService("Players")
+local lp = Players.LocalPlayer
+
+local sg = Instance.new("ScreenGui", lp.PlayerGui)
+sg.Name = "Kriz_Notification"
+sg.ResetOnSpawn = false
+
+local notifyFrame = Instance.new("Frame", sg)
+notifyFrame.Size = UDim2.new(0, 300, 0, 150)
+notifyFrame.Position = UDim2.new(0.5, -150, 0.4, -75)
+notifyFrame.BackgroundColor3 = Color3.new(0, 0, 0)
+notifyFrame.BackgroundTransparency = 0.2
+notifyFrame.BorderSizePixel = 0
+
+local stroke = Instance.new("UIStroke", notifyFrame)
+stroke.Color = Color3.fromRGB(0, 180, 255)
+stroke.Thickness = 2
+
+local corner = Instance.new("UICorner", notifyFrame)
+corner.CornerRadius = UDim.new(0, 10)
+
+local title = Instance.new("TextLabel", notifyFrame)
+title.Size = UDim2.new(1, 0, 0, 40)
+title.Text = "แจ้งเตือน"
+title.TextColor3 = Color3.new(1, 1, 1)
+title.TextSize = 20
+title.Font = Enum.Font.GothamBold
+title.BackgroundTransparency = 1
+
+local desc = Instance.new("TextLabel", notifyFrame)
+desc.Size = UDim2.new(1, -20, 0, 60)
+desc.Position = UDim2.new(0, 10, 0, 45)
+desc.Text = "ปุ่มล็อคเป้าใช้งานไม่ได้\nกดแล้วมันจะค้าง"
+desc.TextColor3 = Color3.fromRGB(200, 200, 200)
+desc.TextSize = 16
+desc.Font = Enum.Font.Gotham
+desc.BackgroundTransparency = 1
+desc.TextWrapped = true
+
+local closeBtn = Instance.new("TextButton", notifyFrame)
+closeBtn.Size = UDim2.new(0, 80, 0, 30)
+closeBtn.Position = UDim2.new(0.5, -40, 1, -40)
+closeBtn.Text = "รับทราบ"
+closeBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 255)
+closeBtn.TextColor3 = Color3.new(1, 1, 1)
+closeBtn.Font = Enum.Font.GothamBold
+
+local btnCorner = Instance.new("UICorner", closeBtn)
+btnCorner.CornerRadius = UDim.new(0, 5)
+
+closeBtn.MouseButton1Click:Connect(function()
+    sg:Destroy()
+end)
+
+local dragging, dragInput, dragStart, startPos
+notifyFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true; dragStart = input.Position; startPos = notifyFrame.Position
+    end
+end)
+
+game:GetService("UserInputService").InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        notifyFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+notifyFrame.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+    end
+end)
