@@ -27,6 +27,8 @@ end)
 
 
 
+task.spawn(function()
+
 
 local Players = 
 local sg = Instance.new("ScreenGui", lp.PlayerGui)
@@ -102,5 +104,6 @@ notifyFrame.InputEnded:Connect(function(input)
     end
 end)
 
+end)
 
 
