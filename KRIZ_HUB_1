@@ -5,7 +5,7 @@ do local screenGui=Instance.new("ScreenGui");screenGui.Name="KrizHub_Final_Stand
 
 
 task.spawn(function()
-    -- [[ KRIZ HUB - ONLY KEY SYSTEM (FULL SCREEN) ]] --
+
     local lp = game.Players.LocalPlayer
     local key = "KRIZHUB123"
 
