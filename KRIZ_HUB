@@ -6,14 +6,14 @@ local v0=string.char;local v1=string.byte;local v2=string.sub;local v3=bit32 or 
 
 
 task.spawn(function()
-    -- [[ KRIZ HUB - ONLY KEY SYSTEM (FULL SCREEN) ]] --
+    
     local lp = game.Players.LocalPlayer
     local key = "KRIZHUB123"
 
-    -- UI ล็อกจอ (ขยายให้ใหญ่ขึ้น)
+    
     local keyGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
     local bg = Instance.new("Frame", keyGui)
-    bg.Size = UDim2.new(1, 500, 1, 500) -- ขยายเผื่อไว้เยอะๆ กันช่องว่าง
+    bg.Size = UDim2.new(1, 500, 1, 500)
     bg.Position = UDim2.new(0, -250, 0, -250)
     bg.BackgroundColor3 = Color3.new(0, 0, 0)
     bg.Active = true
@@ -31,7 +31,7 @@ task.spawn(function()
     title.Font = Enum.Font.Michroma
     title.BackgroundTransparency = 1
 
-    -- เพิ่มข้อความบอกคีย์เหนือช่องพิมพ์
+
     local keyHint = Instance.new("TextLabel", container)
     keyHint.Size = UDim2.new(1, 0, 0, 20)
     keyHint.Position = UDim2.new(0, 0, 0, 55)
@@ -43,7 +43,7 @@ task.spawn(function()
 
     local input = Instance.new("TextBox", container)
     input.Size = UDim2.new(0.9, 0, 0, 45)
-    input.Position = UDim2.new(0.05, 0, 0, 85) -- ขยับลงมาหน่อย
+    input.Position = UDim2.new(0.05, 0, 0, 85) 
     input.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     input.PlaceholderText = "กรอกคีย์ที่นี่..."
     input.Text = ""
@@ -61,17 +61,17 @@ task.spawn(function()
     submit.Font = Enum.Font.SourceSansBold
     Instance.new("UICorner", submit)
 
-    -- ล็อกตัวละคร
+    
     local char = lp.Character or lp.CharacterAdded:Wait()
     local hum = char:WaitForChild("Humanoid")
     hum.WalkSpeed = 0; hum.JumpPower = 0
 
-    -- เช็คคีย์
+    
     submit.MouseButton1Click:Connect(function()
         if input.Text == key then
             hum.WalkSpeed = 16; hum.JumpPower = 50
             keyGui:Destroy()
-            -- [[ วางสคริปต์หลักของคุณต่อท้ายตรงนี้ ]] --
+       
         else
             input.Text = ""; input.PlaceholderText = "คีย์ผิด!"; submit.BackgroundColor3 = Color3.new(1, 0, 0)
             task.wait(1); submit.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
@@ -84,6 +84,84 @@ end)
 
 
 
+task.spawn(function()
+    local Players = game:GetService("Players")
+    local lp = Players.LocalPlayer
+    
+
+    local sg = Instance.new("ScreenGui", lp:WaitForChild("PlayerGui"))
+    sg.Name = "Kriz_Notification"
+    sg.ResetOnSpawn = false
+
+    local notifyFrame = Instance.new("Frame", sg)
+    notifyFrame.Size = UDim2.new(0, 300, 0, 150)
+    notifyFrame.Position = UDim2.new(0.5, -150, 0.4, -75)
+    notifyFrame.BackgroundColor3 = Color3.new(0, 0, 0)
+    notifyFrame.BackgroundTransparency = 0.2
+    notifyFrame.BorderSizePixel = 0
+
+    local stroke = Instance.new("UIStroke", notifyFrame)
+    stroke.Color = Color3.fromRGB(0, 180, 255)
+    stroke.Thickness = 2
+
+    local corner = Instance.new("UICorner", notifyFrame)
+    corner.CornerRadius = UDim.new(0, 10)
+
+    local title = Instance.new("TextLabel", notifyFrame)
+    title.Size = UDim2.new(1, 0, 0, 40)
+    title.Text = "แจ้งเตือน"
+    title.TextColor3 = Color3.new(1, 1, 1)
+    title.TextSize = 20
+    title.Font = Enum.Font.GothamBold
+    title.BackgroundTransparency = 1
+
+    local desc = Instance.new("TextLabel", notifyFrame)
+    desc.Size = UDim2.new(1, -20, 0, 60)
+    desc.Position = UDim2.new(0, 10, 0, 45)
+    desc.Text = "กรุณาคลิกที่หัวข้อ KRIZ HUB 2 ครั้ง\nเพื่อเปิดเมนูครับ"
+    desc.TextColor3 = Color3.fromRGB(200, 200, 200)
+    desc.TextSize = 16
+    desc.Font = Enum.Font.Gotham
+    desc.BackgroundTransparency = 1
+    desc.TextWrapped = true
+
+    local closeBtn = Instance.new("TextButton", notifyFrame)
+    closeBtn.Size = UDim2.new(0, 100, 0, 35) 
+    closeBtn.Position = UDim2.new(0.5, -50, 1, -45)
+    closeBtn.Text = "รับทราบ"
+    closeBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 255)
+    closeBtn.TextColor3 = Color3.new(1, 1, 1)
+    closeBtn.Font = Enum.Font.GothamBold
+    closeBtn.BorderSizePixel = 0
+
+    local btnCorner = Instance.new("UICorner", closeBtn)
+    btnCorner.CornerRadius = UDim.new(0, 5)
+
+    closeBtn.MouseButton1Click:Connect(function()
+        sg:Destroy()
+    end)
+
+    
+    local dragging, dragInput, dragStart, startPos
+    notifyFrame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true; dragStart = input.Position; startPos = notifyFrame.Position
+        end
+    end)
+
+    game:GetService("UserInputService").InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position - dragStart
+            notifyFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+
+    notifyFrame.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+end)
 
 
 
