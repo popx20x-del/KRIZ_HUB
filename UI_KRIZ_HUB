@@ -1,43 +1,321 @@
-local v0=Instance.new("ScreenGui");v0.Name="KrizHub_Final_Standard";v0.Parent=game:GetService("CoreGui");v0.ResetOnSpawn=false;local v4=Instance.new("Frame");v4.Size=UDim2.new(0 + 0 ,912 -(201 + 571) ,1138 -(116 + 1022) ,187 -142 );v4.Position=UDim2.new(0.5 + 0 , -(255 -185),0.5 -0 , -(954 -(814 + 45)));v4.BackgroundColor3=Color3.fromRGB(0 -0 ,0 + 0 ,0 + 0 );v4.BackgroundTransparency=885.5 -(261 + 624) ;v4.BorderSizePixel=0;v4.ClipsDescendants=true;v4.Parent=v0;local v12=Instance.new("UIStroke");v12.Color=Color3.fromRGB(0 -0 ,1250 -(1020 + 60) ,1678 -(630 + 793) );v12.Thickness=3.5 -2 ;v12.Parent=v4;Instance.new("UICorner",v4).CornerRadius=UDim.new(0 -0 ,1 + 1 );local v17=Instance.new("TextButton");v17.Size=UDim2.new(1,0 -0 ,0,1792 -(760 + 987) );v17.BackgroundTransparency=1914 -(1789 + 124) ;v17.Text="KRIZ HUB";v17.TextColor3=Color3.fromRGB(1021 -(745 + 21) ,88 + 167 ,255);v17.TextSize=18;v17.Font=Enum.Font.Michroma;v17.Parent=v4;local v26=Instance.new("ScrollingFrame");v26.Size=UDim2.new(2 -1 , -(46 -34),1 + 0 , -55);v26.Position=UDim2.new(0 + 0 ,1061 -(87 + 968) ,0 -0 ,41 + 4 );v26.BackgroundTransparency=1;v26.BorderSizePixel=0 -0 ;v26.ScrollBarThickness=1413 -(447 + 966) ;v26.Visible=false;v26.AutomaticCanvasSize=Enum.AutomaticSize.Y;v26.Parent=v4;local v36=Instance.new("UIListLayout",v26);v36.Padding=UDim.new(0 -0 ,1822 -(1703 + 114) );local v38=Instance.new("Frame");v38.Size=UDim2.new(702 -(376 + 325) ,0,0,49 -19 );v38.BackgroundTransparency=2 -1 ;v38.AutomaticSize=Enum.AutomaticSize.Y;v38.Parent=v26;Instance.new("UIListLayout",v38).Padding=UDim.new(0,2 + 2 );local v44=Instance.new("TextButton");v44.Size=UDim2.new(1,0 -0 ,14 -(9 + 5) ,30);v44.BackgroundColor3=Color3.fromRGB(376 -(85 + 291) ,1265 -(243 + 1022) ,0 -0 );v44.BackgroundTransparency=0.8 + 0 ;v44.Text="หน้าหลัก";v44.TextColor3=Color3.fromRGB(1435 -(1123 + 57) ,208 + 47 ,509 -(163 + 91) );v44.TextSize=15;v44.Font=Enum.Font.SourceSans;v44.Parent=v38;Instance.new("UICorner",v44).CornerRadius=UDim.new(1930 -(1869 + 61) ,1 + 1 );local function v55(v197,v198,v199) local v200=0 -0 ;local v201;local v202;local v203;while true do local v223=0;while true do if (1==v223) then if ((1 -0)==v200) then v201.Parent=v199;v202=Instance.new("TextButton");v202.Size=UDim2.new(0.485,0 + 0 ,1,0 -0 );v202.BackgroundColor3=Color3.fromRGB(0,0 + 0 ,1474 -(1329 + 145) );v200=2;end if (v200==(971 -(140 + 831))) then v201=Instance.new("Frame");v201.Size=UDim2.new(1851 -(1409 + 441) ,718 -(15 + 703) ,0,14 + 16 );v201.BackgroundTransparency=439 -(262 + 176) ;v201.Visible=false;v200=1;end v223=1723 -(345 + 1376) ;end if (v223==(691 -(198 + 490))) then if (v200==(22 -17)) then v203.Text=v198;v203.TextColor3=Color3.fromRGB(611 -356 ,1461 -(696 + 510) ,255);v203.TextSize=31 -16 ;v203.Font=Enum.Font.SourceSans;v200=1268 -(1091 + 171) ;end break;end if (v223==(0 + 0)) then if (v200==(6 -4)) then v202.BackgroundTransparency=0.8 -0 ;v202.Text=v197;v202.TextColor3=Color3.fromRGB(255,629 -(123 + 251) ,1267 -1012 );v202.TextSize=15;v200=701 -(208 + 490) ;end if (v200==(1 + 5)) then local v263=0;while true do if (1==v263) then return v201,v202,v203;end if (v263==(0 + 0)) then v203.Parent=v201;Instance.new("UICorner",v203).CornerRadius=UDim.new(836 -(660 + 176) ,2);v263=1;end end end v223=1;end if (v223==(1 + 1)) then if (v200==4) then v203.Size=UDim2.new(0.485,202 -(14 + 188) ,1,675 -(534 + 141) );v203.Position=UDim2.new(0.515 + 0 ,0 + 0 ,0,0 + 0 );v203.BackgroundColor3=Color3.fromRGB(0 -0 ,0 -0 ,0);v203.BackgroundTransparency=0.8 -0 ;v200=3 + 2 ;end if (v200==(2 + 1)) then v202.Font=Enum.Font.SourceSans;v202.Parent=v201;Instance.new("UICorner",v202).CornerRadius=UDim.new(396 -(115 + 281) ,4 -2 );v203=Instance.new("TextButton");v200=4 + 0 ;end v223=7 -4 ;end end end end local v56,v57,v58=v55("บิน","รถบิน",v38);local v59,v60,v61=v55("-","-",v38);local v62,v63,v64=v55("-","-",v38);v44.MouseButton1Click:Connect(function() local v204=0;local v205;while true do if (v204==(3 -2)) then v59.Visible=v205;v62.Visible=v205;break;end if (v204==0) then v205= not v56.Visible;v56.Visible=v205;v204=868 -(550 + 317) ;end end end);local v65=Instance.new("Frame");v65.Size=UDim2.new(1 -0 ,0 -0 ,0 -0 ,30);v65.BackgroundTransparency=286 -(134 + 151) ;v65.AutomaticSize=Enum.AutomaticSize.Y;v65.Parent=v26;Instance.new("UIListLayout",v65).Padding=UDim.new(0,1669 -(970 + 695) );local v71=Instance.new("TextButton");v71.Size=UDim2.new(1,0,0 -0 ,30);v71.BackgroundColor3=Color3.fromRGB(1990 -(582 + 1408) ,0 -0 ,0 -0 );v71.BackgroundTransparency=0.8 -0 ;v71.Text="ต่อสู้";v71.TextColor3=Color3.fromRGB(2079 -(1195 + 629) ,336 -81 ,496 -(187 + 54) );v71.TextSize=795 -(162 + 618) ;v71.Font=Enum.Font.SourceSans;v71.Parent=v65;Instance.new("UICorner",v71).CornerRadius=UDim.new(0,2 + 0 );local v81,v82,v83=v55("วาร์ปยิง","สิงเท้า",v65);local v84,v85,v86=v55("ล็อคเป้า","-",v65);local v87,v88,v89=v55("-","-",v65);v71.MouseButton1Click:Connect(function() local v206=0 + 0 ;local v207;while true do if (v206==(0 -0)) then v207= not v81.Visible;v81.Visible=v207;v206=1 -0 ;end if (v206==(1 + 0)) then v84.Visible=v207;v87.Visible=v207;break;end end end);local v90=Instance.new("Frame");v90.Size=UDim2.new(1637 -(1373 + 263) ,0,1000 -(451 + 549) ,30);v90.BackgroundTransparency=1 + 0 ;v90.AutomaticSize=Enum.AutomaticSize.Y;v90.Parent=v26;Instance.new("UIListLayout",v90).Padding=UDim.new(0,5 -1 );local v96=Instance.new("TextButton");v96.Size=UDim2.new(1 -0 ,0,0,1414 -(746 + 638) );v96.BackgroundColor3=Color3.fromRGB(0 + 0 ,0 -0 ,341 -(218 + 123) );v96.BackgroundTransparency=1581.8 -(1535 + 46) ;v96.Text="ป้องกัน";v96.TextColor3=Color3.fromRGB(254 + 1 ,37 + 218 ,815 -(306 + 254) );v96.TextSize=15;v96.Font=Enum.Font.SourceSans;v96.Parent=v90;Instance.new("UICorner",v96).CornerRadius=UDim.new(0,2);local v106,v107,v108=v55("กันตาย","-",v90);local v109,v110,v111=v55("-","-",v90);local v112,v113,v114=v55("-","-",v90);v96.MouseButton1Click:Connect(function() local v208=0 + 0 ;local v209;while true do if (1==v208) then v109.Visible=v209;v112.Visible=v209;break;end if (v208==0) then local v235=0;while true do if (v235==(1 -0)) then v208=1;break;end if (v235==(1467 -(899 + 568))) then v209= not v106.Visible;v106.Visible=v209;v235=1 + 0 ;end end end end end);local v115=Instance.new("Frame");v115.Size=UDim2.new(1,0,0 -0 ,30);v115.BackgroundTransparency=1;v115.AutomaticSize=Enum.AutomaticSize.Y;v115.Parent=v26;Instance.new("UIListLayout",v115).Padding=UDim.new(603 -(268 + 335) ,4);local v121=Instance.new("TextButton");v121.Size=UDim2.new(1,0,0,320 -(60 + 230) );v121.BackgroundColor3=Color3.fromRGB(572 -(426 + 146) ,0,0 + 0 );v121.BackgroundTransparency=1456.8 -(282 + 1174) ;v121.Text="มอง";v121.TextColor3=Color3.fromRGB(1066 -(569 + 242) ,734 -479 ,15 + 240 );v121.TextSize=1039 -(706 + 318) ;v121.Font=Enum.Font.SourceSans;v121.Parent=v115;Instance.new("UICorner",v121).CornerRadius=UDim.new(1251 -(721 + 530) ,1273 -(945 + 326) );local v131,v132,v133=v55("หลอดเลือด","เส้นบนหัว",v115);local v134,v135,v136=v55("ของในตัว","-",v115);local v137,v138,v139=v55("-","-",v115);v121.MouseButton1Click:Connect(function() local v210=0 -0 ;local v211;while true do if (v210==(1 + 0)) then v134.Visible=v211;v137.Visible=v211;break;end if (v210==0) then v211= not v131.Visible;v131.Visible=v211;v210=701 -(271 + 429) ;end end end);local v140=Instance.new("Frame");v140.Size=UDim2.new(1 + 0 ,0,1500 -(1408 + 92) ,1116 -(461 + 625) );v140.BackgroundTransparency=1289 -(993 + 295) ;v140.AutomaticSize=Enum.AutomaticSize.Y;v140.Parent=v26;Instance.new("UIListLayout",v140).Padding=UDim.new(0 + 0 ,4);local v146=Instance.new("TextButton");v146.Size=UDim2.new(1,1171 -(418 + 753) ,0 + 0 ,4 + 26 );v146.BackgroundColor3=Color3.fromRGB(0 + 0 ,0 + 0 ,529 -(406 + 123) );v146.BackgroundTransparency=0.8;v146.Text="ฟาร์ม";v146.TextColor3=Color3.fromRGB(2024 -(1749 + 20) ,61 + 194 ,255);v146.TextSize=15;v146.Font=Enum.Font.SourceSans;v146.Parent=v140;Instance.new("UICorner",v146).CornerRadius=UDim.new(0,1324 -(1249 + 73) );local v156,v157,v158=v55("-","-",v140);local v159,v160,v161=v55("-","-",v140);local v162,v163,v164=v55("-","-",v140);v146.MouseButton1Click:Connect(function() local v212=0 + 0 ;local v213;while true do if (v212==0) then v213= not v156.Visible;v156.Visible=v213;v212=1;end if (v212==(1146 -(466 + 679))) then v159.Visible=v213;v162.Visible=v213;break;end end end);local v165=Instance.new("Frame");v165.Size=UDim2.new(2 -1 ,0,0 -0 ,30);v165.BackgroundTransparency=1901 -(106 + 1794) ;v165.AutomaticSize=Enum.AutomaticSize.Y;v165.Parent=v26;Instance.new("UIListLayout",v165).Padding=UDim.new(0,2 + 2 );local v171=Instance.new("TextButton");v171.Size=UDim2.new(1 + 0 ,0,0,88 -58 );v171.BackgroundColor3=Color3.fromRGB(0 -0 ,0,114 -(4 + 110) );v171.BackgroundTransparency=0.8;v171.Text="ตัวละคร & วาร์ป";v171.TextColor3=Color3.fromRGB(839 -(57 + 527) ,1682 -(41 + 1386) ,358 -(17 + 86) );v171.TextSize=11 + 4 ;v171.Font=Enum.Font.SourceSans;v171.Parent=v165;Instance.new("UICorner",v171).CornerRadius=UDim.new(0,3 -1 );local v181,v182,v183=v55("ความเร็ว","กระโดดสูง",v165);local v184,v185,v186=v55("-","-",v165);local v187,v188,v189=v55("-","-",v165);v171.MouseButton1Click:Connect(function() local v214=0;local v215;while true do if (v214==(2 -1)) then v184.Visible=v215;v187.Visible=v215;break;end if (v214==(166 -(122 + 44))) then v215= not v181.Visible;v181.Visible=v215;v214=1 -0 ;end end end);local v190=0 -0 ;local v191=false;v17.MouseButton1Click:Connect(function() local v216=tick();if ((v216-v190)<(0.3 + 0)) then local v224=0;while true do if (v224==1) then v26.Visible=v191;v190=0 + 0 ;break;end if (v224==0) then v191= not v191;v4.Size=(v191 and UDim2.new(0 -0 ,205 -(30 + 35) ,0 + 0 ,1447 -(1043 + 214) )) or UDim2.new(0 -0 ,1352 -(323 + 889) ,0 -0 ,625 -(361 + 219) ) ;v224=321 -(53 + 267) ;end end else v190=v216;end end);local v192,v193,v194,v195;local function v196(v217) local v218=0;local v219;while true do if (v218==(0 + 0)) then v219=v217.Position-v194 ;v4.Position=UDim2.new(v195.X.Scale,v195.X.Offset + v219.X ,v195.Y.Scale,v195.Y.Offset + v219.Y );break;end end end v17.InputBegan:Connect(function(v220) if ((v220.UserInputType==Enum.UserInputType.MouseButton1) or (v220.UserInputType==Enum.UserInputType.Touch)) then v192,v194,v195=true,v220.Position,v4.Position;v220.Changed:Connect(function() if (v220.UserInputState==Enum.UserInputState.End) then v192=false;end end);end end);v17.InputChanged:Connect(function(v221) if ((v221.UserInputType==Enum.UserInputType.MouseMovement) or (v221.UserInputType==Enum.UserInputType.Touch)) then v193=v221;end end);game:GetService("UserInputService").InputChanged:Connect(function(v222) if ((v222==v193) and v192) then v196(v222);end end);
--- ⚠️ WARNING: integrity protected!
---[[ ฉันนั่งตกปลาอยู่ริมตลิ่งแปลกใจจริงๆปลาไม่กินเหยื่อ  ]]--
 
 
 
 
+-- [[ KRIZ HUB - THE ABSOLUTE FINAL VERSION ]] --
 
-task.spawn(function()
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "KrizHub_Final_Standard"
+screenGui.Parent = game:GetService("CoreGui")
+screenGui.ResetOnSpawn = false
 
-loadstring(game:HttpGet("https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/main/vxv21"))()
+-- 1. Main Frame
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 140, 0, 45) 
+mainFrame.Position = UDim2.new(0.5, -70, 0.5, -95)
+mainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+mainFrame.BackgroundTransparency = 0.5
+mainFrame.BorderSizePixel = 0
+mainFrame.ClipsDescendants = true 
+mainFrame.Parent = screenGui
 
+local uiStroke = Instance.new("UIStroke")
+uiStroke.Color = Color3.fromRGB(0, 170, 255)
+uiStroke.Thickness = 1.5
+uiStroke.Parent = mainFrame
+
+Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 2)
+
+-- 2. Header (Double Click Area)
+local headerBtn = Instance.new("TextButton")
+headerBtn.Size = UDim2.new(1, 0, 0, 45)
+headerBtn.BackgroundTransparency = 1
+headerBtn.Text = "KRIZ HUB"
+headerBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+headerBtn.TextSize = 18 
+headerBtn.Font = Enum.Font.Michroma
+headerBtn.Parent = mainFrame
+
+-- 3. Container สำหรับปุ่ม
+local buttonContainer = Instance.new("ScrollingFrame")
+buttonContainer.Size = UDim2.new(1, -12, 1, -55)
+buttonContainer.Position = UDim2.new(0, 6, 0, 45)
+buttonContainer.BackgroundTransparency = 1
+buttonContainer.BorderSizePixel = 0
+buttonContainer.ScrollBarThickness = 0
+buttonContainer.Visible = false 
+buttonContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y
+buttonContainer.Parent = mainFrame
+
+local listLayout = Instance.new("UIListLayout", buttonContainer)
+listLayout.Padding = UDim.new(0, 5)
+
+-----------------------------------------------------------
+-- [[ ชุดปุ่มที่ 1 - 12 SUB BUTTONS ]] --
+-----------------------------------------------------------
+local group1 = Instance.new("Frame")
+group1.Size = UDim2.new(1, 0, 0, 30)
+group1.BackgroundTransparency = 1
+group1.AutomaticSize = Enum.AutomaticSize.Y
+group1.Parent = buttonContainer
+Instance.new("UIListLayout", group1).Padding = UDim.new(0, 4)
+
+-- ปุ่มหลัก 1
+local mainBtn1 = Instance.new("TextButton")
+mainBtn1.Size = UDim2.new(1, 0, 0, 30)
+mainBtn1.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+mainBtn1.BackgroundTransparency = 0.8
+mainBtn1.Text = "หน้าหลัก" -- < เปลี่ยนชื่อปุ่มหลัก
+mainBtn1.TextColor3 = Color3.fromRGB(255, 255, 255)
+mainBtn1.TextSize = 15
+mainBtn1.Font = Enum.Font.SourceSans
+mainBtn1.Parent = group1
+Instance.new("UICorner", mainBtn1).CornerRadius = UDim.new(0, 2)
+
+-- ฟังก์ชันสำหรับสร้างแถวปุ่มย่อย (เพื่อให้โค้ดไม่ยาวเกินไป)
+local function CreateSubRow(name1, name2, parentFrame)
+    local row = Instance.new("Frame")
+    row.Size = UDim2.new(1, 0, 0, 30)
+    row.BackgroundTransparency = 1
+    row.Visible = false -- เริ่มต้นซ่อนไว้
+    row.Parent = parentFrame
+
+    local b1 = Instance.new("TextButton")
+    b1.Size = UDim2.new(0.485, 0, 1, 0)
+    b1.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    b1.BackgroundTransparency = 0.8
+    b1.Text = name1
+    b1.TextColor3 = Color3.fromRGB(255, 255, 255)
+    b1.TextSize = 15
+    b1.Font = Enum.Font.SourceSans
+    b1.Parent = row
+    Instance.new("UICorner", b1).CornerRadius = UDim.new(0, 2)
+
+    local b2 = Instance.new("TextButton")
+    b2.Size = UDim2.new(0.485, 0, 1, 0)
+    b2.Position = UDim2.new(0.515, 0, 0, 0)
+    b2.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    b2.BackgroundTransparency = 0.8
+    b2.Text = name2
+    b2.TextColor3 = Color3.fromRGB(255, 255, 255)
+    b2.TextSize = 15
+    b2.Font = Enum.Font.SourceSans
+    b2.Parent = row
+    Instance.new("UICorner", b2).CornerRadius = UDim.new(0, 2)
+    
+    return row, b1, b2
+end
+
+-- สร้างแถวปุ่มย่อย 6 แถว (รวม 12 ปุ่ม)
+local row1, s1_1, s1_2 = CreateSubRow("บิน", "รถบิน", group1)
+local row2, s1_3, s1_4 = CreateSubRow("-", "-", group1)
+local row3, s1_5, s1_6 = CreateSubRow("-", "-", group1)
+
+-- ระบบเปิด/ปิด (กดปุ่มหลักแล้วกางออกทั้งหมด 6 แถว)
+mainBtn1.MouseButton1Click:Connect(function()
+    local targetVisible = not row1.Visible
+    row1.Visible = targetVisible
+    row2.Visible = targetVisible
+    row3.Visible = targetVisible
+    end)
+
+-----------------------------------------------------------
+-- [[ ชุดปุ่มที่ 2 : (ปรับปรุงใหม่เป็น 12 SUB BUTTONS) ]] --
+-----------------------------------------------------------
+local group2 = Instance.new("Frame")
+group2.Size = UDim2.new(1, 0, 0, 30)
+group2.BackgroundTransparency = 1
+group2.AutomaticSize = Enum.AutomaticSize.Y
+group2.Parent = buttonContainer
+Instance.new("UIListLayout", group2).Padding = UDim.new(0, 4)
+
+local mainBtn2 = Instance.new("TextButton")
+mainBtn2.Size = UDim2.new(1, 0, 0, 30)
+mainBtn2.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+mainBtn2.BackgroundTransparency = 0.8
+mainBtn2.Text = "ต่อสู้" -- < ใส่ชื่อหัวข้อที่ต้องการ
+mainBtn2.TextColor3 = Color3.fromRGB(255, 255, 255)
+mainBtn2.TextSize = 15
+mainBtn2.Font = Enum.Font.SourceSans
+mainBtn2.Parent = group2
+Instance.new("UICorner", mainBtn2).CornerRadius = UDim.new(0, 2)
+
+-- ใช้ฟังก์ชัน CreateSubRow (ไล่ตัวแปรเป็น r2_... และ s2_...)
+local r2_1, s2_1, s2_2 = CreateSubRow("วาร์ปยิง", "สิงเท้า", group2)
+local r2_2, s2_3, s2_4 = CreateSubRow("ล็อคเป้า", "-", group2)
+local r2_3, s2_5, s2_6 = CreateSubRow("-", "-", group2)
+
+mainBtn2.MouseButton1Click:Connect(function()
+    local vis = not r2_1.Visible
+    r2_1.Visible = vis; r2_2.Visible = vis; r2_3.Visible = vis; end)
+
+-----------------------------------------------------------
+-- [[ ชุดปุ่มที่ 3 : ป้องกัน (12 ปุ่มย่อย) ]] --
+-----------------------------------------------------------
+local group3 = Instance.new("Frame")
+group3.Size = UDim2.new(1, 0, 0, 30)
+group3.BackgroundTransparency = 1
+group3.AutomaticSize = Enum.AutomaticSize.Y
+group3.Parent = buttonContainer
+Instance.new("UIListLayout", group3).Padding = UDim.new(0, 4)
+
+local mainBtn3 = Instance.new("TextButton")
+mainBtn3.Size = UDim2.new(1, 0, 0, 30)
+mainBtn3.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+mainBtn3.BackgroundTransparency = 0.8
+mainBtn3.Text = "ป้องกัน" 
+mainBtn3.TextColor3 = Color3.fromRGB(255, 255, 255)
+mainBtn3.TextSize = 15
+mainBtn3.Font = Enum.Font.SourceSans
+mainBtn3.Parent = group3
+Instance.new("UICorner", mainBtn3).CornerRadius = UDim.new(0, 2)
+
+-- ใช้ฟังก์ชัน CreateSubRow ที่มีอยู่แล้ว (เปลี่ยนชื่อตัวแปรรับค่า s3_...)
+local r3_1, s3_1, s3_2 = CreateSubRow("กันตาย", "-", group3)
+local r3_2, s3_3, s3_4 = CreateSubRow("-", "-", group3)
+local r3_3, s3_5, s3_6 = CreateSubRow("-", "-", group3)
+
+mainBtn3.MouseButton1Click:Connect(function()
+    local vis = not r3_1.Visible
+    r3_1.Visible = vis; r3_2.Visible = vis; r3_3.Visible = vis;end)
+
+-----------------------------------------------------------
+-- [[ ชุดปุ่มที่ 4 : มอง (12 ปุ่มย่อย) ]] --
+-----------------------------------------------------------
+local group4 = Instance.new("Frame")
+group4.Size = UDim2.new(1, 0, 0, 30)
+group4.BackgroundTransparency = 1
+group4.AutomaticSize = Enum.AutomaticSize.Y
+group4.Parent = buttonContainer
+Instance.new("UIListLayout", group4).Padding = UDim.new(0, 4)
+
+local mainBtn4 = Instance.new("TextButton")
+mainBtn4.Size = UDim2.new(1, 0, 0, 30)
+mainBtn4.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+mainBtn4.BackgroundTransparency = 0.8
+mainBtn4.Text = "มอง" 
+mainBtn4.TextColor3 = Color3.fromRGB(255, 255, 255)
+mainBtn4.TextSize = 15
+mainBtn4.Font = Enum.Font.SourceSans
+mainBtn4.Parent = group4
+Instance.new("UICorner", mainBtn4).CornerRadius = UDim.new(0, 2)
+
+local r4_1, s4_1, s4_2 = CreateSubRow("หลอดเลือด", "เส้นบนหัว", group4)
+local r4_2, s4_3, s4_4 = CreateSubRow("ของในตัว", "-", group4)
+local r4_3, s4_5, s4_6 = CreateSubRow("-", "-", group4)
+
+mainBtn4.MouseButton1Click:Connect(function()
+    local vis = not r4_1.Visible
+    r4_1.Visible = vis; r4_2.Visible = vis; r4_3.Visible = vis;
 end)
 
-task.spawn(function()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/main/KRIZ_HUB_1"))()
+-- (ทำซ้ำแบบนี้กับกลุ่มที่ 5 ฟาร์ม และ 6 ตัวละคร โดยเปลี่ยนเลข 4 เป็น 5 และ 6)
+
+-----------------------------------------------------------
+-- [[ ชุดปุ่มที่ 5 : ฟาร์ม (12 SUB BUTTONS) ]] --
+-----------------------------------------------------------
+local group5 = Instance.new("Frame")
+group5.Size = UDim2.new(1, 0, 0, 30)
+group5.BackgroundTransparency = 1
+group5.AutomaticSize = Enum.AutomaticSize.Y
+group5.Parent = buttonContainer
+Instance.new("UIListLayout", group5).Padding = UDim.new(0, 4)
+
+local mainBtn5 = Instance.new("TextButton")
+mainBtn5.Size = UDim2.new(1, 0, 0, 30)
+mainBtn5.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+mainBtn5.BackgroundTransparency = 0.8
+mainBtn5.Text = "ฟาร์ม" -- < เปลี่ยนชื่อปุ่มหลักที่ 5 ตรงนี้
+mainBtn5.TextColor3 = Color3.fromRGB(255, 255, 255)
+mainBtn5.TextSize = 15
+mainBtn5.Font = Enum.Font.SourceSans
+mainBtn5.Parent = group5
+Instance.new("UICorner", mainBtn5).CornerRadius = UDim.new(0, 2)
+
+-- ใช้ฟังก์ชัน CreateSubRow ที่มีอยู่แล้ว (ไล่ตัวแปรเป็น r5_... และ s5_...)
+local r5_1, s5_1, s5_2 = CreateSubRow("-", "-", group5)
+local r5_2, s5_3, s5_4 = CreateSubRow("-", "-", group5)
+local r5_3, s5_5, s5_6 = CreateSubRow("-", "-", group5)
+
+mainBtn5.MouseButton1Click:Connect(function()
+    local vis = not r5_1.Visible
+    r5_1.Visible = vis; r5_2.Visible = vis; r5_3.Visible = vis; end)
+
+-----------------------------------------------------------
+-- [[ ชุดปุ่มที่ 6 : ตัวละคร & วาร์ป (12 SUB BUTTONS) ]] --
+-----------------------------------------------------------
+local group6 = Instance.new("Frame")
+group6.Size = UDim2.new(1, 0, 0, 30)
+group6.BackgroundTransparency = 1
+group6.AutomaticSize = Enum.AutomaticSize.Y
+group6.Parent = buttonContainer
+Instance.new("UIListLayout", group6).Padding = UDim.new(0, 4)
+
+local mainBtn6 = Instance.new("TextButton")
+mainBtn6.Size = UDim2.new(1, 0, 0, 30)
+mainBtn6.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+mainBtn6.BackgroundTransparency = 0.8
+mainBtn6.Text = "ตัวละคร & วาร์ป" -- < เปลี่ยนชื่อปุ่มหลักที่ 6 ตรงนี้
+mainBtn6.TextColor3 = Color3.fromRGB(255, 255, 255)
+mainBtn6.TextSize = 15
+mainBtn6.Font = Enum.Font.SourceSans
+mainBtn6.Parent = group6
+Instance.new("UICorner", mainBtn6).CornerRadius = UDim.new(0, 2)
+
+-- ไล่ตัวแปรเป็น r6_... และ s6_...
+local r6_1, s6_1, s6_2 = CreateSubRow("ความเร็ว", "กระโดดสูง", group6)
+local r6_2, s6_3, s6_4 = CreateSubRow("-", "-", group6)
+local r6_3, s6_5, s6_6 = CreateSubRow("-", "-", group6)
+
+mainBtn6.MouseButton1Click:Connect(function()
+    local vis = not r6_1.Visible
+    r6_1.Visible = vis; r6_2.Visible = vis; r6_3.Visible = vis; end)
+
+
+-----------------------------------------------------------
+-- [ ระบบ Double Click & Drag ] --
+-----------------------------------------------------------
+local lastClick = 0
+local isOpen = false
+
+headerBtn.MouseButton1Click:Connect(function()
+	local currentTime = tick()
+	if currentTime - lastClick < 0.3 then
+		isOpen = not isOpen
+		mainFrame.Size = isOpen and UDim2.new(0, 140, 0, 190) or UDim2.new(0, 140, 0, 45)
+		buttonContainer.Visible = isOpen
+		lastClick = 0
+	else lastClick = currentTime end
 end)
 
-task.spawn(function()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/main/KRIZ_HUB_2"))()
+local dragging, dragInput, dragStart, startPos
+local function update(input)
+	local delta = input.Position - dragStart
+	mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+headerBtn.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging, dragStart, startPos = true, input.Position, mainFrame.Position
+		input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
+	end
 end)
 
-task.spawn(function()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/main/KRIZ_HUB_3"))()
+headerBtn.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end
 end)
 
-task.spawn(function()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/main/KRIZ_HUB_4"))()
+game:GetService("UserInputService").InputChanged:Connect(function(input)
+	if input == dragInput and dragging then update(input) end
 end)
 
+
+
+
 task.spawn(function()
+
 loadstring(game:HttpGet("https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/main/KRIZ_HUB_5"))()
+
 end)
-
-task.spawn(function()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/main/KRIZ_HUB_6"))()
-end)
-
-
-
-
 
 
