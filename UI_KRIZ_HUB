@@ -6,39 +6,38 @@ local v0=Instance.new("ScreenGui");v0.Name="KrizHub_Final_Standard";v0.Parent=ga
 
 
 
-s1_1.MouseButton1Click:Connect(function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/main/KRIZ_HUB_1"))()
-end)
-s1_2.MouseButton1Click:Connect(function()
- 
-end)
-
-s2_1.MouseButton1Click:Connect(function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/main/KRIZ_HUB_2"))()
-end)
-
-s3_1.MouseButton1Click:Connect(function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/main/KRIZ_HUB_3"))()
-end)
-
-s4_1.MouseButton1Click:Connect(function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/main/KRIZ_HUB_4"))()
-end)
-
-s5_1.MouseButton1Click:Connect(function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/main/KRIZ_HUB_5"))()
-end)
-
-s6_1.MouseButton1Click:Connect(function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/main/KRIZ_HUB_6"))()
-end)
-
-
 task.spawn(function()
 
 loadstring(game:HttpGet("https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/main/vxv21"))()
 
 end)
+
+task.spawn(function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/main/KRIZ_HUB_1"))()
+end)
+
+task.spawn(function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/main/KRIZ_HUB_2"))()
+end)
+
+task.spawn(function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/main/KRIZ_HUB_3"))()
+end)
+
+task.spawn(function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/main/KRIZ_HUB_4"))()
+end)
+
+task.spawn(function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/main/KRIZ_HUB_5"))()
+end)
+
+task.spawn(function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/main/KRIZ_HUB_6"))()
+end)
+
+
+
 
 
 
