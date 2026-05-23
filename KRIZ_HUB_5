@@ -128,6 +128,126 @@ end
 
 return PoseExporter
 
+-- =========================
+-- UndoSystem
+-- =========================
+
+local UndoSystem = {}
+
+UndoSystem.Stack = {}
+
+function UndoSystem.Push(pose)
+
+	local copy = {}
+
+	for joint,data in pairs(pose) do
+
+		copy[joint] = {
+
+			X = data.X,
+			Y = data.Y,
+			Z = data.Z,
+
+			RX = data.RX,
+			RY = data.RY,
+			RZ = data.RZ
+		}
+	end
+
+	table.insert(
+		UndoSystem.Stack,
+		copy
+	)
+
+	if #UndoSystem.Stack > 50 then
+		table.remove(
+			UndoSystem.Stack,
+			1
+		)
+	end
+end
+
+function UndoSystem.Pop()
+
+	if #UndoSystem.Stack == 0 then
+		return nil
+	end
+
+	return table.remove(
+		UndoSystem.Stack
+	)
+end
+
+-- =========================
+-- SaveSlots
+-- =========================
+
+local SaveSlots = {}
+
+SaveSlots.Slots = {
+
+	[1] = nil,
+	[2] = nil,
+	[3] = nil
+}
+
+function SaveSlots.Save(slot, pose)
+
+	local copy = {}
+
+	for joint,data in pairs(pose) do
+
+		copy[joint] = {
+
+			X = data.X,
+			Y = data.Y,
+			Z = data.Z,
+
+			RX = data.RX,
+			RY = data.RY,
+			RZ = data.RZ
+		}
+	end
+
+	SaveSlots.Slots[slot] = copy
+end
+
+function SaveSlots.Load(slot)
+
+	return SaveSlots.Slots[slot]
+end
+
+-- =========================
+-- LockSystem
+-- =========================
+
+local LockSystem = {}
+
+LockSystem.Locked = {}
+
+function LockSystem.Lock(part)
+
+	LockSystem.Locked[part] = true
+end
+
+function LockSystem.Unlock(part)
+
+	LockSystem.Locked[part] = nil
+end
+
+function LockSystem.IsLocked(part)
+
+	return LockSystem.Locked[part] == true
+end
+
+function LockSystem.UnlockAll()
+
+	table.clear(
+		LockSystem.Locked
+	)
+end
+
+
 
 
 
