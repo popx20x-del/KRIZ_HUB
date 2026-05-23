@@ -259,6 +259,156 @@ end
 -- พร้อมต่อส่วน 7 (MirrorSystem)
 -- ==========================================
 
+-- ==========================================
+-- ส่วนที่ 7 : MirrorSystem
+-- ==========================================
 
+local MirrorSystem = {}
+
+local MirrorPairs = {
+
+	["Left Shoulder"] = "Right Shoulder",
+	["Right Shoulder"] = "Left Shoulder",
+
+	["Left Hip"] = "Right Hip",
+	["Right Hip"] = "Left Hip"
+}
+
+function MirrorSystem.MirrorPose(pose)
+
+	local result = {}
+
+	for joint,data in pairs(pose) do
+
+		result[joint] = {
+
+			X = data.X,
+			Y = data.Y,
+			Z = data.Z,
+
+			RX = data.RX,
+			RY = data.RY,
+			RZ = data.RZ
+		}
+	end
+
+	for left,right in pairs(MirrorPairs) do
+
+		if pose[left] and pose[right] then
+
+			result[left] = {
+
+				X = -pose[right].X,
+				Y = pose[right].Y,
+				Z = pose[right].Z,
+
+				RX = pose[right].RX,
+				RY = -pose[right].RY,
+				RZ = pose[right].RZ
+			}
+		end
+	end
+
+	return result
+end
+
+-- ==========================================
+-- ส่วนที่ 8 : PoseEditor
+-- ==========================================
+
+local PoseEditor = {}
+
+function PoseEditor.ApplyPose(character, pose)
+
+	for joint,data in pairs(pose) do
+
+		local motor =
+			character:FindFirstChild(
+				joint,
+				true
+			)
+
+		if motor and motor:IsA("Motor6D") then
+
+			motor.C0 =
+				CFrame.new(
+					data.X,
+					data.Y,
+					data.Z
+				)
+				*
+				CFrame.Angles(
+
+					math.rad(data.RX),
+
+					math.rad(data.RY),
+
+					math.rad(data.RZ)
+				)
+		end
+	end
+end
+
+function PoseEditor.Edit(
+
+	pose,
+	part,
+	axis,
+	amount
+)
+
+	if LockSystem.IsLocked(part) then
+		return
+	end
+
+	if not pose[part] then
+		return
+	end
+
+	pose[part][axis] =
+		pose[part][axis]
+		+
+		amount
+end
+
+function PoseEditor.ResetPart(
+	pose,
+	part
+)
+
+	if not pose[part] then
+		return
+	end
+
+	pose[part] = {
+
+		X = 0,
+		Y = 0,
+		Z = 0,
+
+		RX = 0,
+		RY = 0,
+		RZ = 0
+	}
+end
+
+function PoseEditor.ResetPose(pose)
+
+	for _,data in pairs(pose) do
+
+		data.X = 0
+		data.Y = 0
+		data.Z = 0
+
+		data.RX = 0
+		data.RY = 0
+		data.RZ = 0
+	end
+end
+
+function PoseEditor.Undo()
+
+	return UndoSystem.Pop()
+end
 
 
