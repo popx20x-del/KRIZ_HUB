@@ -1,3 +1,7 @@
+-- ==========================================
+-- ส่วนที่ 1 : RigScanner
+-- ==========================================
+
 local RigScanner = {}
 
 function RigScanner.Scan(character)
@@ -15,7 +19,7 @@ function RigScanner.Scan(character)
 			humanoid.RigType == Enum.HumanoidRigType.R6
 	end
 
-	for _,obj in ipairs(character:GetDescendants()) do
+	for _, obj in ipairs(character:GetDescendants()) do
 
 		if obj:IsA("Motor6D") then
 
@@ -30,7 +34,9 @@ function RigScanner.Scan(character)
 	return result
 end
 
-return RigScanner
+-- ==========================================
+-- ส่วนที่ 2 : PoseCapture
+-- ==========================================
 
 local PoseCapture = {}
 
@@ -38,39 +44,39 @@ function PoseCapture.Capture(character)
 
 	local pose = {}
 
-	for _,obj in ipairs(character:GetDescendants()) do
+	for _, obj in ipairs(character:GetDescendants()) do
 
 		if obj:IsA("Motor6D") then
 
 			local cf = obj.C0
 
-			local rx,ry,rz =
+			local rx, ry, rz =
 				cf:ToOrientation()
 
 			pose[obj.Name] = {
 
 				X = tonumber(
-					string.format("%.2f",cf.X)
+					string.format("%.2f", cf.X)
 				),
 
 				Y = tonumber(
-					string.format("%.2f",cf.Y)
+					string.format("%.2f", cf.Y)
 				),
 
 				Z = tonumber(
-					string.format("%.2f",cf.Z)
+					string.format("%.2f", cf.Z)
 				),
 
 				RX = math.floor(
-					math.deg(rx)+0.5
+					math.deg(rx) + 0.5
 				),
 
 				RY = math.floor(
-					math.deg(ry)+0.5
+					math.deg(ry) + 0.5
 				),
 
 				RZ = math.floor(
-					math.deg(rz)+0.5
+					math.deg(rz) + 0.5
 				)
 			}
 		end
@@ -79,7 +85,9 @@ function PoseCapture.Capture(character)
 	return pose
 end
 
-return PoseCapture
+-- ==========================================
+-- ส่วนที่ 3 : PoseExporter
+-- ==========================================
 
 local PoseExporter = {}
 
@@ -87,29 +95,29 @@ function PoseExporter.Export(pose)
 
 	local text = ""
 
-	text ..= "-- [[ POSE DATA ]]\n"
-	text ..= "local PoseTable = {\n"
+	text = text .. "-- [[ POSE DATA ]]\n"
+	text = text .. "local PoseTable = {\n"
 
-	for joint,data in pairs(pose) do
+	for joint, data in pairs(pose) do
 
-		text ..=
+		text = text ..
 			string.format(
 
-			'["%s"]={X=%.2f,Y=%.2f,Z=%.2f,RX=%d,RY=%d,RZ=%d},\n',
+				'    ["%s"] = {X=%.2f, Y=%.2f, Z=%.2f, RX=%d, RY=%d, RZ=%d},\n',
 
-			joint,
+				joint,
 
-			data.X,
-			data.Y,
-			data.Z,
+				data.X,
+				data.Y,
+				data.Z,
 
-			data.RX,
-			data.RY,
-			data.RZ
-		)
+				data.RX,
+				data.RY,
+				data.RZ
+			)
 	end
 
-	text ..= "}"
+	text = text .. "}"
 
 	return text
 end
@@ -126,11 +134,9 @@ function PoseExporter.Copy(pose)
 	return text
 end
 
-return PoseExporter
-
--- =========================
--- UndoSystem
--- =========================
+-- ==========================================
+-- ส่วนที่ 4 : UndoSystem
+-- ==========================================
 
 local UndoSystem = {}
 
@@ -140,7 +146,7 @@ function UndoSystem.Push(pose)
 
 	local copy = {}
 
-	for joint,data in pairs(pose) do
+	for joint, data in pairs(pose) do
 
 		copy[joint] = {
 
@@ -160,6 +166,7 @@ function UndoSystem.Push(pose)
 	)
 
 	if #UndoSystem.Stack > 50 then
+
 		table.remove(
 			UndoSystem.Stack,
 			1
@@ -178,9 +185,9 @@ function UndoSystem.Pop()
 	)
 end
 
--- =========================
--- SaveSlots
--- =========================
+-- ==========================================
+-- ส่วนที่ 5 : SaveSlots
+-- ==========================================
 
 local SaveSlots = {}
 
@@ -195,7 +202,7 @@ function SaveSlots.Save(slot, pose)
 
 	local copy = {}
 
-	for joint,data in pairs(pose) do
+	for joint, data in pairs(pose) do
 
 		copy[joint] = {
 
@@ -217,9 +224,9 @@ function SaveSlots.Load(slot)
 	return SaveSlots.Slots[slot]
 end
 
--- =========================
--- LockSystem
--- =========================
+-- ==========================================
+-- ส่วนที่ 6 : LockSystem
+-- ==========================================
 
 local LockSystem = {}
 
@@ -247,6 +254,10 @@ function LockSystem.UnlockAll()
 	)
 end
 
+-- ==========================================
+-- จบส่วน 1-6
+-- พร้อมต่อส่วน 7 (MirrorSystem)
+-- ==========================================
 
 
 
