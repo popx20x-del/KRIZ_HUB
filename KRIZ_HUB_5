@@ -1,0 +1,133 @@
+local RigScanner = {}
+
+function RigScanner.Scan(character)
+
+	local result = {
+		R6 = false,
+		RootJoint = nil,
+		Motors = {}
+	}
+
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+
+	if humanoid then
+		result.R6 =
+			humanoid.RigType == Enum.HumanoidRigType.R6
+	end
+
+	for _,obj in ipairs(character:GetDescendants()) do
+
+		if obj:IsA("Motor6D") then
+
+			result.Motors[obj.Name] = obj
+
+			if obj.Name == "RootJoint" then
+				result.RootJoint = obj
+			end
+		end
+	end
+
+	return result
+end
+
+return RigScanner
+
+local PoseCapture = {}
+
+function PoseCapture.Capture(character)
+
+	local pose = {}
+
+	for _,obj in ipairs(character:GetDescendants()) do
+
+		if obj:IsA("Motor6D") then
+
+			local cf = obj.C0
+
+			local rx,ry,rz =
+				cf:ToOrientation()
+
+			pose[obj.Name] = {
+
+				X = tonumber(
+					string.format("%.2f",cf.X)
+				),
+
+				Y = tonumber(
+					string.format("%.2f",cf.Y)
+				),
+
+				Z = tonumber(
+					string.format("%.2f",cf.Z)
+				),
+
+				RX = math.floor(
+					math.deg(rx)+0.5
+				),
+
+				RY = math.floor(
+					math.deg(ry)+0.5
+				),
+
+				RZ = math.floor(
+					math.deg(rz)+0.5
+				)
+			}
+		end
+	end
+
+	return pose
+end
+
+return PoseCapture
+
+local PoseExporter = {}
+
+function PoseExporter.Export(pose)
+
+	local text = ""
+
+	text ..= "-- [[ POSE DATA ]]\n"
+	text ..= "local PoseTable = {\n"
+
+	for joint,data in pairs(pose) do
+
+		text ..=
+			string.format(
+
+			'["%s"]={X=%.2f,Y=%.2f,Z=%.2f,RX=%d,RY=%d,RZ=%d},\n',
+
+			joint,
+
+			data.X,
+			data.Y,
+			data.Z,
+
+			data.RX,
+			data.RY,
+			data.RZ
+		)
+	end
+
+	text ..= "}"
+
+	return text
+end
+
+function PoseExporter.Copy(pose)
+
+	local text =
+		PoseExporter.Export(pose)
+
+	if setclipboard then
+		setclipboard(text)
+	end
+
+	return text
+end
+
+return PoseExporter
+
+
+
+
