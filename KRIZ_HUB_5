@@ -411,4 +411,212 @@ function PoseEditor.Undo()
 	return UndoSystem.Pop()
 end
 
+-- ==========================================
+-- ส่วนที่ 9 : Notifications
+-- ==========================================
+
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+
+local Notifications = {}
+
+local NotifyGui = Instance.new("ScreenGui")
+NotifyGui.Name = "PoseStudioNotify"
+NotifyGui.ResetOnSpawn = false
+NotifyGui.Parent = CoreGui
+
+function Notifications.Show(text)
+
+	local label = Instance.new("TextLabel")
+
+	label.Size = UDim2.new(0,220,0,35)
+	label.Position = UDim2.new(0.5,-110,0.1,0)
+
+	label.BackgroundColor3 =
+		Color3.fromRGB(30,30,30)
+
+	label.TextColor3 =
+		Color3.new(1,1,1)
+
+	label.TextScaled = true
+	label.Text = text
+
+	label.Parent = NotifyGui
+
+	task.delay(2,function()
+
+		if label then
+			label:Destroy()
+		end
+
+	end)
+end
+
+-- ==========================================
+-- ส่วนที่ 10 : DPad
+-- ==========================================
+
+local DPad = {}
+
+DPad.Mode = "หมุน"
+
+DPad.SelectedPart = "Neck"
+
+DPad.MoveStep = 0.1
+DPad.RotateStep = 5
+
+function DPad.SetMode(mode)
+
+	DPad.Mode = mode
+end
+
+function DPad.SetPart(part)
+
+	DPad.SelectedPart = part
+end
+
+function DPad.Up(pose)
+
+	if DPad.Mode == "ตำแหน่ง" then
+
+		PoseEditor.Edit(
+			pose,
+			DPad.SelectedPart,
+			"Y",
+			DPad.MoveStep
+		)
+
+	else
+
+		PoseEditor.Edit(
+			pose,
+			DPad.SelectedPart,
+			"RX",
+			-DPad.RotateStep
+		)
+	end
+end
+
+function DPad.Down(pose)
+
+	if DPad.Mode == "ตำแหน่ง" then
+
+		PoseEditor.Edit(
+			pose,
+			DPad.SelectedPart,
+			"Y",
+			-DPad.MoveStep
+		)
+
+	else
+
+		PoseEditor.Edit(
+			pose,
+			DPad.SelectedPart,
+			"RX",
+			DPad.RotateStep
+		)
+	end
+end
+
+function DPad.Left(pose)
+
+	if DPad.Mode == "ตำแหน่ง" then
+
+		PoseEditor.Edit(
+			pose,
+			DPad.SelectedPart,
+			"X",
+			-DPad.MoveStep
+		)
+
+	else
+
+		PoseEditor.Edit(
+			pose,
+			DPad.SelectedPart,
+			"RY",
+			-DPad.RotateStep
+		)
+	end
+end
+
+function DPad.Right(pose)
+
+	if DPad.Mode == "ตำแหน่ง" then
+
+		PoseEditor.Edit(
+			pose,
+			DPad.SelectedPart,
+			"X",
+			DPad.MoveStep
+		)
+
+	else
+
+		PoseEditor.Edit(
+			pose,
+			DPad.SelectedPart,
+			"RY",
+			DPad.RotateStep
+		)
+	end
+end
+
+-- ==========================================
+-- ส่วนที่ 11 : MainUI
+-- ==========================================
+
+local MainUI = {}
+
+local CoreGui =
+	game:GetService("CoreGui")
+
+local Gui =
+	Instance.new("ScreenGui")
+
+Gui.Name = "PoseStudioTH"
+
+Gui.ResetOnSpawn = false
+
+Gui.Parent = CoreGui
+
+local Main =
+	Instance.new("Frame")
+
+Main.Size =
+	UDim2.new(0,260,0,350)
+
+Main.Position =
+	UDim2.new(0.5,-130,0.5,-175)
+
+Main.BackgroundColor3 =
+	Color3.fromRGB(25,25,30)
+
+Main.Active = true
+Main.Draggable = true
+
+Main.Parent = Gui
+
+local Title =
+	Instance.new("TextLabel")
+
+Title.Size =
+	UDim2.new(1,0,0,35)
+
+Title.BackgroundColor3 =
+	Color3.fromRGB(45,45,60)
+
+Title.Text =
+	"🎭 Pose Studio TH"
+
+Title.TextColor3 =
+	Color3.new(1,1,1)
+
+Title.Parent = Main
+
+MainUI.Gui = Gui
+MainUI.Frame = Main
+
+
 
