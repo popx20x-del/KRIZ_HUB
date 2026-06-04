@@ -1943,47 +1943,49 @@ end)
 
 
 task.spawn(function()
--- [[ ระบบเกิดที่เดิม (Anti-Death Warp - Fast & No Camera Snap) ]]
-_G.deathPosActive = _G.deathPosActive or false
-local lastDeathPosition = nil
-local RunService = game:GetService("RunService")
-
-local function onCharacterAdded(char)
-    if _G.deathPosActive and lastDeathPosition then
-        local hrp = char:WaitForChild("HumanoidRootPart", 5)
-        if hrp then
-            hrp.CFrame = CFrame.new(lastDeathPosition)
-            -- เคลียร์ตำแหน่งหลังวาร์ปเสร็จ
-            lastDeathPosition = nil 
+    -- [[ แก้ไขจุดที่ lp เป็น nil ]]
+    local Players = game:GetService("Players")
+    local lp = Players.LocalPlayer or Players:GetPropertyChangedSignal("LocalPlayer"):Wait() or Players.LocalPlayer
+    
+    -- [[ ระบบเกิดที่เดิม (Anti-Death Warp) ]]
+    _G.deathPosActive = _G.deathPosActive or false
+    local lastDeathPosition = nil
+    
+    local function onCharacterAdded(char)
+        if _G.deathPosActive and lastDeathPosition then
+            local hrp = char:WaitForChild("HumanoidRootPart", 5)
+            if hrp then
+                -- อัปเดตตำแหน่ง
+                hrp.CFrame = CFrame.new(lastDeathPosition)
+                lastDeathPosition = nil 
+            end
         end
     end
-end
 
-local function onCharacterRemoving(char)
-    if _G.deathPosActive then
-        local hrp = char:FindFirstChild("HumanoidRootPart")
-        local hum = char:FindFirstChild("Humanoid")
-        
-        -- ถ้าตาย ให้บันทึกพิกัดทันที
-        if hrp and hum and hum.Health <= 0 then
-            lastDeathPosition = hrp.Position
+    local function onCharacterRemoving(char)
+        if _G.deathPosActive then
+            local hrp = char:FindFirstChild("HumanoidRootPart")
+            local hum = char:FindFirstChild("Humanoid")
             
-            -- เทคนิคพิเศษ: ล็อคมุมกล้องไม่ให้ขยับตอนตาย
-            local cam = workspace.CurrentCamera
-            cam.CameraType = Enum.CameraType.Scriptable
-            cam.CFrame = cam.CFrame
+            if hrp and hum and hum.Health <= 0 then
+                lastDeathPosition = hrp.Position
+                local cam = workspace.CurrentCamera
+                cam.CameraType = Enum.CameraType.Scriptable
+                cam.CFrame = cam.CFrame
+            end
         end
     end
-end
 
-lp.CharacterAdded:Connect(onCharacterAdded)
-lp.CharacterRemoving:Connect(onCharacterRemoving)
+    -- เชื่อมต่อ Event ด้วยตัวแปร lp ที่มั่นใจว่าโหลดเสร็จแล้ว
+    lp.CharacterAdded:Connect(onCharacterAdded)
+    lp.CharacterRemoving:Connect(onCharacterRemoving)
 
-_G.ExternalCommands["dw.."] = function()
-    _G.deathPosActive = not _G.deathPosActive
-    return true, "DeathWarp: " .. (_G.deathPosActive and "ON" or "OFF")
-end
+    _G.ExternalCommands["dw.."] = function()
+        _G.deathPosActive = not _G.deathPosActive
+        return true, "DeathWarp: " .. (_G.deathPosActive and "ON" or "OFF")
+    end
 end)
+
 
 
 task.spawn(function()
