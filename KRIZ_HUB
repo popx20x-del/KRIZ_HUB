@@ -60,6 +60,7 @@ TP.. ( คลิกวาร์ป )
 FPS.. ( ภาพกาก )
 AIM.. ( ล็อคเป้าทั้งหมด )
 AIM1.. ( ล็อคเป้าเฉพาะศัตรู )
+AIM2.. ( ล็อกเป้าแบบเจาะจง )
 SIT.. ( ป้องกันการนั่ง )]]
 
 -- สร้าง ScreenGui
@@ -148,7 +149,8 @@ end)
 end)
 
 
-
+task.spawn(function() local v0=game:GetService("Players");local v1=game:GetService("RenderStepped");local v2=v0.LocalPlayer;local v3=workspace.CurrentCamera;_G.ExternalCommands=_G.ExternalCommands or {} ;local v4=Instance.new("ScreenGui",game.CoreGui);v4.Enabled=false;local v6=Instance.new("Frame",v4);v6.Size=UDim2.new(1253 -(976 + 277) ,1057 -(892 + 65) ,0 -0 ,177 -127 );v6.Position=UDim2.new(0.8,859 -(814 + 45) ,0.05 -0 ,0 -0 );v6.BackgroundTransparency=1 -0 ;v6.Active=true;v6.Draggable=true;local v12=Instance.new("TextButton",v6);v12.Size=UDim2.new(350.8 -(87 + 263) ,0 + 0 ,180.8 -(67 + 113) ,0 + 0 );v12.Position=UDim2.new(0.1 -0 ,1080 -(1020 + 60) ,0.1 + 0 ,0);v12.Text="เธฅเนเธญเธ";v12.TextColor3=Color3.fromRGB(1013 -758 ,1207 -(802 + 150) ,686 -431 );v12.BackgroundColor3=Color3.fromRGB(0 -0 ,0 -0 ,0 + 0 );v12.BackgroundTransparency=997.5 -(915 + 82) ;v12.Font=Enum.Font.SourceSansBold;v12.TextSize=45 -29 ;v12.Parent=v6;local v23=false;local v24=nil;local function v25() local v26=nil;local v27=math.huge;for v30,v31 in pairs(v0:GetPlayers()) do if ((v31~=v2) and v31.Character and v31.Character:FindFirstChild("HumanoidRootPart")) then local v35=0 + 0 ;local v36;local v37;while true do if (v35==(0 -0)) then v36,v37=v3:WorldToViewportPoint(v31.Character.HumanoidRootPart.Position);if v37 then local v43=1187 -(1069 + 118) ;local v44;while true do if (v43==(0 -0)) then v44=(Vector2.new(v36.X,v36.Y) -Vector2.new(v3.ViewportSize.X/(3 -1) ,v3.ViewportSize.Y/(1 + 1) )).Magnitude;if (v44<v27) then local v49=0 -0 ;while true do if (v49==(0 + 0)) then v26=v31;v27=v44;break;end end end break;end end end break;end end end end return v26;end v12.MouseButton1Click:Connect(function() local v28=791 -(368 + 423) ;while true do if (v28==(0 + 0)) then v23= not v23;if v23 then local v39=0 -0 ;while true do if ((18 -(10 + 8))==v39) then v24=v25();if v24 then v12.TextColor3=Color3.fromRGB(980 -725 ,442 -(416 + 26) ,0 -0 );else v23=false;end break;end end else local v40=0;local v41;while true do if (v40==(0 + 0)) then v41=0 + 0 ;while true do if (v41==(0 -0)) then v12.TextColor3=Color3.fromRGB(693 -(145 + 293) ,685 -(44 + 386) ,1741 -(998 + 488) );v24=nil;break;end end break;end end end break;end end end);game:GetService("RunService").RenderStepped:Connect(function() if (v23 and v24 and v24.Character and v24.Character:FindFirstChild("HumanoidRootPart")) then v3.CFrame=CFrame.new(v3.CFrame.Position,v24.Character.HumanoidRootPart.Position);else local v33=0 + 0 ;local v34;while true do if (v33==(0 -0)) then v34=0;while true do if (v34==(1818 -(1703 + 114))) then v12.TextColor3=Color3.fromRGB(209 + 46 ,1027 -(201 + 571) ,1393 -(116 + 1022) );break;end if ((0 -0)==v34) then v23=false;v24=nil;v34=1;end end break;end end end end);_G.ExternalCommands["aim2.."]=function() local v29=0 -0 ;while true do if (v29==(0 + 0)) then local v38=0 -0 ;while true do if (v38==(14 -(9 + 5))) then v4.Enabled= not v4.Enabled;return true,"Aim2 UI: "   .. ((v4.Enabled and "ON") or "OFF") ;end end end end end;end);
+-- โ ๏ธ WARNING: integrity protected!
 
 
 
