@@ -1,0 +1,792 @@
+--[[
+ .____                  ________ ___.    _____                           __                
+ |    |    __ _______   \_____  \\_ |___/ ____\_ __  ______ ____ _____ _/  |_  ___________ 
+ |    |   |  |  \__  \   /   |   \| __ \   __\  |  \/  ___// ___\\__  \\   __\/  _ \_  __ \
+ |    |___|  |  // __ \_/    |    \ \_\ \  | |  |  /\___ \\  \___ / __ \|  | (  <_> )  | \/
+ |_______ \____/(____  /\_______  /___  /__| |____//____  >\___  >____  /__|  \____/|__|   
+         \/          \/         \/    \/                \/     \/     \/                   
+          \_Welcome to LuaObfuscator.com   (Alpha 0.10.9) ~  Much Love, Ferib 
+
+]]--
+
+if _G.KrizHubCore then
+	pcall(function()
+		_G.KrizHubCore:Destroy();
+	end);
+end
+local Players = game:GetService("Players");
+local UserInputService = game:GetService("UserInputService");
+local Player = Players.LocalPlayer;
+local PlayerGui = Player:WaitForChild("PlayerGui");
+local Core = {};
+Core.Modules = {};
+Core.ModuleInstances = {};
+Core.Connections = {};
+_G.KrizHubCore = Core;
+Core.Connect = function(self, signal, callback)
+	local connection = signal:Connect(callback);
+	table.insert(self.Connections, connection);
+	return connection;
+end;
+local ScreenGui = Instance.new("ScreenGui");
+ScreenGui.Name = "KrizHub_Core_Mask";
+ScreenGui.ResetOnSpawn = false;
+ScreenGui.IgnoreGuiInset = true;
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
+ScreenGui.DisplayOrder = 999999;
+ScreenGui.Parent = PlayerGui;
+Core.ScreenGui = ScreenGui;
+local MainMenu = Instance.new("Frame");
+MainMenu.Name = "MainMenu";
+MainMenu.AnchorPoint = Vector2.new(0.5, 0.5);
+MainMenu.Size = UDim2.new(0, 280, 0, 360);
+MainMenu.Position = UDim2.fromScale(0.5, 0.5);
+MainMenu.BackgroundColor3 = Color3.fromRGB(0, 0, 0);
+MainMenu.BackgroundTransparency = 0.5;
+MainMenu.BorderSizePixel = 0;
+MainMenu.Visible = false;
+MainMenu.ZIndex = 10000;
+MainMenu.Parent = ScreenGui;
+Core.MainMenu = MainMenu;
+local Title = Instance.new("TextLabel");
+Title.Name = "Title";
+Title.Size = UDim2.new(1, 0, 0, 42);
+Title.Position = UDim2.new(0, 0, 0, 0);
+Title.BackgroundTransparency = 1;
+Title.Text = "KRIZ HUB v0.0.0";
+Title.TextColor3 = Color3.fromRGB(255, 255, 255);
+Title.TextSize = 16;
+Title.Font = Enum.Font.GothamMedium;
+Title.TextXAlignment = Enum.TextXAlignment.Center;
+Title.TextYAlignment = Enum.TextYAlignment.Center;
+Title.ZIndex = 10001;
+Title.Parent = MainMenu;
+local ScrollContainer = Instance.new("ScrollingFrame");
+ScrollContainer.Name = "FunctionList";
+ScrollContainer.Size = UDim2.new(1, -16, 1, -50);
+ScrollContainer.Position = UDim2.new(0, 8, 0, 44);
+ScrollContainer.BackgroundTransparency = 1;
+ScrollContainer.BorderSizePixel = 0;
+ScrollContainer.ScrollBarThickness = 0;
+ScrollContainer.ScrollingDirection = Enum.ScrollingDirection.Y;
+ScrollContainer.CanvasSize = UDim2.new(0, 0, 0, 0);
+ScrollContainer.AutomaticCanvasSize = Enum.AutomaticSize.None;
+ScrollContainer.ZIndex = 10001;
+ScrollContainer.Parent = MainMenu;
+Core.ScrollContainer = ScrollContainer;
+local UIListLayout = Instance.new("UIListLayout");
+UIListLayout.FillDirection = Enum.FillDirection.Vertical;
+UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center;
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder;
+UIListLayout.Padding = UDim.new(0, 6);
+UIListLayout.Parent = ScrollContainer;
+local function UpdateCanvasSize()
+	local contentHeight = UIListLayout.AbsoluteContentSize.Y;
+	ScrollContainer.CanvasSize = UDim2.new(0, 0, 0, math.max(contentHeight + 6, 0));
+end
+UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(UpdateCanvasSize);
+local IconBtn = Instance.new("TextButton");
+IconBtn.Name = "GhostIcon";
+IconBtn.Size = UDim2.new(0, 46, 0, 46);
+IconBtn.Position = UDim2.new(1, -62, 0, 16);
+IconBtn.AnchorPoint = Vector2.new(0, 0);
+IconBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0);
+IconBtn.BackgroundTransparency = 0.5;
+IconBtn.BorderSizePixel = 0;
+IconBtn.Text = "๐‘ป";
+IconBtn.TextSize = 22;
+IconBtn.AutoButtonColor = false;
+IconBtn.ZIndex = 20000;
+IconBtn.Parent = ScreenGui;
+Core.Icon = IconBtn;
+local activeTouchInput = nil;
+local dragStartPosition = nil;
+local dragStartGuiPosition = nil;
+local totalDistanceMoved = 0;
+Core:Connect(IconBtn.InputBegan, function(input)
+	if ((input.UserInputType == Enum.UserInputType.Touch) or (input.UserInputType == Enum.UserInputType.MouseButton1)) then
+		if (activeTouchInput == nil) then
+			activeTouchInput = input;
+			dragStartPosition = input.Position;
+			dragStartGuiPosition = IconBtn.Position;
+			totalDistanceMoved = 0;
+		end
+	end
+end);
+Core:Connect(UserInputService.InputChanged, function(input)
+	if (activeTouchInput and (input == activeTouchInput)) then
+		if ((input.UserInputType == Enum.UserInputType.MouseMovement) or (input.UserInputType == Enum.UserInputType.Touch)) then
+			local delta = input.Position - dragStartPosition;
+			totalDistanceMoved = totalDistanceMoved + delta.Magnitude;
+			IconBtn.Position = UDim2.new(dragStartGuiPosition.X.Scale, dragStartGuiPosition.X.Offset + delta.X, dragStartGuiPosition.Y.Scale, dragStartGuiPosition.Y.Offset + delta.Y);
+		end
+	end
+end);
+Core:Connect(UserInputService.InputEnded, function(input)
+	if (activeTouchInput and (input == activeTouchInput)) then
+		if (totalDistanceMoved < 12) then
+			MainMenu.Visible = not MainMenu.Visible;
+		end
+		activeTouchInput = nil;
+		dragStartPosition = nil;
+		totalDistanceMoved = 0;
+	end
+end);
+Core.RegisterModule = function(self, moduleData)
+	if (type(moduleData) ~= "table") then
+		warn("[KRIZ HUB] Invalid module data");
+		return nil;
+	end
+	local moduleName = moduleData.Name;
+	if (type(moduleName) ~= "string") then
+		warn("[KRIZ HUB] Module has no valid Name");
+		return nil;
+	end
+	if self.Modules[moduleName] then
+		warn("[KRIZ HUB] Module already registered: " .. moduleName);
+		return nil;
+	end
+	local instance = {};
+	instance.Name = moduleName;
+	instance.Data = moduleData;
+	local Row = Instance.new("Frame");
+	Row.Name = "Function_" .. moduleName;
+	Row.Size = UDim2.new(1, 0, 0, 40);
+	Row.BackgroundColor3 = Color3.fromRGB(20, 20, 20);
+	Row.BackgroundTransparency = 0.35;
+	Row.BorderSizePixel = 0;
+	Row.ZIndex = 10002;
+	Row.Parent = ScrollContainer;
+	instance.Row = Row;
+	local NameLabel = Instance.new("TextLabel");
+	NameLabel.Name = "Name";
+	NameLabel.Size = UDim2.new(1, -60, 1, 0);
+	NameLabel.Position = UDim2.new(0, 10, 0, 0);
+	NameLabel.BackgroundTransparency = 1;
+	NameLabel.Text = moduleName;
+	NameLabel.TextColor3 = Color3.fromRGB(255, 255, 255);
+	NameLabel.TextSize = 14;
+	NameLabel.Font = Enum.Font.Gotham;
+	NameLabel.TextXAlignment = Enum.TextXAlignment.Left;
+	NameLabel.TextYAlignment = Enum.TextYAlignment.Center;
+	NameLabel.ZIndex = 10003;
+	NameLabel.Parent = Row;
+	instance.NameLabel = NameLabel;
+	local Toggle = Instance.new("TextButton");
+	Toggle.Name = "Toggle";
+	Toggle.Size = UDim2.new(0, 38, 0, 20);
+	Toggle.Position = UDim2.new(1, -48, 0.5, -10);
+	Toggle.BackgroundColor3 = Color3.fromRGB(55, 55, 55);
+	Toggle.BackgroundTransparency = 0.15;
+	Toggle.BorderSizePixel = 0;
+	Toggle.Text = "";
+	Toggle.AutoButtonColor = false;
+	Toggle.ZIndex = 10003;
+	Toggle.Parent = Row;
+	instance.Toggle = Toggle;
+	local Dot = Instance.new("Frame");
+	Dot.Name = "Dot";
+	Dot.Size = UDim2.new(0, 16, 0, 16);
+	Dot.Position = UDim2.new(0, 2, 0.5, -8);
+	Dot.BackgroundColor3 = Color3.fromRGB(230, 50, 50);
+	Dot.BorderSizePixel = 0;
+	Dot.ZIndex = 10004;
+	Dot.Parent = Toggle;
+	instance.Dot = Dot;
+	instance.Enabled = false;
+	local function Enable()
+		if instance.Enabled then
+			return;
+		end
+		instance.Enabled = true;
+		Dot.Position = UDim2.new(1, -18, 0.5, -8);
+		Dot.BackgroundColor3 = Color3.fromRGB(50, 230, 50);
+		Toggle.BackgroundColor3 = Color3.fromRGB(70, 70, 70);
+		if (type(moduleData.OnEnable) == "function") then
+			local success, err = pcall(moduleData.OnEnable);
+			if not success then
+				warn("[KRIZ HUB] " .. moduleName .. " OnEnable error: " .. tostring(err));
+			end
+		end
+	end
+	local function Disable()
+		if not instance.Enabled then
+			return;
+		end
+		instance.Enabled = false;
+		Dot.Position = UDim2.new(0, 2, 0.5, -8);
+		Dot.BackgroundColor3 = Color3.fromRGB(230, 50, 50);
+		Toggle.BackgroundColor3 = Color3.fromRGB(55, 55, 55);
+		if (type(moduleData.OnDisable) == "function") then
+			local success, err = pcall(moduleData.OnDisable);
+			if not success then
+				warn("[KRIZ HUB] " .. moduleName .. " OnDisable error: " .. tostring(err));
+			end
+		end
+	end
+	instance.Connection = Toggle.Activated:Connect(function()
+		if instance.Enabled then
+			Disable();
+		else
+			Enable();
+		end
+	end);
+	table.insert(self.Connections, instance.Connection);
+	self.Modules[moduleName] = instance;
+	table.insert(self.ModuleInstances, instance);
+	task.defer(UpdateCanvasSize);
+	return instance;
+end;
+Core.UnregisterModule = function(self, moduleName)
+	local instance = self.Modules[moduleName];
+	if not instance then
+		return false;
+	end
+	if instance.Enabled then
+		instance.Enabled = false;
+		if (instance.Data and (type(instance.Data.OnDisable) == "function")) then
+			pcall(instance.Data.OnDisable);
+		end
+	end
+	if instance.Connection then
+		pcall(function()
+			instance.Connection:Disconnect();
+		end);
+	end
+	if instance.Row then
+		instance.Row:Destroy();
+	end
+	for i, module in ipairs(self.ModuleInstances) do
+		if (module == instance) then
+			table.remove(self.ModuleInstances, i);
+			break;
+		end
+	end
+	self.Modules[moduleName] = nil;
+	task.defer(UpdateCanvasSize);
+	return true;
+end;
+UpdateCanvasSize();
+Core.Destroy = function(self)
+	for _, instance in ipairs(self.ModuleInstances) do
+		if instance.Enabled then
+			instance.Enabled = false;
+			if (instance.Data and (type(instance.Data.OnDisable) == "function")) then
+				pcall(instance.Data.OnDisable);
+			end
+		end
+	end
+	for _, connection in ipairs(self.Connections) do
+		pcall(function()
+			if (connection and connection.Connected) then
+				connection:Disconnect();
+			end
+		end);
+	end
+	self.Connections = {};
+	if self.ScreenGui then
+		pcall(function()
+			self.ScreenGui:Destroy();
+		end);
+	end
+	self.Modules = {};
+	self.ModuleInstances = {};
+	self.ScreenGui = nil;
+	self.MainMenu = nil;
+	self.Icon = nil;
+	self.ScrollContainer = nil;
+	if (_G.KrizHubCore == self) then
+		_G.KrizHubCore = nil;
+	end
+end;
+print("[KRIZ HUB] Core UI loaded successfully.");
+
+--[[
+ .____                  ________ ___.    _____                           __                
+ |    |    __ _______   \_____  \\_ |___/ ____\_ __  ______ ____ _____ _/  |_  ___________ 
+ |    |   |  |  \__  \   /   |   \| __ \   __\  |  \/  ___// ___\\__  \\   __\/  _ \_  __ \
+ |    |___|  |  // __ \_/    |    \ \_\ \  | |  |  /\___ \\  \___ / __ \|  | (  <_> )  | \/
+ |_______ \____/(____  /\_______  /___  /__| |____//____  >\___  >____  /__|  \____/|__|   
+         \/          \/         \/    \/                \/     \/     \/                   
+          \_Welcome to LuaObfuscator.com   (Alpha 0.10.9) ~  Much Love, Ferib 
+
+]]--
+
+Core:RegisterModule({Name="ESP / เธกเธญเธเธ—เธฐเธฅเธธ",OnEnable=function()
+	getgenv().KrizEspActive = true;
+	local Players = game:GetService("Players");
+	local lp = Players.LocalPlayer;
+	local RunService = game:GetService("RunService");
+	local cam = workspace.CurrentCamera;
+	local drawingsList = {};
+	local function GetCol(p)
+		local c, b = p.Character, p:FindFirstChild("Backpack");
+		if c then
+			if (c:FindFirstChild("Knife") or (b and b:FindFirstChild("Knife"))) then
+				return Color3.new(1, 0, 0);
+			end
+			if (c:FindFirstChild("Gun") or (b and b:FindFirstChild("Gun"))) then
+				return Color3.new(0, 0, 1);
+			end
+		end
+		return (p.Team and (p.Team ~= lp.Team) and p.TeamColor.Color) or Color3.new(1, 1, 1);
+	end
+	local function CreateESP(p)
+		if (p == lp) then
+			return;
+		end
+		local d = {T=Drawing.new("Line"),B=Drawing.new("Line"),L=Drawing.new("Line"),R=Drawing.new("Line"),H=Drawing.new("Line"),N=Drawing.new("Text"),D=Drawing.new("Text")};
+		for _, v in pairs(d) do
+			table.insert(drawingsList, v);
+		end
+		for _, v in pairs(d) do
+			v.Visible = false;
+			if (v.Center ~= nil) then
+				v.Center = true;
+				v.Outline = true;
+				v.OutlineColor = Color3.new(0, 0, 0);
+				v.Transparency = 1;
+				v.Font = 0;
+				v.Size = 13;
+			end
+		end
+		local conn;
+		conn = RunService.RenderStepped:Connect(function()
+			if not getgenv().KrizEspActive then
+				for _, v in pairs(d) do
+					v.Visible = false;
+				end
+				if conn then
+					conn:Disconnect();
+				end
+				return;
+			end
+			local c = p.Character;
+			local hum = c and c:FindFirstChildOfClass("Humanoid");
+			local hrp = c and c:FindFirstChild("HumanoidRootPart");
+			if (hrp and hum and (hum.Health > 0)) then
+				local pos, vis = cam:WorldToViewportPoint(hrp.Position);
+				if vis then
+					local dist = (hrp.Position - cam.CFrame.Position).Magnitude;
+					local head = cam:WorldToViewportPoint(c.Head.Position + Vector3.new(0, 0.5, 0));
+					local leg = cam:WorldToViewportPoint(hrp.Position - Vector3.new(0, 3, 0));
+					local h = math.abs(head.Y - leg.Y);
+					local w = h / 1.5;
+					local clr = GetCol(p);
+					local thk = math.clamp(1.2 * (40 / dist), 0.5, 1.2);
+					local trans = math.clamp(70 / dist, 0.4, 0.9);
+					d.T.From, d.T.To = Vector2.new(pos.X - (w / 2), pos.Y - (h / 2)), Vector2.new(pos.X + (w / 2), pos.Y - (h / 2));
+					d.B.From, d.B.To = Vector2.new(pos.X - (w / 2), pos.Y + (h / 2)), Vector2.new(pos.X + (w / 2), pos.Y + (h / 2));
+					d.L.From, d.L.To = Vector2.new(pos.X - (w / 2), pos.Y - (h / 2)), Vector2.new(pos.X - (w / 2), pos.Y + (h / 2));
+					d.R.From, d.R.To = Vector2.new(pos.X + (w / 2), pos.Y - (h / 2)), Vector2.new(pos.X + (w / 2), pos.Y + (h / 2));
+					for _, l in pairs({d.T,d.B,d.L,d.R}) do
+						l.Thickness, l.Transparency, l.Color, l.Visible = thk, trans, clr, true;
+					end
+					local hThk, barX = math.clamp(3 * (40 / dist), 1.5, 2.5), (pos.X - (w / 2)) - 5;
+					d.H.From, d.H.To = Vector2.new(barX, pos.Y + (h / 2)), Vector2.new(barX, (pos.Y + (h / 2)) - (h * (hum.Health / hum.MaxHealth)));
+					d.H.Thickness, d.H.Color, d.H.Transparency, d.H.Visible = hThk, Color3.fromHSV((hum.Health / hum.MaxHealth) * 0.3, 1, 1), trans, true;
+					d.N.Position, d.N.Text, d.N.Color, d.N.Visible = Vector2.new(pos.X, (pos.Y - (h / 2)) - 16), p.Name, clr, true;
+					d.D.Position, d.D.Text, d.D.Color, d.D.Visible = Vector2.new(pos.X, pos.Y + (h / 2) + 2), math.floor(dist) .. "m", Color3.new(1, 1, 1), true;
+				else
+					for _, v in pairs(d) do
+						v.Visible = false;
+					end
+				end
+			else
+				for _, v in pairs(d) do
+					v.Visible = false;
+				end
+				if not p.Parent then
+					conn:Disconnect();
+				end
+			end
+		end);
+	end
+	for _, p in pairs(Players:GetPlayers()) do
+		CreateESP(p);
+	end
+	local playerAddedConn = Players.PlayerAdded:Connect(CreateESP);
+	getgenv().KrizEspCleanup = function()
+		if playerAddedConn then
+			playerAddedConn:Disconnect();
+		end
+		for _, obj in ipairs(drawingsList) do
+			pcall(function()
+				obj:Remove();
+			end);
+		end
+	end;
+end,OnDisable=function()
+	getgenv().KrizEspActive = false;
+	if getgenv().KrizEspCleanup then
+		pcall(getgenv().KrizEspCleanup);
+	end
+end});
+Core:RegisterModule({Name="ESP Highlight / เนเธฎเนเธฅเธ—เน",OnEnable=function()
+	getgenv().KrizHighlightActive = true;
+	local Players = game:GetService("Players");
+	local lp = Players.LocalPlayer;
+	local RunService = game:GetService("RunService");
+	local highlights = {};
+	local playerConnections = {};
+	local playerAddedConn = nil;
+	local playerRemovingConn = nil;
+	local updateConn = nil;
+	local function GetCol(p)
+		local c, b = p.Character, p:FindFirstChild("Backpack");
+		if c then
+			if (c:FindFirstChild("Knife") or (b and b:FindFirstChild("Knife"))) then
+				return Color3.new(1, 0, 0);
+			end
+			if (c:FindFirstChild("Gun") or (b and b:FindFirstChild("Gun"))) then
+				return Color3.new(0, 0, 1);
+			end
+		end
+		return (p.Team and (p.Team ~= lp.Team) and p.TeamColor.Color) or Color3.new(1, 1, 1);
+	end
+	local function RemoveHighlight(p)
+		if highlights[p] then
+			pcall(function()
+				highlights[p]:Destroy();
+			end);
+			highlights[p] = nil;
+		end
+	end
+	local function SetupPlayer(p)
+		if (p == lp) then
+			return;
+		end
+		local function OnCharacterAdded(char)
+			if not getgenv().KrizHighlightActive then
+				return;
+			end
+			RemoveHighlight(p);
+			if char then
+				local hl = Instance.new("Highlight");
+				hl.Name = "KrizHighlight_" .. p.Name;
+				hl.Adornee = char;
+				hl.FillTransparency = 0.5;
+				hl.OutlineTransparency = 0;
+				hl.Parent = char;
+				highlights[p] = hl;
+			end
+		end
+		if (p.Character and getgenv().KrizHighlightActive) then
+			task.spawn(function()
+				OnCharacterAdded(p.Character);
+			end);
+		end
+		local charAddedConn = p.CharacterAdded:Connect(OnCharacterAdded);
+		playerConnections[p] = {CharAdded=charAddedConn};
+	end
+	local function CleanupPlayer(p)
+		RemoveHighlight(p);
+		if playerConnections[p] then
+			if playerConnections[p].CharAdded then
+				pcall(function()
+					playerConnections[p].CharAdded:Disconnect();
+				end);
+			end
+			playerConnections[p] = nil;
+		end
+	end
+	for _, p in pairs(Players:GetPlayers()) do
+		SetupPlayer(p);
+	end
+	playerAddedConn = Players.PlayerAdded:Connect(SetupPlayer);
+	playerRemovingConn = Players.PlayerRemoving:Connect(CleanupPlayer);
+	updateConn = RunService.RenderStepped:Connect(function()
+		if not getgenv().KrizHighlightActive then
+			return;
+		end
+		for p, hl in pairs(highlights) do
+			if (hl and hl.Parent) then
+				local color = GetCol(p);
+				hl.FillColor = color;
+				hl.OutlineColor = color;
+			end
+		end
+	end);
+	getgenv().KrizHighlightCleanup = function()
+		if updateConn then
+			pcall(function()
+				updateConn:Disconnect();
+			end);
+			updateConn = nil;
+		end
+		if playerAddedConn then
+			pcall(function()
+				playerAddedConn:Disconnect();
+			end);
+			playerAddedConn = nil;
+		end
+		if playerRemovingConn then
+			pcall(function()
+				playerRemovingConn:Disconnect();
+			end);
+			playerRemovingConn = nil;
+		end
+		for _, p in ipairs(Players:GetPlayers()) do
+			CleanupPlayer(p);
+		end
+		highlights = {};
+		playerConnections = {};
+	end;
+end,OnDisable=function()
+	getgenv().KrizHighlightActive = false;
+	if getgenv().KrizHighlightCleanup then
+		pcall(getgenv().KrizHighlightCleanup);
+	end
+end});
+Core:RegisterModule({Name="ESP Tracer / เน€เธชเนเธเธเธฒเธเธ”เนเธฒเธเธเธ",OnEnable=function()
+	getgenv().KrizTracerTopActive = true;
+	local Players = game:GetService("Players");
+	local lp = Players.LocalPlayer;
+	local RunService = game:GetService("RunService");
+	local Camera = workspace.CurrentCamera;
+	local tracers = {};
+	local playerConnections = {};
+	local playerAddedConn = nil;
+	local playerRemovingConn = nil;
+	local updateConn = nil;
+	local function GetCol(p)
+		local c, b = p.Character, p:FindFirstChild("Backpack");
+		if c then
+			if (c:FindFirstChild("Knife") or (b and b:FindFirstChild("Knife"))) then
+				return Color3.new(1, 0, 0);
+			end
+			if (c:FindFirstChild("Gun") or (b and b:FindFirstChild("Gun"))) then
+				return Color3.new(0, 0, 1);
+			end
+		end
+		return (p.Team and (p.Team ~= lp.Team) and p.TeamColor.Color) or Color3.new(1, 1, 1);
+	end
+	local function RemoveTracer(p)
+		if tracers[p] then
+			pcall(function()
+				tracers[p]:Remove();
+			end);
+			tracers[p] = nil;
+		end
+	end
+	local function SetupPlayer(p)
+		if (p == lp) then
+			return;
+		end
+		local function OnCharacterAdded(char)
+			if not getgenv().KrizTracerTopActive then
+				return;
+			end
+			RemoveTracer(p);
+			local line = Drawing.new("Line");
+			line.Visible = false;
+			line.Thickness = 1.5;
+			line.Transparency = 0.8;
+			tracers[p] = line;
+		end
+		if (p.Character and getgenv().KrizTracerTopActive) then
+			task.spawn(function()
+				OnCharacterAdded(p.Character);
+			end);
+		end
+		local charAddedConn = p.CharacterAdded:Connect(OnCharacterAdded);
+		playerConnections[p] = {CharAdded=charAddedConn};
+	end
+	local function CleanupPlayer(p)
+		RemoveTracer(p);
+		if playerConnections[p] then
+			if playerConnections[p].CharAdded then
+				pcall(function()
+					playerConnections[p].CharAdded:Disconnect();
+				end);
+			end
+			playerConnections[p] = nil;
+		end
+	end
+	for _, p in pairs(Players:GetPlayers()) do
+		SetupPlayer(p);
+	end
+	playerAddedConn = Players.PlayerAdded:Connect(SetupPlayer);
+	playerRemovingConn = Players.PlayerRemoving:Connect(CleanupPlayer);
+	updateConn = RunService.RenderStepped:Connect(function()
+		if not getgenv().KrizTracerTopActive then
+			return;
+		end
+		local viewportSize = Camera.ViewportSize;
+		local origin = Vector2.new(viewportSize.X / 2, 0);
+		for p, line in pairs(tracers) do
+			local c = p.Character;
+			local hrp = c and c:FindFirstChild("HumanoidRootPart");
+			local hum = c and c:FindFirstChildOfClass("Humanoid");
+			if (hrp and hum and (hum.Health > 0)) then
+				local screenPos, onScreen = Camera:WorldToViewportPoint(hrp.Position);
+				if onScreen then
+					line.From = origin;
+					line.To = Vector2.new(screenPos.X, screenPos.Y);
+					line.Color = GetCol(p);
+					line.Visible = true;
+				else
+					line.Visible = false;
+				end
+			else
+				line.Visible = false;
+			end
+		end
+	end);
+	getgenv().KrizTracerTopCleanup = function()
+		if updateConn then
+			pcall(function()
+				updateConn:Disconnect();
+			end);
+			updateConn = nil;
+		end
+		if playerAddedConn then
+			pcall(function()
+				playerAddedConn:Disconnect();
+			end);
+			playerAddedConn = nil;
+		end
+		if playerRemovingConn then
+			pcall(function()
+				playerRemovingConn:Disconnect();
+			end);
+			playerRemovingConn = nil;
+		end
+		for _, p in ipairs(Players:GetPlayers()) do
+			CleanupPlayer(p);
+		end
+		tracers = {};
+		playerConnections = {};
+	end;
+end,OnDisable=function()
+	getgenv().KrizTracerTopActive = false;
+	if getgenv().KrizTracerTopCleanup then
+		pcall(getgenv().KrizTracerTopCleanup);
+	end
+end});
+Core:RegisterModule({Name="ESP Tracer / เน€เธชเนเธเธเธฒเธเธ”เนเธฒเธเธฅเนเธฒเธ",OnEnable=function()
+	getgenv().KrizTracerBottomActive = true;
+	local Players = game:GetService("Players");
+	local lp = Players.LocalPlayer;
+	local RunService = game:GetService("RunService");
+	local Camera = workspace.CurrentCamera;
+	local tracers = {};
+	local playerConnections = {};
+	local playerAddedConn = nil;
+	local playerRemovingConn = nil;
+	local updateConn = nil;
+	local function GetCol(p)
+		local c, b = p.Character, p:FindFirstChild("Backpack");
+		if c then
+			if (c:FindFirstChild("Knife") or (b and b:FindFirstChild("Knife"))) then
+				return Color3.new(1, 0, 0);
+			end
+			if (c:FindFirstChild("Gun") or (b and b:FindFirstChild("Gun"))) then
+				return Color3.new(0, 0, 1);
+			end
+		end
+		return (p.Team and (p.Team ~= lp.Team) and p.TeamColor.Color) or Color3.new(1, 1, 1);
+	end
+	local function RemoveTracer(p)
+		if tracers[p] then
+			pcall(function()
+				tracers[p]:Remove();
+			end);
+			tracers[p] = nil;
+		end
+	end
+	local function SetupPlayer(p)
+		if (p == lp) then
+			return;
+		end
+		local function OnCharacterAdded(char)
+			if not getgenv().KrizTracerBottomActive then
+				return;
+			end
+			RemoveTracer(p);
+			local line = Drawing.new("Line");
+			line.Visible = false;
+			line.Thickness = 1.5;
+			line.Transparency = 0.8;
+			tracers[p] = line;
+		end
+		if (p.Character and getgenv().KrizTracerBottomActive) then
+			task.spawn(function()
+				OnCharacterAdded(p.Character);
+			end);
+		end
+		local charAddedConn = p.CharacterAdded:Connect(OnCharacterAdded);
+		playerConnections[p] = {CharAdded=charAddedConn};
+	end
+	local function CleanupPlayer(p)
+		RemoveTracer(p);
+		if playerConnections[p] then
+			if playerConnections[p].CharAdded then
+				pcall(function()
+					playerConnections[p].CharAdded:Disconnect();
+				end);
+			end
+			playerConnections[p] = nil;
+		end
+	end
+	for _, p in pairs(Players:GetPlayers()) do
+		SetupPlayer(p);
+	end
+	playerAddedConn = Players.PlayerAdded:Connect(SetupPlayer);
+	playerRemovingConn = Players.PlayerRemoving:Connect(CleanupPlayer);
+	updateConn = RunService.RenderStepped:Connect(function()
+		if not getgenv().KrizTracerBottomActive then
+			return;
+		end
+		local viewportSize = Camera.ViewportSize;
+		local origin = Vector2.new(viewportSize.X / 2, viewportSize.Y);
+		for p, line in pairs(tracers) do
+			local c = p.Character;
+			local hrp = c and c:FindFirstChild("HumanoidRootPart");
+			local hum = c and c:FindFirstChildOfClass("Humanoid");
+			if (hrp and hum and (hum.Health > 0)) then
+				local screenPos, onScreen = Camera:WorldToViewportPoint(hrp.Position);
+				if onScreen then
+					line.From = origin;
+					line.To = Vector2.new(screenPos.X, screenPos.Y);
+					line.Color = GetCol(p);
+					line.Visible = true;
+				else
+					line.Visible = false;
+				end
+			else
+				line.Visible = false;
+			end
+		end
+	end);
+	getgenv().KrizTracerBottomCleanup = function()
+		if updateConn then
+			pcall(function()
+				updateConn:Disconnect();
+			end);
+			updateConn = nil;
+		end
+		if playerAddedConn then
+			pcall(function()
+				playerAddedConn:Disconnect();
+			end);
+			playerAddedConn = nil;
+		end
+		if playerRemovingConn then
+			pcall(function()
+				playerRemovingConn:Disconnect();
+			end);
+			playerRemovingConn = nil;
+		end
+		for _, p in ipairs(Players:GetPlayers()) do
+			CleanupPlayer(p);
+		end
+		tracers = {};
+		playerConnections = {};
+	end;
+end,OnDisable=function()
+	getgenv().KrizTracerBottomActive = false;
+	if getgenv().KrizTracerBottomCleanup then
+		pcall(getgenv().KrizTracerBottomCleanup);
+	end
+end});
