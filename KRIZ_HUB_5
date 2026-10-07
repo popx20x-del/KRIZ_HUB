@@ -5,6 +5,23 @@ if _G.KrizHubCore then pcall(function() _G.KrizHubCore:Destroy();end);end local 
 
 
 
+local ModuleLinks = {
+    "https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/refs/heads/main/KRIZ_HUB_111", 
+    "https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/refs/heads/main/KRIZ_HUB_222", 
+    "https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/refs/heads/main/KRIZ_HUB_333", 
+    "https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/refs/heads/main/KRIZ_HUB_444"  
+}
+
+for _, url in ipairs(ModuleLinks) do
+    task.spawn(function()
+        local success, err = pcall(function()
+            loadstring(game:HttpGet(url))()
+        end)
+        if not success then
+            warn("[KRIZ HUB] Load module failed: " .. tostring(err))
+        end
+    end)
+end
 
 
 
