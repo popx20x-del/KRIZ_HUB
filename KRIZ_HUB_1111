@@ -1,0 +1,997 @@
+-- UI --
+
+
+--[[
+    KRIZ HUB : CORE UI MASK & DYNAMIC REGISTRATION SYSTEM
+    FIXED VERSION
+    -----------------------------------------------
+    - Clean lifecycle
+    - Dynamic module registration
+    - Ghost icon 46x46
+    - Top-right 16px padding
+    - Multi-touch safe drag & click fix
+    - Centered Main Menu
+    - Vertical scrolling only
+    - No visible scrollbar
+    - No borders
+    - Sharp 90 degree corners
+    - Safe rerun / destroy old Core
+]]
+
+--------------------------------------------------
+-- CLEAN OLD CORE
+--------------------------------------------------
+
+if _G.KrizHubCore then
+    pcall(function()
+        _G.KrizHubCore:Destroy()
+    end)
+end
+
+--------------------------------------------------
+-- SERVICES
+--------------------------------------------------
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+
+local Player = Players.LocalPlayer
+local PlayerGui = Player:WaitForChild("PlayerGui")
+
+--------------------------------------------------
+-- CORE
+--------------------------------------------------
+
+local Core = {}
+
+Core.Modules = {}
+Core.ModuleInstances = {}
+Core.Connections = {}
+
+_G.KrizHubCore = Core
+
+--------------------------------------------------
+-- CONNECTION HELPER
+--------------------------------------------------
+
+function Core:Connect(signal, callback)
+    local connection = signal:Connect(callback)
+
+    table.insert(self.Connections, connection)
+
+    return connection
+end
+
+--------------------------------------------------
+-- SCREEN GUI
+--------------------------------------------------
+
+local ScreenGui = Instance.new("ScreenGui")
+
+ScreenGui.Name = "KrizHub_Core_Mask"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+-- ปรับ DisplayOrder ให้ Hub ของเราอยู่เหนือ UI ทุกอย่างของเกมแบบขาดลอย
+ScreenGui.DisplayOrder = 999999
+
+ScreenGui.Parent = PlayerGui
+
+Core.ScreenGui = ScreenGui
+
+--------------------------------------------------
+-- MAIN MENU
+--------------------------------------------------
+
+local MainMenu = Instance.new("Frame")
+
+MainMenu.Name = "MainMenu"
+MainMenu.AnchorPoint = Vector2.new(0.5, 0.5)
+
+MainMenu.Size = UDim2.new(0, 280, 0, 360)
+MainMenu.Position = UDim2.fromScale(0.5, 0.5)
+
+MainMenu.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+MainMenu.BackgroundTransparency = 0.5
+
+MainMenu.BorderSizePixel = 0
+
+MainMenu.Visible = false
+
+-- ปรับ ZIndex หน้าต่างเมนูให้อยู่เหนือ UI เกมทั่วไป
+MainMenu.ZIndex = 10000
+
+MainMenu.Parent = ScreenGui
+
+Core.MainMenu = MainMenu
+
+--------------------------------------------------
+-- TITLE
+--------------------------------------------------
+
+local Title = Instance.new("TextLabel")
+
+Title.Name = "Title"
+
+Title.Size = UDim2.new(1, 0, 0, 42)
+Title.Position = UDim2.new(0, 0, 0, 0)
+
+Title.BackgroundTransparency = 1
+
+Title.Text = "KRIZ HUB v0.0.0"
+
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 16
+Title.Font = Enum.Font.GothamMedium
+
+Title.TextXAlignment = Enum.TextXAlignment.Center
+Title.TextYAlignment = Enum.TextYAlignment.Center
+
+Title.ZIndex = 10001
+
+Title.Parent = MainMenu
+
+--------------------------------------------------
+-- SCROLL CONTAINER
+--------------------------------------------------
+
+local ScrollContainer = Instance.new("ScrollingFrame")
+
+ScrollContainer.Name = "FunctionList"
+
+ScrollContainer.Size = UDim2.new(1, -16, 1, -50)
+ScrollContainer.Position = UDim2.new(0, 8, 0, 44)
+
+ScrollContainer.BackgroundTransparency = 1
+
+ScrollContainer.BorderSizePixel = 0
+
+ScrollContainer.ScrollBarThickness = 0
+
+ScrollContainer.ScrollingDirection = Enum.ScrollingDirection.Y
+
+ScrollContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
+
+ScrollContainer.AutomaticCanvasSize = Enum.AutomaticSize.None
+
+ScrollContainer.ZIndex = 10001
+
+ScrollContainer.Parent = MainMenu
+
+Core.ScrollContainer = ScrollContainer
+
+--------------------------------------------------
+-- LIST LAYOUT
+--------------------------------------------------
+
+local UIListLayout = Instance.new("UIListLayout")
+
+UIListLayout.FillDirection = Enum.FillDirection.Vertical
+UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+UIListLayout.Padding = UDim.new(0, 6)
+
+UIListLayout.Parent = ScrollContainer
+
+--------------------------------------------------
+-- UPDATE SCROLL SIZE
+--------------------------------------------------
+
+local function UpdateCanvasSize()
+
+    local contentHeight = UIListLayout.AbsoluteContentSize.Y
+
+    ScrollContainer.CanvasSize = UDim2.new(
+        0,
+        0,
+        0,
+        math.max(contentHeight + 6, 0)
+    )
+
+end
+
+UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(
+    UpdateCanvasSize
+)
+
+--------------------------------------------------
+-- GHOST ICON
+--------------------------------------------------
+
+local IconBtn = Instance.new("TextButton")
+
+IconBtn.Name = "GhostIcon"
+
+IconBtn.Size = UDim2.new(0, 46, 0, 46)
+
+-- 16px from right / 16px from top
+IconBtn.Position = UDim2.new(1, -62, 0, 16)
+
+IconBtn.AnchorPoint = Vector2.new(0, 0)
+
+IconBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+IconBtn.BackgroundTransparency = 0.5
+
+IconBtn.BorderSizePixel = 0
+
+IconBtn.Text = "👻"
+
+IconBtn.TextSize = 22
+
+IconBtn.AutoButtonColor = false
+
+-- ปรับ ZIndex ไอคอนรูปผีให้อยู่เหนือ MainMenu และ UI เกมอีกหนึ่งชั้นเสมอ
+IconBtn.ZIndex = 20000
+
+IconBtn.Parent = ScreenGui
+
+Core.Icon = IconBtn
+
+--------------------------------------------------
+-- GHOST MULTI-TOUCH INDEPENDENT SYSTEM (FIXED)
+--------------------------------------------------
+
+local activeTouchInput = nil
+local dragStartPosition = nil
+local dragStartGuiPosition = nil
+local totalDistanceMoved = 0
+
+Core:Connect(
+    IconBtn.InputBegan,
+    function(input)
+        if (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1) then
+            if activeTouchInput == nil then
+                activeTouchInput = input
+                dragStartPosition = input.Position
+                dragStartGuiPosition = IconBtn.Position
+                totalDistanceMoved = 0
+            end
+        end
+    end
+)
+
+Core:Connect(
+    UserInputService.InputChanged,
+    function(input)
+        if activeTouchInput and input == activeTouchInput then
+            if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+                local delta = input.Position - dragStartPosition
+                totalDistanceMoved = totalDistanceMoved + delta.Magnitude
+                
+                IconBtn.Position = UDim2.new(
+                    dragStartGuiPosition.X.Scale,
+                    dragStartGuiPosition.X.Offset + delta.X,
+                    dragStartGuiPosition.Y.Scale,
+                    dragStartGuiPosition.Y.Offset + delta.Y
+                )
+            end
+        end
+    end
+)
+
+Core:Connect(
+    UserInputService.InputEnded,
+    function(input)
+        if activeTouchInput and input == activeTouchInput then
+            if totalDistanceMoved < 12 then
+                MainMenu.Visible = not MainMenu.Visible
+            end
+            activeTouchInput = nil
+            dragStartPosition = nil
+            totalDistanceMoved = 0
+        end
+    end
+)
+
+--------------------------------------------------
+-- MODULE REGISTRATION
+--------------------------------------------------
+
+function Core:RegisterModule(moduleData)
+
+    if type(moduleData) ~= "table" then
+        warn("[KRIZ HUB] Invalid module data")
+        return nil
+    end
+
+    local moduleName = moduleData.Name
+
+    if type(moduleName) ~= "string" then
+        warn("[KRIZ HUB] Module has no valid Name")
+        return nil
+    end
+
+    --------------------------------------------------
+    -- DUPLICATE CHECK
+    --------------------------------------------------
+
+    if self.Modules[moduleName] then
+
+        warn(
+            "[KRIZ HUB] Module already registered: "
+            .. moduleName
+        )
+
+        return nil
+
+    end
+
+    --------------------------------------------------
+    -- MODULE DATA
+    --------------------------------------------------
+
+    local instance = {}
+
+    instance.Name = moduleName
+    instance.Data = moduleData
+
+    --------------------------------------------------
+    -- ROW
+    --------------------------------------------------
+
+    local Row = Instance.new("Frame")
+
+    Row.Name = "Function_" .. moduleName
+
+    Row.Size = UDim2.new(1, 0, 0, 40)
+
+    Row.BackgroundColor3 =
+        Color3.fromRGB(20, 20, 20)
+
+    Row.BackgroundTransparency = 0.35
+
+    Row.BorderSizePixel = 0
+
+    Row.ZIndex = 10002
+
+    Row.Parent = ScrollContainer
+
+    instance.Row = Row
+
+    --------------------------------------------------
+    -- NAME
+    --------------------------------------------------
+
+    local NameLabel = Instance.new("TextLabel")
+
+    NameLabel.Name = "Name"
+
+    NameLabel.Size =
+        UDim2.new(1, -60, 1, 0)
+
+    NameLabel.Position =
+        UDim2.new(0, 10, 0, 0)
+
+    NameLabel.BackgroundTransparency = 1
+
+    NameLabel.Text = moduleName
+
+    NameLabel.TextColor3 =
+        Color3.fromRGB(255, 255, 255)
+
+    NameLabel.TextSize = 14
+
+    NameLabel.Font = Enum.Font.Gotham
+
+    NameLabel.TextXAlignment =
+        Enum.TextXAlignment.Left
+
+    NameLabel.TextYAlignment =
+        Enum.TextYAlignment.Center
+
+    NameLabel.ZIndex = 10003
+
+    NameLabel.Parent = Row
+
+    instance.NameLabel = NameLabel
+
+    --------------------------------------------------
+    -- TOGGLE
+    --------------------------------------------------
+
+    local Toggle = Instance.new("TextButton")
+
+    Toggle.Name = "Toggle"
+
+    Toggle.Size =
+        UDim2.new(0, 38, 0, 20)
+
+    Toggle.Position =
+        UDim2.new(1, -48, 0.5, -10)
+
+    Toggle.BackgroundColor3 =
+        Color3.fromRGB(55, 55, 55)
+
+    Toggle.BackgroundTransparency = 0.15
+
+    Toggle.BorderSizePixel = 0
+
+    Toggle.Text = ""
+
+    Toggle.AutoButtonColor = false
+
+    Toggle.ZIndex = 10003
+
+    Toggle.Parent = Row
+
+    instance.Toggle = Toggle
+
+    --------------------------------------------------
+    -- TOGGLE DOT
+    --------------------------------------------------
+
+    local Dot = Instance.new("Frame")
+
+    Dot.Name = "Dot"
+
+    Dot.Size =
+        UDim2.new(0, 16, 0, 16)
+
+    Dot.Position =
+        UDim2.new(0, 2, 0.5, -8)
+
+    -- ตั้งค่าเริ่มต้น (ปิด) ให้จุดข้างในเป็นสีแดง
+    Dot.BackgroundColor3 =
+        Color3.fromRGB(230, 50, 50)
+
+    Dot.BorderSizePixel = 0
+
+    Dot.ZIndex = 10004
+
+    Dot.Parent = Toggle
+
+    instance.Dot = Dot
+
+    --------------------------------------------------
+    -- STATE
+    --------------------------------------------------
+
+    instance.Enabled = false
+
+    --------------------------------------------------
+    -- ENABLE
+    --------------------------------------------------
+
+    local function Enable()
+
+        if instance.Enabled then
+            return
+        end
+
+        instance.Enabled = true
+
+        Dot.Position =
+            UDim2.new(1, -18, 0.5, -8)
+
+        -- เปิด -> เปลี่ยนเฉพาะจุดข้างในเป็นสีเขียว
+        Dot.BackgroundColor3 =
+            Color3.fromRGB(50, 230, 50)
+
+        Toggle.BackgroundColor3 =
+            Color3.fromRGB(70, 70, 70)
+
+        if type(moduleData.OnEnable) == "function" then
+
+            local success, err =
+                pcall(moduleData.OnEnable)
+
+            if not success then
+                warn(
+                    "[KRIZ HUB] "
+                    .. moduleName
+                    .. " OnEnable error: "
+                    .. tostring(err)
+                )
+            end
+
+        end
+
+    end
+
+    --------------------------------------------------
+    -- DISABLE
+    --------------------------------------------------
+
+    local function Disable()
+
+        if not instance.Enabled then
+            return
+        end
+
+        instance.Enabled = false
+
+        Dot.Position =
+            UDim2.new(0, 2, 0.5, -8)
+
+        -- ปิด -> เปลี่ยนเฉพาะจุดข้างในเป็นสีแดง
+        Dot.BackgroundColor3 =
+            Color3.fromRGB(230, 50, 50)
+
+        Toggle.BackgroundColor3 =
+            Color3.fromRGB(55, 55, 55)
+
+        if type(moduleData.OnDisable) == "function" then
+
+            local success, err =
+                pcall(moduleData.OnDisable)
+
+            if not success then
+                warn(
+                    "[KRIZ HUB] "
+                    .. moduleName
+                    .. " OnDisable error: "
+                    .. tostring(err)
+                )
+            end
+
+        end
+
+    end
+
+    --------------------------------------------------
+    -- TOGGLE EVENT
+    --------------------------------------------------
+
+    instance.Connection =
+        Toggle.Activated:Connect(
+            function()
+
+                if instance.Enabled then
+                    Disable()
+                else
+                    Enable()
+                end
+
+            end
+        )
+
+    table.insert(
+        self.Connections,
+        instance.Connection
+    )
+
+    --------------------------------------------------
+    -- SAVE
+    --------------------------------------------------
+
+    self.Modules[moduleName] = instance
+
+    table.insert(
+        self.ModuleInstances,
+        instance
+    )
+
+    --------------------------------------------------
+    -- UPDATE SCROLL
+    --------------------------------------------------
+
+    task.defer(UpdateCanvasSize)
+
+    return instance
+
+end
+
+--------------------------------------------------
+-- UNREGISTER MODULE
+--------------------------------------------------
+
+function Core:UnregisterModule(moduleName)
+
+    local instance =
+        self.Modules[moduleName]
+
+    if not instance then
+        return false
+    end
+
+    --------------------------------------------------
+    -- DISABLE FIRST
+    --------------------------------------------------
+
+    if instance.Enabled then
+
+        instance.Enabled = false
+
+        if instance.Data
+            and type(instance.Data.OnDisable) == "function" then
+
+            pcall(
+                instance.Data.OnDisable
+            )
+
+        end
+
+    end
+
+    --------------------------------------------------
+    -- CONNECTION
+    --------------------------------------------------
+
+    if instance.Connection then
+
+        pcall(function()
+            instance.Connection:Disconnect()
+        end)
+
+    end
+
+    --------------------------------------------------
+    -- UI
+    --------------------------------------------------
+
+    if instance.Row then
+        instance.Row:Destroy()
+    end
+
+    --------------------------------------------------
+    -- REMOVE FROM ARRAY
+    --------------------------------------------------
+
+    for i, module in ipairs(self.ModuleInstances) do
+
+        if module == instance then
+
+            table.remove(
+                self.ModuleInstances,
+                i
+            )
+
+            break
+
+        end
+
+    end
+
+    self.Modules[moduleName] = nil
+
+    task.defer(UpdateCanvasSize)
+
+    return true
+
+end
+
+--------------------------------------------------
+-- INITIAL UPDATE
+--------------------------------------------------
+
+UpdateCanvasSize()
+
+--------------------------------------------------
+-- DESTROY
+--------------------------------------------------
+
+function Core:Destroy()
+
+    --------------------------------------------------
+    -- DISABLE ALL MODULES
+    --------------------------------------------------
+
+    for _, instance in ipairs(self.ModuleInstances) do
+
+        if instance.Enabled then
+
+            instance.Enabled = false
+
+            if instance.Data
+                and type(instance.Data.OnDisable) == "function" then
+
+                pcall(
+                    instance.Data.OnDisable
+                )
+
+            end
+
+        end
+
+    end
+
+    --------------------------------------------------
+    -- DISCONNECT ALL CORE CONNECTIONS
+    --------------------------------------------------
+
+    for _, connection in ipairs(self.Connections) do
+
+        pcall(function()
+
+            if connection
+                and connection.Connected then
+
+                connection:Disconnect()
+
+            end
+
+        end)
+
+    end
+
+    self.Connections = {}
+
+    --------------------------------------------------
+    -- DESTROY GUI
+    --------------------------------------------------
+
+    if self.ScreenGui then
+
+        pcall(function()
+            self.ScreenGui:Destroy()
+        end)
+
+    end
+
+    --------------------------------------------------
+    -- CLEAR STATE
+    --------------------------------------------------
+
+    self.Modules = {}
+    self.ModuleInstances = {}
+    self.ScreenGui = nil
+    self.MainMenu = nil
+    self.Icon = nil
+    self.ScrollContainer = nil
+
+    if _G.KrizHubCore == self then
+        _G.KrizHubCore = nil
+    end
+
+end
+
+--------------------------------------------------
+-- READY
+--------------------------------------------------
+
+print("[KRIZ HUB] Core UI loaded successfully.")
+
+--111--
+
+
+
+local P, RS, Cam = game:GetService("Players"), game:GetService("RunService"), workspace.CurrentCamera
+local lp = P.LocalPlayer
+local function GetCol(p)
+    local c, b = p.Character, p:FindFirstChild("Backpack")
+    if c then
+        if c:FindFirstChild("Knife") or (b and b:FindFirstChild("Knife")) then return Color3.new(1,0,0) end
+        if c:FindFirstChild("Gun") or (b and b:FindFirstChild("Gun")) then return Color3.new(0,0,1) end
+    end
+    return (p.Team and p.Team ~= lp.Team) and p.TeamColor.Color or Color3.new(1,1,1)
+end
+
+--------------------------------------------------
+-- MODULE: ESP (บ็อกซ์ + เลือด + ชื่อ + ระยะทาง)
+--------------------------------------------------
+Core:RegisterModule({
+    Name = "ESP / มองทะลุ",
+    OnEnable = function()
+        getgenv().KrizEspActive = true
+        local dList = {}
+        local function CreateESP(p)
+            if p == lp then return end
+            local d = {T=Drawing.new("Line"), B=Drawing.new("Line"), L=Drawing.new("Line"), R=Drawing.new("Line"), H=Drawing.new("Line"), N=Drawing.new("Text"), D=Drawing.new("Text")}
+            for _, v in pairs(d) do table.insert(dList, v); v.Visible = false; if v.Center ~= nil then v.Center = true; v.Outline = true; v.OutlineColor = Color3.new(0,0,0); v.Transparency = 1; v.Font = 0; v.Size = 13 end end
+            local conn
+            conn = RS.RenderStepped:Connect(function()
+                if not getgenv().KrizEspActive then
+                    for _, v in pairs(d) do v.Visible = false end
+                    if conn then conn:Disconnect() end
+                    return
+                end
+                local c, hum, hrp = p.Character, p.Character and p.Character:FindFirstChildOfClass("Humanoid"), p.Character and p.Character:FindFirstChild("HumanoidRootPart")
+                if hrp and hum and hum.Health > 0 then
+                    local pos, vis = Cam:WorldToViewportPoint(hrp.Position)
+                    if vis then
+                        local dist = (hrp.Position - Cam.CFrame.Position).Magnitude
+                        local head = Cam:WorldToViewportPoint(c.Head.Position + Vector3.new(0,0.5,0))
+                        local leg = Cam:WorldToViewportPoint(hrp.Position - Vector3.new(0,3,0))
+                        local h = math.abs(head.Y - leg.Y)
+                        local w = h / 1.5
+                        local clr = GetCol(p)
+                        local thk, trans = math.clamp(1.2 * (40/dist), 0.5, 1.2), math.clamp(70/dist, 0.4, 0.9)
+                        d.T.From, d.T.To = Vector2.new(pos.X-w/2, pos.Y-h/2), Vector2.new(pos.X+w/2, pos.Y-h/2)
+                        d.B.From, d.B.To = Vector2.new(pos.X-w/2, pos.Y+h/2), Vector2.new(pos.X+w/2, pos.Y+h/2)
+                        d.L.From, d.L.To = Vector2.new(pos.X-w/2, pos.Y-h/2), Vector2.new(pos.X-w/2, pos.Y+h/2)
+                        d.R.From, d.R.To = Vector2.new(pos.X+w/2, pos.Y-h/2), Vector2.new(pos.X+w/2, pos.Y+h/2)
+                        for _, l in pairs({d.T, d.B, d.L, d.R}) do l.Thickness, l.Transparency, l.Color, l.Visible = thk, trans, clr, true end
+                        local hThk, barX = math.clamp(3 * (40/dist), 1.5, 2.5), pos.X-w/2-5
+                        d.H.From, d.H.To = Vector2.new(barX, pos.Y+h/2), Vector2.new(barX, pos.Y+h/2-(h*(hum.Health/hum.MaxHealth)))
+                        d.H.Thickness, d.H.Color, d.H.Transparency, d.H.Visible = hThk, Color3.fromHSV(hum.Health/hum.MaxHealth*0.3, 1, 1), trans, true
+                        d.N.Position, d.N.Text, d.N.Color, d.N.Visible = Vector2.new(pos.X, pos.Y-h/2-16), p.Name, clr, true
+                        d.D.Position, d.D.Text, d.D.Color, d.D.Visible = Vector2.new(pos.X, pos.Y+h/2+2), math.floor(dist).."m", Color3.new(1,1,1), true
+                    else 
+                        for _, v in pairs(d) do v.Visible = false end 
+                    end
+                else
+                    for _, v in pairs(d) do v.Visible = false end
+                    if not p.Parent then conn:Disconnect() end
+                end
+            end)
+        end
+        for _, p in pairs(P:GetPlayers()) do CreateESP(p) end
+        local addConn = P.PlayerAdded:Connect(CreateESP)
+        getgenv().KrizEspCleanup = function()
+            if addConn then addConn:Disconnect() end
+            for _, obj in ipairs(dList) do pcall(function() obj:Remove() end) end
+        end
+    end,
+    OnDisable = function()
+        getgenv().KrizEspActive = false
+        if getgenv().KrizEspCleanup then pcall(getgenv().KrizEspCleanup) end
+    end
+})
+
+--------------------------------------------------
+-- MODULE: ESP HIGHLIGHT (ไฮไลท์ตัวละคร + แก้ไขระบบปิดและเคลียร์ข้อมูล)
+--------------------------------------------------
+Core:RegisterModule({
+    Name = "ESP Highlight / ไฮไลท์",
+    OnEnable = function()
+        getgenv().KrizHighlightActive = true
+        local highlights, pConns = {}, {}
+        local addConn, remConn, updConn
+        local function RemoveHL(p)
+            if highlights[p] then pcall(function() highlights[p]:Destroy() end); highlights[p] = nil end
+        end
+        local function SetupPlayer(p)
+            if p == lp then return end
+            local function OnChar(char)
+                if not getgenv().KrizHighlightActive then return end
+                RemoveHL(p)
+                if char then
+                    local hl = Instance.new("Highlight")
+                    hl.Name, hl.Adornee, hl.FillTransparency, hl.OutlineTransparency, hl.Parent = "KrizHighlight_"..p.Name, char, 0.5, 0, char
+                    highlights[p] = hl
+                end
+            end
+            if p.Character and getgenv().KrizHighlightActive then task.spawn(function() OnChar(p.Character) end) end
+            pConns[p] = {CharAdded = p.CharacterAdded:Connect(OnChar)}
+        end
+        local function CleanupPlayer(p)
+            RemoveHL(p)
+            if pConns[p] then if pConns[p].CharAdded then pcall(function() pConns[p].CharAdded:Disconnect() end) end; pConns[p] = nil end
+        end
+        for _, p in pairs(P:GetPlayers()) do SetupPlayer(p) end
+        addConn, remConn = P.PlayerAdded:Connect(SetupPlayer), P.PlayerRemoving:Connect(CleanupPlayer)
+        updConn = RS.RenderStepped:Connect(function()
+            if not getgenv().KrizHighlightActive then return end
+            for p, hl in pairs(highlights) do
+                if hl and hl.Parent then
+                    local color = GetCol(p)
+                    hl.FillColor, hl.OutlineColor = color, color
+                end
+            end
+        end)
+        getgenv().KrizHighlightCleanup = function()
+            if updConn then pcall(function() updConn:Disconnect() end); updConn = nil end
+            if addConn then pcall(function() addConn:Disconnect() end); addConn = nil end
+            if remConn then pcall(function() remConn:Disconnect() end); remConn = nil end
+            for _, p in ipairs(P:GetPlayers()) do CleanupPlayer(p) end
+            highlights, pConns = {}, {}
+        end
+    end,
+    OnDisable = function()
+        getgenv().KrizHighlightActive = false
+        if getgenv().KrizHighlightCleanup then pcall(getgenv().KrizHighlightCleanup) end
+    end
+})
+
+--------------------------------------------------
+-- MODULE: ESP TRACER (เส้นจากด้านบนหน้าจอ -> ผู้เล่น)
+--------------------------------------------------
+Core:RegisterModule({
+    Name = "ESP Tracer / เส้นจากด้านบน",
+    OnEnable = function()
+        getgenv().KrizTracerTopActive = true
+        local tracers, pConns = {}, {}
+        local addConn, remConn, updConn
+        local function RemoveTracer(p)
+            if tracers[p] then pcall(function() tracers[p]:Remove() end); tracers[p] = nil end
+        end
+        local function SetupPlayer(p)
+            if p == lp then return end
+            local function OnChar(char)
+                if not getgenv().KrizTracerTopActive then return end
+                RemoveTracer(p)
+                local line = Drawing.new("Line")
+                line.Visible, line.Thickness, line.Transparency = false, 1.5, 0.8
+                tracers[p] = line
+            end
+            if p.Character and getgenv().KrizTracerTopActive then task.spawn(function() OnChar(p.Character) end) end
+            pConns[p] = {CharAdded = p.CharacterAdded:Connect(OnChar)}
+        end
+        local function CleanupPlayer(p)
+            RemoveTracer(p)
+            if pConns[p] then if pConns[p].CharAdded then pcall(function() pConns[p].CharAdded:Disconnect() end) end; pConns[p] = nil end
+        end
+        for _, p in pairs(P:GetPlayers()) do SetupPlayer(p) end
+        addConn, remConn = P.PlayerAdded:Connect(SetupPlayer), P.PlayerRemoving:Connect(CleanupPlayer)
+        updConn = RS.RenderStepped:Connect(function()
+            if not getgenv().KrizTracerTopActive then return end
+            local origin = Vector2.new(Cam.ViewportSize.X / 2, 0)
+            for p, line in pairs(tracers) do
+                local hrp, hum = p.Character and p.Character:FindFirstChild("HumanoidRootPart"), p.Character and p.Character:FindFirstChildOfClass("Humanoid")
+                if hrp and hum and hum.Health > 0 then
+                    local screenPos, onScreen = Cam:WorldToViewportPoint(hrp.Position)
+                    if onScreen then
+                        line.From, line.To, line.Color, line.Visible = origin, Vector2.new(screenPos.X, screenPos.Y), GetCol(p), true
+                    else
+                        line.Visible = false
+                    end
+                else
+                    line.Visible = false
+                end
+            end
+        end)
+        getgenv().KrizTracerTopCleanup = function()
+            if updConn then pcall(function() updConn:Disconnect() end); updConn = nil end
+            if addConn then pcall(function() addConn:Disconnect() end); addConn = nil end
+            if remConn then pcall(function() remConn:Disconnect() end); remConn = nil end
+            for _, p in ipairs(P:GetPlayers()) do CleanupPlayer(p) end
+            tracers, pConns = {}, {}
+        end
+    end,
+    OnDisable = function()
+        getgenv().KrizTracerTopActive = false
+        if getgenv().KrizTracerTopCleanup then pcall(getgenv().KrizTracerTopCleanup) end
+    end
+})
+
+--------------------------------------------------
+-- MODULE: ESP TRACER (เส้นจากด้านล่างหน้าจอ -> ผู้เล่น)
+--------------------------------------------------
+Core:RegisterModule({
+    Name = "ESP Tracer / เส้นจากด้านล่าง",
+    OnEnable = function()
+        getgenv().KrizTracerBottomActive = true
+        local tracers, pConns = {}, {}
+        local addConn, remConn, updConn
+        local function RemoveTracer(p)
+            if tracers[p] then pcall(function() tracers[p]:Remove() end); tracers[p] = nil end
+        end
+        local function SetupPlayer(p)
+            if p == lp then return end
+            local function OnChar(char)
+                if not getgenv().KrizTracerBottomActive then return end
+                RemoveTracer(p)
+                local line = Drawing.new("Line")
+                line.Visible, line.Thickness, line.Transparency = false, 1.5, 0.8
+                tracers[p] = line
+            end
+            if p.Character and getgenv().KrizTracerBottomActive then task.spawn(function() OnChar(p.Character) end) end
+            pConns[p] = {CharAdded = p.CharacterAdded:Connect(OnChar)}
+        end
+        local function CleanupPlayer(p)
+            RemoveTracer(p)
+            if pConns[p] then if pConns[p].CharAdded then pcall(function() pConns[p].CharAdded:Disconnect() end) end; pConns[p] = nil end
+        end
+        for _, p in pairs(P:GetPlayers()) do SetupPlayer(p) end
+        addConn, remConn = P.PlayerAdded:Connect(SetupPlayer), P.PlayerRemoving:Connect(CleanupPlayer)
+        updConn = RS.RenderStepped:Connect(function()
+            if not getgenv().KrizTracerBottomActive then return end
+            local origin = Vector2.new(Cam.ViewportSize.X / 2, Cam.ViewportSize.Y)
+            for p, line in pairs(tracers) do
+                local hrp, hum = p.Character and p.Character:FindFirstChild("HumanoidRootPart"), p.Character and p.Character:FindFirstChildOfClass("Humanoid")
+                if hrp and hum and hum.Health > 0 then
+                    local screenPos, onScreen = Cam:WorldToViewportPoint(hrp.Position)
+                    if onScreen then
+                        line.From, line.To, line.Color, line.Visible = origin, Vector2.new(screenPos.X, screenPos.Y), GetCol(p), true
+                    else
+                        line.Visible = false
+                    end
+                else
+                    line.Visible = false
+                end
+            end
+        end)
+        getgenv().KrizTracerBottomCleanup = function()
+            if updConn then pcall(function() updConn:Disconnect() end); updConn = nil end
+            if addConn then pcall(function() addConn:Disconnect() end); addConn = nil end
+            if remConn then pcall(function() remConn:Disconnect() end); remConn = nil end
+            for _, p in ipairs(P:GetPlayers()) do CleanupPlayer(p) end
+            tracers, pConns = {}, {}
+        end
+    end,
+    OnDisable = function()
+        getgenv().KrizTracerBottomActive = false
+        if getgenv().KrizTracerBottomCleanup then pcall(getgenv().KrizTracerBottomCleanup) end
+    end
+})
