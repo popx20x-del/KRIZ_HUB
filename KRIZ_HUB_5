@@ -1,0 +1,7 @@
+local success, result = pcall(function()
+    return loadstring(game:HttpGet("ลิงก์_Raw_ของ_Layer_2_บน_GitHub"))()
+end)
+
+if not success then
+    warn("KRIZ HUB: Failed to initialize layer 1")
+end
