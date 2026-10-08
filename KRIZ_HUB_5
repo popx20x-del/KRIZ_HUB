@@ -1,5 +1,5 @@
 local success, result = pcall(function()
-    return loadstring(game:HttpGet("ลิงก์_Raw_ของ_Layer_2_บน_GitHub"))()
+    return loadstring(game:HttpGet("loadstring(game:HttpGet("https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/main/KRIZ_HUB_1111"))()"))()
 end)
 
 if not success then
