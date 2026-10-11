@@ -1,0 +1,3560 @@
+--1/2--
+
+
+-- 🛡️ ระบบป้องกันการรันซ้ำและเคลียร์หน้าต่างเก่าทิ้งแบบเด็ดขาด 100%
+if _G.KrizHubCore then
+    pcall(function()
+        _G.KrizHubCore:Destroy()
+    end)
+end
+
+local Players, UIS = game:GetService("Players"), game:GetService("UserInputService")
+local Player, PlayerGui = Players.LocalPlayer, Players.LocalPlayer:WaitForChild("PlayerGui")
+
+-- กวาดล้าง ScreenGui ตัวเก่าที่อาจตกค้างในหน้าจอให้เกลี้ยงทันที ป้องกันหน้าต่างซ้อนกัน
+local oldMask = PlayerGui:FindFirstChild("KrizHub_Core_Mask")
+if oldMask then
+    oldMask:Destroy()
+end
+
+local Core = { 
+    Modules = {}, ModuleInstances = {}, Settings = {}, SettingInstances = {}, 
+    Connections = {}, CurrentTab = "General", CategoryContainers = {}, NavButtons = {} 
+}
+_G.KrizHubCore = Core
+
+function Core:Connect(signal, callback) local conn = signal:Connect(callback) table.insert(self.Connections, conn) return conn end
+local function addCorner(parent, radius) local c = Instance.new("UICorner", parent) c.CornerRadius = radius or UDim.new(0, 8) return c end
+local function addStroke(parent, color, thickness) local s = Instance.new("UIStroke", parent) s.Color, s.Thickness = color or Color3.fromRGB(230, 50, 50), thickness or 1.5 return s end
+
+local ScreenGui = Instance.new("ScreenGui", PlayerGui)
+ScreenGui.Name, ScreenGui.ResetOnSpawn, ScreenGui.IgnoreGuiInset, ScreenGui.ZIndexBehavior, ScreenGui.DisplayOrder = "KrizHub_Core_Mask", false, true, Enum.ZIndexBehavior.Sibling, 999999
+Core.ScreenGui = ScreenGui
+
+local MainMenu = Instance.new("Frame", ScreenGui)
+MainMenu.Name, MainMenu.AnchorPoint, MainMenu.Size, MainMenu.Position = "MainMenu", Vector2.new(0.5, 0.5), UDim2.new(0, 280, 0, 360), UDim2.fromScale(0.5, 0.5)
+MainMenu.BackgroundColor3, MainMenu.BackgroundTransparency, MainMenu.BorderSizePixel, MainMenu.Visible, MainMenu.ZIndex = Color3.fromRGB(0, 0, 0), 0.35, 0, false, 10000
+Core.MainMenu = MainMenu
+addCorner(MainMenu, UDim.new(0, 10)) addStroke(MainMenu)
+
+local Title = Instance.new("TextLabel", MainMenu)
+Title.Name, Title.Size, Title.Position, Title.BackgroundTransparency, Title.Text, Title.ZIndex = "Title", UDim2.new(1, 0, 0, 42), UDim2.new(0, 0, 0, 0), 1, "", 10001
+local Txt1 = Instance.new("TextLabel", Title) Txt1.Size, Txt1.Position, Txt1.BackgroundTransparency, Txt1.Text, Txt1.TextColor3, Txt1.TextSize, Txt1.Font, Txt1.ZIndex, Txt1.TextXAlignment = UDim2.new(0, 50, 1, 0), UDim2.new(0.5, -52, 0, 0), 1, "KRIZ", Color3.fromRGB(255, 255, 255), 16, Enum.Font.GothamBold, 10001, Enum.TextXAlignment.Right
+local Txt2 = Instance.new("TextLabel", Title) Txt2.Size, Txt2.Position, Txt2.BackgroundTransparency, Txt2.Text, Txt2.TextColor3, Txt2.TextSize, Txt2.Font, Txt2.ZIndex, Txt2.TextXAlignment = UDim2.new(0, 50, 1, 0), UDim2.new(0.5, 2, 0, 0), 1, "HUB", Color3.fromRGB(230, 50, 50), 16, Enum.Font.GothamBold, 10001, Enum.TextXAlignment.Left
+
+-- 🗂️ แถบเมนูด้านบน (กึ่งกลางเป๊ะ + ไฮไลท์สีแดง)
+local NavBar = Instance.new("Frame", MainMenu)
+NavBar.AnchorPoint = Vector2.new(0.5, 0)
+NavBar.Size, NavBar.Position, NavBar.BackgroundTransparency, NavBar.ZIndex = UDim2.new(0, 260, 0, 28), UDim2.new(0.5, 0, 0, 44), 1, 10001
+
+local NavLayout = Instance.new("UIListLayout", NavBar)
+NavLayout.FillDirection = Enum.FillDirection.Horizontal
+NavLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+NavLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+NavLayout.SortOrder = Enum.SortOrder.LayoutOrder
+NavLayout.Padding = UDim.new(0, 6)
+
+local categories = {
+    { Name = "General", Icon = "หน้าหลัก" },
+    { Name = "Attack", Icon = "โจมตี" },
+    { Name = "Defense", Icon = "ป้องกัน" },
+    { Name = "Settings", Icon = "ตั้งค่า" }
+}
+
+-- ฟังก์ชันสำหรับสลับสีไอคอนหมวดหมู่เป็นสีแดง
+local function updateNavColors()
+    for catName, navBtn in pairs(Core.NavButtons) do
+        if catName == Core.CurrentTab then
+            navBtn.TextColor3 = Color3.fromRGB(230, 50, 50) -- สีแดง (เปิดอยู่)
+        else
+            navBtn.TextColor3 = Color3.fromRGB(200, 200, 200) -- สีขาว/เทา (ไม่ได้เปิด)
+        end
+    end
+end
+
+local function createScroll()
+    local f = Instance.new("ScrollingFrame", MainMenu)
+    f.Size, f.Position, f.BackgroundTransparency, f.BorderSizePixel, f.ScrollBarThickness, f.ScrollingDirection, f.CanvasSize, f.ZIndex = UDim2.new(1, -16, 1, -86), UDim2.new(0, 8, 0, 78), 1, 0, 0, Enum.ScrollingDirection.Y, UDim2.new(0,0,0,0), 10001
+    local pad = Instance.new("UIPadding", f) pad.PaddingTop, pad.PaddingBottom = UDim.new(0, 4), UDim.new(0, 4)
+    local list = Instance.new("UIListLayout", f) list.FillDirection, list.HorizontalAlignment, list.SortOrder, list.Padding = Enum.FillDirection.Vertical, Enum.HorizontalAlignment.Center, Enum.SortOrder.LayoutOrder, UDim.new(0, 6)
+    return f, list
+end
+
+for i, cat in ipairs(categories) do
+    local Holder = Instance.new("Frame", NavBar)
+    Holder.Size = UDim2.new(0, 58, 1, 0)
+    Holder.LayoutOrder = i
+    Holder.BackgroundTransparency = 1
+    Holder.ZIndex = 10002
+    addCorner(Holder, UDim.new(0, 6))
+    addStroke(Holder, Color3.fromRGB(230, 50, 50), 1.5)
+
+    -- สีเริ่มต้น: ถ้าเป็น General ให้เป็นสีแดงสดทันที
+    local initialColor = (cat.Name == "General") and Color3.fromRGB(230, 50, 50) or Color3.fromRGB(200, 200, 200)
+
+    local btn = Instance.new("TextButton", Holder)
+    btn.Size = UDim2.new(1, 0, 1, 0)
+    btn.Position = UDim2.new(0, 0, 0, 0)
+    btn.BackgroundColor3, btn.BackgroundTransparency, btn.BorderSizePixel, btn.Text, btn.TextColor3, btn.TextSize, btn.Font, btn.ZIndex = Color3.fromRGB(20, 20, 20), 0.35, 0, cat.Icon, initialColor, 12, Enum.Font.GothamBold, 10003
+    addCorner(btn, UDim.new(0, 6))
+
+    Core.NavButtons[cat.Name] = btn
+
+    local scroll, layout = createScroll()
+    scroll.Name = cat.Name .. "List"
+    scroll.Visible = (cat.Name == "General")
+    Core.CategoryContainers[cat.Name] = { Scroll = scroll, Layout = layout }
+
+    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        if Core.CurrentTab == cat.Name then
+            scroll.CanvasSize = UDim2.new(0, 0, 0, math.max(layout.AbsoluteContentSize.Y + 8, 0))
+        end
+    end)
+
+    btn.Activated:Connect(function()
+        Core.CurrentTab = cat.Name
+        updateNavColors() -- เปลี่ยนสีไอคอนเป็นสีแดงทันทีที่กดเลือก
+
+        for cName, cData in pairs(Core.CategoryContainers) do
+            cData.Scroll.Visible = (cName == cat.Name)
+            if cName == cat.Name then
+                cData.Scroll.CanvasSize = UDim2.new(0, 0, 0, math.max(cData.Layout.AbsoluteContentSize.Y + 8, 0))
+            end
+        end
+    end)
+end
+
+Core.ScrollContainer = Core.CategoryContainers["General"].Scroll
+
+local IconContainer = Instance.new("Frame", ScreenGui)
+IconContainer.Size, IconContainer.Position, IconContainer.BackgroundTransparency, IconContainer.BorderSizePixel, IconContainer.ZIndex = UDim2.new(0, 46, 0, 46), UDim2.new(1, -62, 0, 16), 1, 0, 20000
+addCorner(IconContainer, UDim.new(0, 10)) addStroke(IconContainer)
+
+local IconBtn = Instance.new("TextButton", IconContainer)
+IconBtn.Size, IconBtn.Position, IconBtn.BackgroundColor3, IconBtn.BackgroundTransparency, IconBtn.BorderSizePixel, IconBtn.Text, IconBtn.TextSize, IconBtn.AutoButtonColor, IconBtn.ZIndex = UDim2.new(1, 0, 1, 0), UDim2.new(0, 0, 0, 0), Color3.fromRGB(0, 0, 0), 0.5, 0, "👻", 22, false, 20001
+Core.Icon = IconBtn addCorner(IconBtn, UDim.new(0, 10))
+
+local activeTouchInput, dragStartPosition, dragStartGuiPosition, totalDistanceMoved = nil, nil, nil, 0
+Core:Connect(IconBtn.InputBegan, function(input) if (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1) and activeTouchInput == nil then activeTouchInput, dragStartPosition, dragStartGuiPosition, totalDistanceMoved = input, input.Position, IconContainer.Position, 0 end end)
+Core:Connect(UIS.InputChanged, function(input) if activeTouchInput and input == activeTouchInput then local delta = input.Position - dragStartPosition totalDistanceMoved = totalDistanceMoved + delta.Magnitude IconContainer.Position = UDim2.new(dragStartGuiPosition.X.Scale, dragStartGuiPosition.X.Offset + delta.X, dragStartGuiPosition.Y.Scale, dragStartGuiPosition.Y.Offset + delta.Y) end end)
+Core:Connect(UIS.InputEnded, function(input) if activeTouchInput and input == activeTouchInput then if totalDistanceMoved < 12 then MainMenu.Visible = not MainMenu.Visible end activeTouchInput, dragStartPosition, totalDistanceMoved = nil, nil, 0 end end)
+--2/2--
+
+function Core:RegisterModule(moduleData)
+    if type(moduleData) ~= "table" or type(moduleData.Name) ~= "string" then return nil end
+    local name = moduleData.Name if self.Modules[name] then return nil end
+    local cat = moduleData.Category or "General"
+    local containerData = self.CategoryContainers[cat] or self.CategoryContainers["General"]
+    local inst = { Name = name, Data = moduleData, Enabled = false, Category = cat }
+
+    local Row = Instance.new("Frame", containerData.Scroll)
+    -- ตั้งชื่อให้ตรงกับโค้ดคำสั่งเดิมของคุณเป๊ะๆ เพื่อให้หาเจอผ่าน FindFirstChild
+    Row.Name = "Function_" .. name
+    Row.Size, Row.BackgroundColor3, Row.BackgroundTransparency, Row.BorderSizePixel, Row.ZIndex = UDim2.new(1, -6, 0, 40), Color3.fromRGB(20, 20, 20), 0.35, 0, 10002
+    inst.Row = Row addCorner(Row) addStroke(Row)
+
+    local NameLabel = Instance.new("TextLabel", Row)
+    NameLabel.Name = "Name"
+    NameLabel.Size, NameLabel.Position, NameLabel.BackgroundTransparency, NameLabel.Text, NameLabel.TextColor3, NameLabel.TextSize, NameLabel.Font, NameLabel.TextXAlignment, NameLabel.TextYAlignment, NameLabel.ZIndex = UDim2.new(1, -60, 1, 0), UDim2.new(0, 10, 0, 0), 1, name, Color3.fromRGB(255, 255, 255), 14, Enum.Font.Gotham, Enum.TextXAlignment.Left, Enum.TextYAlignment.Center, 10003
+
+    local Toggle = Instance.new("TextButton", Row)
+    Toggle.Name = "Toggle"
+    Toggle.Size, Toggle.Position, Toggle.BackgroundColor3, Toggle.BackgroundTransparency, Toggle.BorderSizePixel, Toggle.Text, Toggle.AutoButtonColor, Toggle.ZIndex = UDim2.new(0, 38, 0, 20), UDim2.new(1, -48, 0.5, -10), Color3.fromRGB(55, 55, 55), 0.15, 0, "", false, 10003
+    inst.Toggle = Toggle addCorner(Toggle, UDim.new(1, 0))
+
+    local Dot = Instance.new("Frame", Toggle)
+    Dot.Name = "Dot"
+    Dot.Size, Dot.Position, Dot.BackgroundColor3, Dot.BorderSizePixel, Dot.ZIndex = UDim2.new(0, 16, 0, 16), UDim2.new(0, 2, 0.5, -8), Color3.fromRGB(230, 50, 50), 0, 10004
+    inst.Dot = Dot addCorner(Dot, UDim.new(1, 0))
+
+    local function setEnabled(state)
+        inst.Enabled = state
+        Dot.Position = state and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
+        Dot.BackgroundColor3 = state and Color3.fromRGB(50, 230, 50) or Color3.fromRGB(230, 50, 50)
+        Toggle.BackgroundColor3 = state and Color3.fromRGB(70, 70, 70) or Color3.fromRGB(55, 55, 55)
+    end
+
+    inst.Connection = Toggle.Activated:Connect(function()
+        setEnabled(not inst.Enabled)
+        local cb = moduleData[inst.Enabled and "OnEnable" or "OnDisable"]
+        if type(cb) == "function" then pcall(cb) end
+    end)
+    table.insert(self.Connections, inst.Connection)
+    self.Modules[name] = inst table.insert(self.ModuleInstances, inst)
+    task.defer(function() containerData.Scroll.CanvasSize = UDim2.new(0, 0, 0, math.max(containerData.Layout.AbsoluteContentSize.Y + 8, 0)) end)
+    return inst
+end
+
+function Core:UnregisterModule(name)
+    local inst = self.Modules[name] if not inst then return false end
+    if inst.Enabled then inst.Enabled = false pcall(inst.Data.OnDisable) end
+    if inst.Connection then pcall(function() inst.Connection:Disconnect() end) end
+    if inst.Row then inst.Row:Destroy() end
+    for i, m in ipairs(self.ModuleInstances) do if m == inst then table.remove(self.ModuleInstances, i) break end end
+    self.Modules[name] = nil return true
+end
+
+function Core:RegisterSetting(settingData)
+    if type(settingData) ~= "table" or type(settingData.Name) ~= "string" or type(settingData.Type) ~= "string" then return nil end
+    local sName = settingData.Name if self.Settings[sName] then return nil end
+    local inst = { Name = sName, Data = settingData }
+    local settingsContainer = self.CategoryContainers["Settings"]
+
+    local Row = Instance.new("Frame", settingsContainer.Scroll)
+    Row.Size, Row.BackgroundColor3, Row.BackgroundTransparency, Row.BorderSizePixel, Row.ZIndex = UDim2.new(1, -6, 0, 40), Color3.fromRGB(20, 20, 20), 0.35, 0, 10002
+    inst.Row = Row addCorner(Row) addStroke(Row)
+
+    local NameLabel = Instance.new("TextLabel", Row)
+    NameLabel.Size, NameLabel.Position, NameLabel.BackgroundTransparency, NameLabel.Text, NameLabel.TextColor3, NameLabel.TextSize, NameLabel.Font, NameLabel.TextXAlignment, NameLabel.TextYAlignment, NameLabel.ZIndex = UDim2.new(0, 120, 1, 0), UDim2.new(0, 10, 0, 0), 1, sName, Color3.fromRGB(255, 255, 255), 13, Enum.Font.Gotham, Enum.TextXAlignment.Left, Enum.TextYAlignment.Center, 10003
+
+    local sType = settingData.Type
+    if sType == "Toggle" then
+        local Toggle = Instance.new("TextButton", Row)
+        Toggle.Size, Toggle.Position, Toggle.BackgroundColor3, Toggle.BackgroundTransparency, Toggle.BorderSizePixel, Toggle.Text, Toggle.AutoButtonColor, Toggle.ZIndex = UDim2.new(0, 38, 0, 20), UDim2.new(1, -48, 0.5, -10), Color3.fromRGB(55, 55, 55), 0.15, 0, "", false, 10003
+        addCorner(Toggle, UDim.new(1, 0))
+        local Dot = Instance.new("Frame", Toggle)
+        Dot.Size, Dot.Position, Dot.BackgroundColor3, Dot.BorderSizePixel, Dot.ZIndex = UDim2.new(0, 16, 0, 16), UDim2.new(0, 2, 0.5, -8), Color3.fromRGB(230, 50, 50), 0, 10004
+        addCorner(Dot, UDim.new(1, 0))
+        local val = settingData.Default == true
+        if val then Dot.Position, Dot.BackgroundColor3, Toggle.BackgroundColor3 = UDim2.new(1, -18, 0.5, -8), Color3.fromRGB(50, 230, 50), Color3.fromRGB(70, 70, 70) end
+        inst.Connection = Toggle.Activated:Connect(function()
+            val = not val
+            Dot.Position = val and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
+            Dot.BackgroundColor3 = val and Color3.fromRGB(50, 230, 50) or Color3.fromRGB(230, 50, 50)
+            Toggle.BackgroundColor3 = val and Color3.fromRGB(70, 70, 70) or Color3.fromRGB(55, 55, 55)
+            if type(settingData.Callback) == "function" then pcall(function() settingData.Callback(val) end) end
+        end)
+        table.insert(Core.Connections, inst.Connection)
+
+    elseif sType == "Slider" or sType == "VerticalSlider" then
+        local min, max, step = settingData.Min or 0, settingData.Max or 100, settingData.Step or 1
+        local val = settingData.Default or min
+        local ValLabel = Instance.new("TextLabel", Row)
+        ValLabel.Size, ValLabel.Position, ValLabel.BackgroundTransparency, ValLabel.Text, ValLabel.TextColor3, ValLabel.TextSize, ValLabel.Font, ValLabel.TextXAlignment, ValLabel.TextYAlignment, ValLabel.ZIndex = UDim2.new(0, 80, 1, 0), UDim2.new(1, -90, 0, 0), 1, tostring(val), Color3.fromRGB(200, 200, 200), 12, Enum.Font.Gotham, Enum.TextXAlignment.Right, Enum.TextYAlignment.Center, 10003
+        local SliderBar = Instance.new("Frame", Row)
+        SliderBar.Size, SliderBar.Position, SliderBar.BackgroundColor3, SliderBar.BackgroundTransparency, SliderBar.BorderSizePixel, SliderBar.ZIndex = UDim2.new(0, 90, 0, 6), UDim2.new(1, -195, 0.5, -3), Color3.fromRGB(55, 55, 55), 0.2, 0, 10003
+        addCorner(SliderBar, UDim.new(1, 0))
+        local FillBar = Instance.new("Frame", SliderBar)
+        FillBar.Size, FillBar.BackgroundColor3, FillBar.BorderSizePixel, FillBar.ZIndex = UDim2.new(math.clamp((val - min) / (max - min), 0, 1), 0, 1, 0), Color3.fromRGB(230, 50, 50), 0, 10004
+        addCorner(FillBar, UDim.new(1, 0))
+
+        local dragging = false
+        local function updateSlider(input)
+            local posRatio = math.clamp((input.Position.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X, 0, 1)
+            val = math.clamp(math.floor((min + (max - min) * posRatio) / step + 0.5) * step, min, max)
+            FillBar.Size, ValLabel.Text = UDim2.new((val - min) / (max - min), 0, 1, 0), tostring(val)
+            if type(settingData.Callback) == "function" then pcall(function() settingData.Callback(val) end) end
+        end
+        table.insert(Core.Connections, SliderBar.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = true updateSlider(input) end end))
+        table.insert(Core.Connections, UIS.InputChanged:Connect(function(input) if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then updateSlider(input) end end))
+        table.insert(Core.Connections, UIS.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = false end end))
+
+    elseif sType == "Input" then
+        local TextBox = Instance.new("TextBox", Row)
+        TextBox.Size, TextBox.Position, TextBox.BackgroundColor3, TextBox.BackgroundTransparency, TextBox.BorderSizePixel, TextBox.Text, TextBox.TextColor3, TextBox.TextSize, TextBox.Font, TextBox.ZIndex = UDim2.new(0, 90, 0, 26), UDim2.new(1, -100, 0.5, -13), Color3.fromRGB(45, 45, 45), 0.1, 0, tostring(settingData.Default or ""), Color3.fromRGB(255, 255, 255), 12, Enum.Font.Gotham, 10003
+        addCorner(TextBox, UDim.new(0, 6)) addStroke(TextBox, Color3.fromRGB(100, 100, 100), 1)
+        inst.Connection = TextBox.FocusLost:Connect(function() if type(settingData.Callback) == "function" then pcall(function() settingData.Callback(TextBox.Text) end) end end)
+        table.insert(Core.Connections, inst.Connection)
+
+    elseif sType == "Button" then
+        NameLabel.Size = UDim2.new(1, -20, 1, 0)
+        local Btn = Instance.new("TextButton", Row)
+        Btn.Size, Btn.Position, Btn.BackgroundColor3, Btn.BackgroundTransparency, Btn.BorderSizePixel, Btn.Text, Btn.TextColor3, Btn.TextSize,Btn.Font, Btn.AutoButtonColor, Btn.ZIndex = UDim2.new(0, 80, 0, 26), UDim2.new(1, -90, 0.5, -13), Color3.fromRGB(70, 70, 70), 0.1, 0, settingData.ButtonText or "Click", Color3.fromRGB(255, 255, 255), 12, Enum.Font.GothamBold, false, 10003
+        addCorner(Btn, UDim.new(0, 6))
+        inst.Connection = Btn.Activated:Connect(function() if type(settingData.Callback) == "function" then pcall(function() settingData.Callback() end) end end)
+        table.insert(Core.Connections, inst.Connection)
+
+    elseif sType == "Dropdown" then
+        local DropBtn = Instance.new("TextButton", Row)
+        DropBtn.Size, DropBtn.Position, DropBtn.BackgroundColor3, DropBtn.BackgroundTransparency, DropBtn.BorderSizePixel, DropBtn.Text, DropBtn.TextColor3, DropBtn.TextSize, DropBtn.Font, DropBtn.AutoButtonColor, DropBtn.ZIndex = UDim2.new(0, 90, 0, 26), UDim2.new(1, -100, 0.5, -13), Color3.fromRGB(45, 45, 45), 0.1, 0, tostring(settingData.Default or "Select"), Color3.fromRGB(255, 255, 255), 11, Enum.Font.Gotham, false, 10003
+        addCorner(DropBtn, UDim.new(0, 6))
+        local options, currentIndex = settingData.Options or {}, 1
+        for i, opt in ipairs(options) do if opt == settingData.Default then currentIndex = i break end end
+        inst.Connection = DropBtn.Activated:Connect(function()
+            if #options == 0 then return end
+            currentIndex = (currentIndex % #options) + 1
+            local selected = options[currentIndex]
+            DropBtn.Text = tostring(selected)
+            if type(settingData.Callback) == "function" then pcall(function() settingData.Callback(selected) end) end
+        end)
+        table.insert(Core.Connections, inst.Connection)
+    end
+
+    self.Settings[sName] = inst table.insert(self.SettingInstances, inst)
+    task.defer(function() settingsContainer.Scroll.CanvasSize = UDim2.new(0, 0, 0, math.max(settingsContainer.Layout.AbsoluteContentSize.Y + 8, 0)) end)
+    return inst
+end
+
+function Core:UnregisterSetting(sName)
+    local inst = self.Settings[sName] if not inst then return false end
+    if inst.Connection then pcall(function() inst.Connection:Disconnect() end) end
+    if inst.Row then inst.Row:Destroy() end
+    for i, s in ipairs(self.SettingInstances) do if s == inst then table.remove(self.SettingInstances, i) break end end
+    self.Settings[sName] = nil return true
+end
+
+function Core:Destroy()
+    for _, inst in ipairs(self.ModuleInstances) do if inst.Enabled then pcall(inst.Data.OnDisable) end end
+    for _, conn in ipairs(self.Connections) do pcall(function() if conn.Connected then conn:Disconnect() end end) end
+    self.Connections = {}
+    if self.ScreenGui then pcall(function() self.ScreenGui:Destroy() end) end
+    self.Modules, self.ModuleInstances, self.Settings, self.SettingInstances, self.CategoryContainers = {}, {}, {}, {}, {}
+    self.ScreenGui, self.MainMenu, Core.Icon, Core.ScrollContainer, Core.SettingsScrollContainer = nil, nil, nil, nil, nil
+    if _G.KrizHubCore == self then _G.KrizHubCore = nil end
+end
+
+print("[KRIZ HUB] Core UI loaded successfully.")
+--111--
+
+
+local P, RS, Cam = game:GetService("Players"), game:GetService("RunService"), workspace.CurrentCamera
+local lp = P.LocalPlayer
+local function GetCol(p)
+    local c, b = p.Character, p:FindFirstChild("Backpack")
+    if c then
+        if c:FindFirstChild("Knife") or (b and b:FindFirstChild("Knife")) then return Color3.new(1,0,0) end
+        if c:FindFirstChild("Gun") or (b and b:FindFirstChild("Gun")) then return Color3.new(0,0,1) end
+    end
+    return (p.Team and p.Team ~= lp.Team) and p.TeamColor.Color or Color3.new(1,1,1)
+end
+
+--------------------------------------------------
+-- MODULE: ESP (บ็อกซ์ + เลือด + ชื่อ + ระยะทาง)
+--------------------------------------------------
+Core:RegisterModule({
+    Name = "ESP / มองทะลุ",
+    Category = "Settings",
+    OnEnable = function()
+        getgenv().KrizEspActive = true
+        local dList = {}
+        local function CreateESP(p)
+            if p == lp then return end
+            local d = {T=Drawing.new("Line"), B=Drawing.new("Line"), L=Drawing.new("Line"), R=Drawing.new("Line"), H=Drawing.new("Line"), N=Drawing.new("Text"), D=Drawing.new("Text")}
+            for _, v in pairs(d) do table.insert(dList, v); v.Visible = false; if v.Center ~= nil then v.Center = true; v.Outline = true; v.OutlineColor = Color3.new(0,0,0); v.Transparency = 1; v.Font = 0; v.Size = 13 end end
+            local conn
+            conn = RS.RenderStepped:Connect(function()
+                if not getgenv().KrizEspActive then
+                    for _, v in pairs(d) do v.Visible = false end
+                    if conn then conn:Disconnect() end
+                    return
+                end
+                local c, hum, hrp = p.Character, p.Character and p.Character:FindFirstChildOfClass("Humanoid"), p.Character and p.Character:FindFirstChild("HumanoidRootPart")
+                if hrp and hum and hum.Health > 0 then
+                    local pos, vis = Cam:WorldToViewportPoint(hrp.Position)
+                    if vis then
+                        local dist = (hrp.Position - Cam.CFrame.Position).Magnitude
+                        local head = Cam:WorldToViewportPoint(c.Head.Position + Vector3.new(0,0.5,0))
+                        local leg = Cam:WorldToViewportPoint(hrp.Position - Vector3.new(0,3,0))
+                        local h = math.abs(head.Y - leg.Y)
+                        local w = h / 1.5
+                        local clr = GetCol(p)
+                        local thk, trans = math.clamp(1.2 * (40/dist), 0.5, 1.2), math.clamp(70/dist, 0.4, 0.9)
+                        d.T.From, d.T.To = Vector2.new(pos.X-w/2, pos.Y-h/2), Vector2.new(pos.X+w/2, pos.Y-h/2)
+                        d.B.From, d.B.To = Vector2.new(pos.X-w/2, pos.Y+h/2), Vector2.new(pos.X+w/2, pos.Y+h/2)
+                        d.L.From, d.L.To = Vector2.new(pos.X-w/2, pos.Y-h/2), Vector2.new(pos.X-w/2, pos.Y+h/2)
+                        d.R.From, d.R.To = Vector2.new(pos.X+w/2, pos.Y-h/2), Vector2.new(pos.X+w/2, pos.Y+h/2)
+                        for _, l in pairs({d.T, d.B, d.L, d.R}) do l.Thickness, l.Transparency, l.Color, l.Visible = thk, trans, clr, true end
+                        local hThk, barX = math.clamp(3 * (40/dist), 1.5, 2.5), pos.X-w/2-5
+                        d.H.From, d.H.To = Vector2.new(barX, pos.Y+h/2), Vector2.new(barX, pos.Y+h/2-(h*(hum.Health/hum.MaxHealth)))
+                        d.H.Thickness, d.H.Color, d.H.Transparency, d.H.Visible = hThk, Color3.fromHSV(hum.Health/hum.MaxHealth*0.3, 1, 1), trans, true
+                        d.N.Position, d.N.Text, d.N.Color, d.N.Visible = Vector2.new(pos.X, pos.Y-h/2-16), p.Name, clr, true
+                        d.D.Position, d.D.Text, d.D.Color, d.D.Visible = Vector2.new(pos.X, pos.Y+h/2+2), math.floor(dist).."m", Color3.new(1,1,1), true
+                    else 
+                        for _, v in pairs(d) do v.Visible = false end 
+                    end
+                else
+                    for _, v in pairs(d) do v.Visible = false end
+                    if not p.Parent then conn:Disconnect() end
+                end
+            end)
+        end
+        for _, p in pairs(P:GetPlayers()) do CreateESP(p) end
+        local addConn = P.PlayerAdded:Connect(CreateESP)
+        getgenv().KrizEspCleanup = function()
+            if addConn then addConn:Disconnect() end
+            for _, obj in ipairs(dList) do pcall(function() obj:Remove() end) end
+        end
+    end,
+    OnDisable = function()
+        getgenv().KrizEspActive = false
+        if getgenv().KrizEspCleanup then pcall(getgenv().KrizEspCleanup) end
+    end
+})
+
+--------------------------------------------------
+-- MODULE: ESP HIGHLIGHT (ไฮไลท์ตัวละคร + แก้ไขระบบปิดและเคลียร์ข้อมูล)
+--------------------------------------------------
+Core:RegisterModule({
+    Name = "ESP Highlight / ไฮไลท์",
+    Category = "Settings",
+    OnEnable = function()
+        getgenv().KrizHighlightActive = true
+        local highlights, pConns = {}, {}
+        local addConn, remConn, updConn
+        local function RemoveHL(p)
+            if highlights[p] then pcall(function() highlights[p]:Destroy() end); highlights[p] = nil end
+        end
+        local function SetupPlayer(p)
+            if p == lp then return end
+            local function OnChar(char)
+                if not getgenv().KrizHighlightActive then return end
+                RemoveHL(p)
+                if char then
+                    local hl = Instance.new("Highlight")
+                    hl.Name, hl.Adornee, hl.FillTransparency, hl.OutlineTransparency, hl.Parent = "KrizHighlight_"..p.Name, char, 0.5, 0, char
+                    highlights[p] = hl
+                end
+            end
+            if p.Character and getgenv().KrizHighlightActive then task.spawn(function() OnChar(p.Character) end) end
+            pConns[p] = {CharAdded = p.CharacterAdded:Connect(OnChar)}
+        end
+        local function CleanupPlayer(p)
+            RemoveHL(p)
+            if pConns[p] then if pConns[p].CharAdded then pcall(function() pConns[p].CharAdded:Disconnect() end) end; pConns[p] = nil end
+        end
+        for _, p in pairs(P:GetPlayers()) do SetupPlayer(p) end
+        addConn, remConn = P.PlayerAdded:Connect(SetupPlayer), P.PlayerRemoving:Connect(CleanupPlayer)
+        updConn = RS.RenderStepped:Connect(function()
+            if not getgenv().KrizHighlightActive then return end
+            for p, hl in pairs(highlights) do
+                if hl and hl.Parent then
+                    local color = GetCol(p)
+                    hl.FillColor, hl.OutlineColor = color, color
+                end
+            end
+        end)
+        getgenv().KrizHighlightCleanup = function()
+            if updConn then pcall(function() updConn:Disconnect() end); updConn = nil end
+            if addConn then pcall(function() addConn:Disconnect() end); addConn = nil end
+            if remConn then pcall(function() remConn:Disconnect() end); remConn = nil end
+            for _, p in ipairs(P:GetPlayers()) do CleanupPlayer(p) end
+            highlights, pConns = {}, {}
+        end
+    end,
+    OnDisable = function()
+        getgenv().KrizHighlightActive = false
+        if getgenv().KrizHighlightCleanup then pcall(getgenv().KrizHighlightCleanup) end
+    end
+})
+
+--------------------------------------------------
+-- MODULE: ESP TRACER (เส้นจากด้านบนหน้าจอ -> ผู้เล่น)
+--------------------------------------------------
+Core:RegisterModule({
+    Name = "ESP Tracer / เส้นจากด้านบน",
+    Category = "Settings",
+    OnEnable = function()
+        getgenv().KrizTracerTopActive = true
+        local tracers, pConns = {}, {}
+        local addConn, remConn, updConn
+        local function RemoveTracer(p)
+            if tracers[p] then pcall(function() tracers[p]:Remove() end); tracers[p] = nil end
+        end
+        local function SetupPlayer(p)
+            if p == lp then return end
+            local function OnChar(char)
+                if not getgenv().KrizTracerTopActive then return end
+                RemoveTracer(p)
+                local line = Drawing.new("Line")
+                line.Visible, line.Thickness, line.Transparency = false, 1.5, 0.8
+                tracers[p] = line
+            end
+            if p.Character and getgenv().KrizTracerTopActive then task.spawn(function() OnChar(p.Character) end) end
+            pConns[p] = {CharAdded = p.CharacterAdded:Connect(OnChar)}
+        end
+        local function CleanupPlayer(p)
+            RemoveTracer(p)
+            if pConns[p] then if pConns[p].CharAdded then pcall(function() pConns[p].CharAdded:Disconnect() end) end; pConns[p] = nil end
+        end
+        for _, p in pairs(P:GetPlayers()) do SetupPlayer(p) end
+        addConn, remConn = P.PlayerAdded:Connect(SetupPlayer), P.PlayerRemoving:Connect(CleanupPlayer)
+        updConn = RS.RenderStepped:Connect(function()
+            if not getgenv().KrizTracerTopActive then return end
+            local origin = Vector2.new(Cam.ViewportSize.X / 2, 0)
+            for p, line in pairs(tracers) do
+                local hrp, hum = p.Character and p.Character:FindFirstChild("HumanoidRootPart"), p.Character and p.Character:FindFirstChildOfClass("Humanoid")
+                if hrp and hum and hum.Health > 0 then
+                    local screenPos, onScreen = Cam:WorldToViewportPoint(hrp.Position)
+                    if onScreen then
+                        line.From, line.To, line.Color, line.Visible = origin, Vector2.new(screenPos.X, screenPos.Y), GetCol(p), true
+                    else
+                        line.Visible = false
+                    end
+                else
+                    line.Visible = false
+                end
+            end
+        end)
+        getgenv().KrizTracerTopCleanup = function()
+            if updConn then pcall(function() updConn:Disconnect() end); updConn = nil end
+            if addConn then pcall(function() addConn:Disconnect() end); addConn = nil end
+            if remConn then pcall(function() remConn:Disconnect() end); remConn = nil end
+            for _, p in ipairs(P:GetPlayers()) do CleanupPlayer(p) end
+            tracers, pConns = {}, {}
+        end
+    end,
+    OnDisable = function()
+        getgenv().KrizTracerTopActive = false
+        if getgenv().KrizTracerTopCleanup then pcall(getgenv().KrizTracerTopCleanup) end
+    end
+})
+
+
+
+--------------------------------------------------
+-- MODULE: NPC HIGHLIGHT ESP + NAME (สำหรับ KRIZ HUB)
+--------------------------------------------------
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+
+Core:RegisterModule({
+    Name = "ESP NPC Highlight / ไฮไลท์ NPC",
+    Category = "Settings",
+    OnEnable = function()
+        getgenv().KrizNPCHighlightActive = true
+        local highlights = {}
+        local nameTags = {}
+        local trackedConnections = {}
+
+        local function removeNPC(model)
+            if highlights[model] then
+                pcall(function() highlights[model]:Destroy() end)
+                highlights[model] = nil
+            end
+            if nameTags[model] then
+                pcall(function() nameTags[model]:Destroy() end)
+                nameTags[model] = nil
+            end
+            if trackedConnections[model] then
+                for _, conn in pairs(trackedConnections[model]) do
+                    pcall(function() conn:Disconnect() end)
+                end
+                trackedConnections[model] = nil
+            end
+        end
+
+        local function setupNPC(model)
+            if not model:IsA("Model") then return end
+            -- กรองผู้เล่นจริงออก ให้ทำงานกับ NPC เท่านั้น
+            if Players:GetPlayerFromCharacter(model) then return end
+            
+            local humanoid = model:FindFirstChildOfClass("Humanoid")
+            local head = model:FindFirstChild("Head")
+            local hrp = model:FindFirstChild("HumanoidRootPart")
+            
+            if not humanoid or not head or not hrp then return end
+            if highlights[model] then return end -- ป้องกันการสร้างซ้ำ
+
+            -- 1. สร้าง Highlight สีเขียว
+            local hl = Instance.new("Highlight")
+            hl.Name = "KrizNPCHighlight"
+            hl.Adornee = model
+            hl.FillColor = Color3.fromRGB(0, 255, 0)
+            hl.OutlineColor = Color3.fromRGB(0, 255, 0)
+            hl.FillTransparency = 0.5
+            hl.OutlineTransparency = 0
+            hl.Parent = model
+            highlights[model] = hl
+
+            -- 2. สร้าง BillboardGui แสดงชื่อ NPC ลอยบนหัว
+            local billboard = Instance.new("BillboardGui")
+            billboard.Name = "KrizNPCNameTag"
+            billboard.Adornee = head
+            billboard.Size = UDim2.new(0, 150, 0, 30)
+            billboard.StudsOffset = Vector3.new(0, 2.5, 0)
+            billboard.AlwaysOnTop = true
+
+            local textLabel = Instance.new("TextLabel", billboard)
+            textLabel.Size = UDim2.new(1, 0, 1, 0)
+            textLabel.BackgroundTransparency = 1
+            textLabel.Text = "NPC : " .. (model.Name ~= "" and model.Name or "Unknown")
+            textLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+            textLabel.TextSize = 13
+            textLabel.Font = Enum.Font.GothamBold
+            textLabel.TextStrokeTransparency = 0.2
+            textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+
+            billboard.Parent = model
+            nameTags[model] = billboard
+
+            -- จัดการเมื่อ NPC ถูกลบหรือออกจากแมพ
+            local destroyConn = model.Destroying:Connect(function()
+                removeNPC(model)
+            end)
+
+            trackedConnections[model] = {Destroying = destroyConn}
+        end
+
+        -- สแกนหา NPC ที่มีอยู่แล้วใน Workspace
+        for _, obj in ipairs(Workspace:GetDescendants()) do
+            if obj:IsA("Model") then
+                setupNPC(obj)
+            end
+        end
+
+        -- ตรวจจับ NPC ที่เกิดเพิ่มภายหลัง
+        local addConn = Workspace.DescendantAdded:Connect(function(obj)
+            if obj:IsA("Model") and getgenv().KrizNPCHighlightActive then
+                task.spawn(function()
+                    task.wait(0.2)
+                    setupNPC(obj)
+                end)
+            end
+        end)
+
+        -- ฟังก์ชันเคลียร์ข้อมูลและลบ Highlight + NameTag ทั้งหมดเมื่อปิดโมดูล
+        getgenv().KrizNPCHighlightCleanup = function()
+            if addConn then pcall(function() addConn:Disconnect() end) end
+            for model, _ in pairs(highlights) do
+                removeNPC(model)
+            end
+            highlights = {}
+            nameTags = {}
+            trackedConnections = {}
+        end
+    end,
+    OnDisable = function()
+        getgenv().KrizNPCHighlightActive = false
+        if getgenv().KrizNPCHighlightCleanup then 
+            pcall(getgenv().KrizNPCHighlightCleanup) 
+        end
+    end
+})
+--221--
+
+
+
+--------------------------------------------------
+-- MODULE: AIMBOT (ENEMY ONLY) / ล็อกเป้าเฉพาะศัตรู (พิมพ์เขียวมาตรฐาน 5 ปุ่มแคปซูล)
+--------------------------------------------------
+Core:RegisterModule({
+    Name = "Aimbot / ล็อคเป้า",
+    Category = "Attack",
+    OnEnable = function()
+        getgenv().KrizAimEnemyActive = false
+        local aimActive = false
+        local CG, UIS, P, RS, SG, LP, Cam = game:GetService("CoreGui"), game:GetService("UserInputService"), game:GetService("Players"), game:GetService("RunService"), game:GetService("StarterGui"), game:GetService("Players").LocalPlayer, workspace.CurrentCamera
+        local aimFOV = 100
+        local smoothLevels, smoothNames, currentSmoothIndex = {1, 2, 3}, {"SMOOTH: 1 (ติดหนึบ 100%)", "SMOOTH: 2 (ปานกลาง 70%)", "SMOOTH: 3 (นุ่มนวล 40%)"}, 1
+        local targetParts, targetPartNames, currentPartIndex = {"Head", "HumanoidRootPart"}, {"HEAD", "TORSO"}, 1
+        local wallStates, wallStateNames, currentWallIndex = {false, true}, {"WALL: OFF", "WALL: ON"}, 1
+        local targetModes, targetModeNames, currentModeIndex = {"Enemy", "All"}, {"TARGET: ENEMY (เฉพาะศัตรู)", "TARGET: ALL (ทุกคน)"}, 1
+        
+        local function notify(text)
+            task.spawn(function()
+                pcall(function()
+                    SG:SetCore("SendNotification", {Title = "KRIZ HUB", Text = text, Duration = 3})
+                end)
+            end)
+        end
+
+        local ScreenGui = Instance.new("ScreenGui", CG)
+        ScreenGui.Name, ScreenGui.ZIndexBehavior, ScreenGui.DisplayOrder, ScreenGui.Enabled = "KrizHubAimEnemyUI", Enum.ZIndexBehavior.Sibling, 999999, true
+        
+        local Button = Instance.new("TextButton", ScreenGui)
+        Button.Name, Button.BackgroundColor3, Button.BackgroundTransparency, Button.Position, Button.Size, Button.AutoButtonColor, Button.Font, Button.Text, Button.TextColor3, Button.TextSize = "MainButton", Color3.fromRGB(0, 0, 0), 0.5, UDim2.new(0.5, -35, 0.4, -15), UDim2.new(0, 70, 0, 30), false, Enum.Font.GothamBold, "ON", Color3.fromRGB(255, 255, 255), 13
+        
+        local dragging, dragStart, startPos, activeInput, isMoved = false, Vector3.new(0,0,0), UDim2.new(0,0,0,0), nil, false
+        Button.InputBegan:Connect(function(input)
+            if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and activeInput == nil then
+                dragging, isMoved, activeInput, dragStart, startPos = true, false, input, input.Position, Button.Position
+            end
+        end)
+        
+        UIS.InputChanged:Connect(function(input)
+            if dragging and input == activeInput then
+                local delta = input.Position - dragStart
+                if math.abs(delta.X) > 5 or math.abs(delta.Y) > 5 then isMoved = true end
+                Button.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+            end
+        end)
+        
+        local function endDrag(input)
+            if input == activeInput then dragging, activeInput = false, nil end
+        end
+        Button.InputEnded:Connect(endDrag)
+        UIS.InputEnded:Connect(endDrag)
+
+        -- 1. ค้นหา rowFrame จาก Container ของหมวด Attack โดยตรง
+        local rowFrame = nil
+        pcall(function()
+            if _G.KrizHubCore and _G.KrizHubCore.CategoryContainers and _G.KrizHubCore.CategoryContainers["Attack"] then
+                local attackScroll = _G.KrizHubCore.CategoryContainers["Attack"].Scroll
+                for _, child in ipairs(attackScroll:GetChildren()) do
+                    if child:IsA("Frame") then
+                        local lbl = child:FindFirstChild("Name")
+                        if lbl and (string.find(lbl.Text, "Aimbot") or string.find(lbl.Text, "ล็อคเป้า")) then
+                            rowFrame = child
+                            break
+                        end
+                    end
+                end
+            end
+        end)
+
+        local fovBox, smoothButton, modeButton, partButton, wallButton
+        if rowFrame then
+            -- ปรับหลบข้อความชื่อฟังก์ชันสำหรับ 5 ปุ่ม (เหลือความกว้าง -255px)
+            local nameLbl = rowFrame:FindFirstChild("Name")
+            if nameLbl then
+                nameLbl.Size = UDim2.new(1, -255, 1, 0)
+                nameLbl.ClipsDescendants = true
+            end
+
+            -- ปุ่มที่ 1: Wall Check (ชิดสวิตช์หลักที่สุด -88px)
+            wallButton = Instance.new("TextButton", rowFrame)
+            wallButton.Name = "WallButton"
+            wallButton.Size = UDim2.new(0, 36, 0, 20)
+            wallButton.Position = UDim2.new(1, -88, 0.5, -10)
+            wallButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+            wallButton.BackgroundTransparency = 0.15
+            wallButton.BorderSizePixel = 0
+            wallButton.Font = Enum.Font.GothamBold
+            wallButton.Text = wallStates[currentWallIndex] and "W:ON" or "W:OFF"
+            wallButton.TextColor3 = wallStates[currentWallIndex] and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 255, 255)
+            wallButton.TextSize = 8
+            wallButton.ZIndex = 10003
+            local c1 = Instance.new("UICorner", wallButton) c1.CornerRadius = UDim.new(1, 0)
+
+            wallButton.MouseButton1Click:Connect(function()
+                currentWallIndex = currentWallIndex + 1
+                if currentWallIndex > #wallStates then currentWallIndex = 1 end
+                local isWallOn = wallStates[currentWallIndex]
+                wallButton.Text = isWallOn and "W:ON" or "W:OFF"
+                wallButton.TextColor3 = isWallOn and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 255, 255)
+                notify("WALL CHECK: " .. wallStateNames[currentWallIndex])
+            end)
+
+            -- ปุ่มที่ 2: Aim Part (-128px)
+            partButton = Instance.new("TextButton", rowFrame)
+            partButton.Name = "PartButton"
+            partButton.Size = UDim2.new(0, 36, 0, 20)
+            partButton.Position = UDim2.new(1, -128, 0.5, -10)
+            partButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+            partButton.BackgroundTransparency = 0.15
+            partButton.BorderSizePixel = 0
+            partButton.Font = Enum.Font.GothamBold
+            partButton.Text = targetPartNames[currentPartIndex]
+            partButton.TextColor3 = Color3.fromRGB(0, 255, 255)
+            partButton.TextSize = 8
+            partButton.ZIndex = 10003
+            local c2 = Instance.new("UICorner", partButton) c2.CornerRadius = UDim.new(1, 0)
+
+            partButton.MouseButton1Click:Connect(function()
+                currentPartIndex = currentPartIndex + 1
+                if currentPartIndex > #targetParts then currentPartIndex = 1 end
+                partButton.Text = targetPartNames[currentPartIndex]
+                notify("AIM PART: " .. targetPartNames[currentPartIndex])
+            end)
+
+            -- ปุ่มที่ 3: Target Mode (-168px)
+            modeButton = Instance.new("TextButton", rowFrame)
+            modeButton.Name = "ModeButton"
+            modeButton.Size = UDim2.new(0, 36, 0, 20)
+            modeButton.Position = UDim2.new(1, -168, 0.5, -10)
+            modeButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+            modeButton.BackgroundTransparency = 0.15
+            modeButton.BorderSizePixel = 0
+            modeButton.Font = Enum.Font.GothamBold
+            modeButton.Text = targetModes[currentModeIndex] == "Enemy" and "ENEMY" or "ALL"
+            modeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+            modeButton.TextSize = 8
+            modeButton.ZIndex = 10003
+            local c3 = Instance.new("UICorner", modeButton) c3.CornerRadius = UDim.new(1, 0)
+
+            modeButton.MouseButton1Click:Connect(function()
+                currentModeIndex = currentModeIndex + 1
+                if currentModeIndex > #targetModes then currentModeIndex = 1 end
+                modeButton.Text = targetModes[currentModeIndex] == "Enemy" and "ENEMY" or "ALL"
+                notify("TARGET MODE: " .. targetModeNames[currentModeIndex])
+            end)
+
+            -- ปุ่มที่ 4: Smooth Level (-208px)
+            smoothButton = Instance.new("TextButton", rowFrame)
+            smoothButton.Name = "SmoothButton"
+            smoothButton.Size = UDim2.new(0, 36, 0, 20)
+            smoothButton.Position = UDim2.new(1, -208, 0.5, -10)
+            smoothButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+            smoothButton.BackgroundTransparency = 0.15
+            smoothButton.BorderSizePixel = 0
+            smoothButton.Font = Enum.Font.GothamBold
+            smoothButton.Text = "S:" .. smoothLevels[currentSmoothIndex]
+            smoothButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+            smoothButton.TextSize = 8
+            smoothButton.ZIndex = 10003
+            local c4 = Instance.new("UICorner", smoothButton) c4.CornerRadius = UDim.new(1, 0)
+
+            smoothButton.MouseButton1Click:Connect(function()
+                currentSmoothIndex = currentSmoothIndex + 1
+                if currentSmoothIndex > #smoothLevels then currentSmoothIndex = 1 end
+                smoothButton.Text = "S:" .. smoothLevels[currentSmoothIndex]
+                notify(smoothNames[currentSmoothIndex])
+            end)
+
+            -- ปุ่มที่ 5: FOV Input Box (ซ้ายสุด -248px ชิดขอบซ้ายพอดีเป๊ะ)
+            fovBox = Instance.new("TextBox", rowFrame)
+            fovBox.Name = "FOVBox"
+            fovBox.Size = UDim2.new(0, 36, 0, 20)
+            fovBox.Position = UDim2.new(1, -248, 0.5, -10)
+            fovBox.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+            fovBox.BackgroundTransparency = 0.15
+            fovBox.BorderSizePixel = 0
+            fovBox.Font = Enum.Font.Gotham
+            fovBox.Text = tostring(aimFOV)
+            fovBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+            fovBox.TextSize = 10
+            fovBox.ClearTextOnFocus = false
+            fovBox.ZIndex = 10003
+            fovBox.PlaceholderText = "FOV"
+            local c5 = Instance.new("UICorner", fovBox) c5.CornerRadius = UDim.new(1, 0)
+
+            local oldFovText = tostring(aimFOV)
+            fovBox.Focused:Connect(function() oldFovText = fovBox.Text; fovBox.Text = "" end)
+            fovBox.FocusLost:Connect(function()
+                local val = tonumber(fovBox.Text)
+                if val and val > 0 then aimFOV = val; fovBox.Text = tostring(aimFOV) else fovBox.Text = oldFovText end
+            end)
+        end
+
+        local fovCircle = Drawing.new("Circle")
+        fovCircle.Thickness, fovCircle.NumSides, fovCircle.Filled, fovCircle.Visible, fovCircle.Color = 1, 30, false, false, Color3.fromRGB(255, 255, 255)
+
+        local function getTarget()
+            local closest, dist = nil, aimFOV
+            local screenCenter = Vector2.new(Cam.ViewportSize.X / 2, Cam.ViewportSize.Y / 2)
+            local selectedPartName, ignoreWall, selectedMode = targetParts[currentPartIndex], wallStates[currentWallIndex], targetModes[currentModeIndex]
+            for _, p in pairs(P:GetPlayers()) do
+                local isTargetValid = (selectedMode == "All" and p ~= LP) or (selectedMode == "Enemy" and p ~= LP and p.Team ~= LP.Team)
+                if isTargetValid and p.Character then
+                    local hum, targetPart = p.Character:FindFirstChild("Humanoid"), p.Character:FindFirstChild(selectedPartName) or p.Character:FindFirstChild("HumanoidRootPart")
+                    if hum and hum.Health > 0 and targetPart then
+                        local pos, vis = Cam:WorldToViewportPoint(targetPart.Position)
+                        local isValid = false
+                        if ignoreWall then isValid = vis else
+                            local rayParams = RaycastParams.new()
+                            rayParams.FilterDescendantsInstances, rayParams.FilterType = {LP.Character, p.Character}, Enum.RaycastFilterType.Exclude
+                            local rayResult = workspace:Raycast(Cam.CFrame.Position, (targetPart.Position - Cam.CFrame.Position), rayParams)
+                            isValid = vis and not rayResult
+                        end
+                        if isValid then
+                            local d = (Vector2.new(pos.X, pos.Y) - screenCenter).Magnitude
+                            if d < dist then closest, dist = targetPart, d end
+                        end
+                    end
+                end
+            end
+            return closest
+        end
+
+        local aimConn = RS.RenderStepped:Connect(function(dt)
+            if not fovCircle then return end
+            fovCircle.Position, fovCircle.Radius, fovCircle.Visible = Vector2.new(Cam.ViewportSize.X / 2, Cam.ViewportSize.Y / 2), aimFOV, aimActive
+            if aimActive then
+                local target = getTarget()
+                if target then
+                    local camPos = Cam.CFrame.Position
+                    local targetCFrame = CFrame.lookAt(camPos, target.Position)
+                    local currentSmoothLevel = smoothLevels[currentSmoothIndex]
+                    if currentSmoothLevel == 1 then
+                        Cam.CFrame = targetCFrame
+                    else
+                        local smoothFactor = (currentSmoothLevel == 2) and 0.35 or 0.18
+                        local currentRot = Cam.CFrame.Rotation
+                        local targetRot = targetCFrame.Rotation
+                        local newRot = currentRot:Lerp(targetRot, math.clamp(dt * smoothFactor * 60, 0.01, 1))
+                        Cam.CFrame = CFrame.new(camPos) * newRot
+                    end
+                end
+            end
+        end)
+
+        Button.MouseButton1Click:Connect(function()
+            if not isMoved then
+                aimActive = not aimActive
+                getgenv().KrizAimEnemyActive = aimActive
+                Button.TextColor3 = aimActive and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 255, 255)
+                notify(aimActive and "LOCK: ON" or "LOCK: OFF")
+            end
+        end)
+        notify("LOCK UI: OPEN")
+
+        getgenv().KrizAimEnemyCleanup = function()
+            aimActive, getgenv().KrizAimEnemyActive = false, false
+            if aimConn then aimConn:Disconnect() end
+            if fovCircle then fovCircle:Remove() end
+            for _, obj in pairs({ScreenGui, fovBox, smoothButton, partButton, wallButton, modeButton}) do
+                pcall(function() if obj then obj:Destroy() end end)
+            end
+            if rowFrame then
+                local nameLbl = rowFrame:FindFirstChild("Name")
+                if nameLbl then nameLbl.Size = UDim2.new(1, -60, 1, 0) end
+            end
+            notify("LOCK: OFF")
+        end
+    end,
+    OnDisable = function()
+        getgenv().KrizAimEnemyActive = false
+        if getgenv().KrizAimEnemyCleanup then pcall(getgenv().KrizAimEnemyCleanup) end
+    end
+})
+
+--222--
+
+
+--------------------------------------------------
+-- MODULE: HITBOX EXPANDER / ขยายฮิตบ็อกซ์ + ช่องปรับขนาด (พิมพ์เขียวมาตรฐาน)
+--------------------------------------------------
+Core:RegisterModule({
+    Name = "Hitbox Expander / ขยายฮิตบ็อกซ์",
+    Category = "Attack",
+    OnEnable = function()
+        getgenv().KrizHitboxActive = true
+        local CG, P, RS, SG, LP = game:GetService("CoreGui"), game:GetService("Players"), game:GetService("RunService"), game:GetService("StarterGui"), game:GetService("Players").LocalPlayer
+        local hitboxSize = 5
+
+        local function notify(text)
+            task.spawn(function()
+                pcall(function()
+                    SG:SetCore("SendNotification", {Title = "KRIZ HUB", Text = text, Duration = 3})
+                end)
+            end)
+        end
+
+        -- ค้นหา rowFrame จาก Container ของหมวด Attack โดยตรง
+        local rowFrame = nil
+        pcall(function()
+            if _G.KrizHubCore and _G.KrizHubCore.CategoryContainers and _G.KrizHubCore.CategoryContainers["Attack"] then
+                local attackScroll = _G.KrizHubCore.CategoryContainers["Attack"].Scroll
+                for _, child in ipairs(attackScroll:GetChildren()) do
+                    if child:IsA("Frame") then
+                        local lbl = child:FindFirstChild("Name")
+                        if lbl and (string.find(lbl.Text, "Hitbox") or string.find(lbl.Text, "ขยายฮิตบ็อกซ์")) then
+                            rowFrame = child
+                            break
+                        end
+                    end
+                end
+            end
+        end)
+
+        local hitboxBox
+        if rowFrame then
+            -- ปรับหลบข้อความชื่อฟังก์ชันสำหรับ 1 ปุ่ม (เหลือความกว้าง -95px)
+            local nameLbl = rowFrame:FindFirstChild("Name")
+            if nameLbl then
+                nameLbl.Size = UDim2.new(1, -95, 1, 0)
+                nameLbl.ClipsDescendants = true
+            end
+
+            -- ช่องกรอกขนาด Hitbox ทรงแคปซูลมาตรฐาน (-88px)
+            hitboxBox = Instance.new("TextBox", rowFrame)
+            hitboxBox.Name = "HitboxBox"
+            hitboxBox.Size = UDim2.new(0, 36, 0, 20)
+            hitboxBox.Position = UDim2.new(1, -88, 0.5, -10)
+            hitboxBox.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+            hitboxBox.BackgroundTransparency = 0.15
+            hitboxBox.BorderSizePixel = 0
+            hitboxBox.Font = Enum.Font.Gotham
+            hitboxBox.Text = tostring(hitboxSize)
+            hitboxBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+            hitboxBox.TextSize = 10
+            hitboxBox.ClearTextOnFocus = false
+            hitboxBox.ZIndex = 10003
+            hitboxBox.PlaceholderText = "SIZE"
+            
+            local corner = Instance.new("UICorner", hitboxBox)
+            corner.CornerRadius = UDim.new(1, 0)
+
+            local oldText = tostring(hitboxSize)
+            hitboxBox.Focused:Connect(function()
+                oldText = hitboxBox.Text
+                hitboxBox.Text = ""
+            end)
+            
+            hitboxBox.FocusLost:Connect(function()
+                local val = tonumber(hitboxBox.Text)
+                if val and val > 0 then
+                    hitboxSize = val
+                    hitboxBox.Text = tostring(hitboxSize)
+                else
+                    hitboxBox.Text = oldText
+                end
+            end)
+        end
+
+        local function expandHitbox(char)
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                local hrp = char.HumanoidRootPart
+                hrp.Size, hrp.Transparency, hrp.CanCollide = Vector3.new(hitboxSize, hitboxSize, hitboxSize), 0.7, false
+            end
+        end
+
+        local hitboxConn = RS.RenderStepped:Connect(function()
+            if not getgenv().KrizHitboxActive then return end
+            for _, v in pairs(P:GetPlayers()) do
+                if v ~= LP and v.Character then expandHitbox(v.Character) end
+            end
+        end)
+
+        notify("HITBOX: ON")
+
+        getgenv().KrizHitboxCleanup = function()
+            if hitboxConn then hitboxConn:Disconnect() end
+            if hitboxBox then pcall(function() hitboxBox:Destroy() end) end
+            if rowFrame then
+                local nameLbl = rowFrame:FindFirstChild("Name")
+                if nameLbl then nameLbl.Size = UDim2.new(1, -60, 1, 0) end
+            end
+            for _, v in pairs(P:GetPlayers()) do
+                pcall(function()
+                    if v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+                        local hrp = v.Character.HumanoidRootPart
+                        hrp.Size, hrp.Transparency = Vector3.new(2, 2, 1), 1
+                    end
+                end)
+            end
+            notify("HITBOX: OFF")
+        end
+    end,
+    OnDisable = function()
+        getgenv().KrizHitboxActive = false
+        if getgenv().KrizHitboxCleanup then pcall(getgenv().KrizHitboxCleanup) end
+    end
+})
+--331--
+
+
+--------------------------------------------------
+-- MODULE: AIR WALK / เดินบนอากาศ (หมวด General)
+--------------------------------------------------
+Core:RegisterModule({
+    Name = "Air Walk / เดินบนอากาศ",
+    Category = "General",
+    OnEnable = function()
+        getgenv().KrizAirWalkActive = true
+        local P, RS, UIS, SG, LP = game:GetService("Players"), game:GetService("RunService"), game:GetService("UserInputService"), game:GetService("StarterGui"), game:GetService("Players").LocalPlayer
+        local function notify(text)
+            task.spawn(function() pcall(function() SG:SetCore("SendNotification", {Title = "KRIZ HUB", Text = text, Duration = 3}) end) end)
+        end
+        local speedValue, airWalkPart, airWalkConn = 50, nil, nil
+        local function cleanupAirWalk()
+            if airWalkPart then airWalkPart:Destroy(); airWalkPart = nil end
+            if airWalkConn then airWalkConn:Disconnect(); airWalkConn = nil end
+        end
+        local function enableAirWalk()
+            cleanupAirWalk()
+            airWalkPart = Instance.new("Part", workspace)
+            airWalkPart.Size, airWalkPart.Anchored, airWalkPart.CanCollide, airWalkPart.Transparency = Vector3.new(500, 1, 500), true, true, 1
+            local lockedY = nil
+            airWalkConn = RS.Heartbeat:Connect(function()
+                if not getgenv().KrizAirWalkActive then return end
+                local char = LP.Character
+                if not char or not airWalkPart then return end
+                local root, hum = char:FindFirstChild("HumanoidRootPart"), char:FindFirstChildOfClass("Humanoid")
+                if not root or not hum then return end
+                if not lockedY then lockedY = root.Position.Y - 4 end
+                if hum.MoveDirection.Magnitude > 0.05 then lockedY = lockedY + ((root.Position.Y - 4) - lockedY) * 0.5 end
+                airWalkPart.Position = Vector3.new(root.Position.X, lockedY, root.Position.Z)
+            end)
+        end
+        local renderConn = RS.RenderStepped:Connect(function()
+            if not getgenv().KrizAirWalkActive then return end
+            local char = LP.Character
+            if not char then return end
+            local hum, root = char:FindFirstChildOfClass("Humanoid"), char:FindFirstChild("HumanoidRootPart")
+            if root and hum and speedValue > 0 and hum.MoveDirection.Magnitude > 0 then
+                root.CFrame = root.CFrame + (hum.MoveDirection * (speedValue / 50))
+            end
+        end)
+        local jumpConn = UIS.JumpRequest:Connect(function()
+            if getgenv().KrizAirWalkActive and LP.Character then
+                local hum = LP.Character:FindFirstChildOfClass("Humanoid")
+                if hum then hum:ChangeState(Enum.HumanoidStateType.Jumping) end
+            end
+        end)
+        enableAirWalk()
+        notify("Air Walk: ON")
+        getgenv().KrizAirWalkCleanup = function()
+            if renderConn then renderConn:Disconnect() end
+            if jumpConn then jumpConn:Disconnect() end
+            cleanupAirWalk()
+            notify("Air Walk: OFF")
+        end
+    end,
+    OnDisable = function()
+        getgenv().KrizAirWalkActive = false
+        if getgenv().KrizAirWalkCleanup then pcall(getgenv().KrizAirWalkCleanup) end
+    end
+})
+
+--------------------------------------------------
+-- MODULE: NOCLIP / เดินทะลุทุกอย่าง (หมวด General)
+--------------------------------------------------
+Core:RegisterModule({
+    Name = "Noclip / เดินทะลุทุกอย่าง",
+    Category = "General",
+    OnEnable = function()
+        getgenv().KrizNoclipActive = true
+        local P, RS, SG, LP = game:GetService("Players"), game:GetService("RunService"), game:GetService("StarterGui"), game:GetService("Players").LocalPlayer
+        local function notify(text)
+            task.spawn(function() pcall(function() SG:SetCore("SendNotification", {Title = "KRIZ HUB", Text = text, Duration = 3}) end) end)
+        end
+        if getgenv().KRIZ_NOCLIP_CONN then getgenv().KRIZ_NOCLIP_CONN:Disconnect() end
+        local lastState = false
+        local function setCollisions(state)
+            pcall(function()
+                for _, obj in pairs(workspace:GetDescendants()) do
+                    if obj:IsA("BasePart") then obj.CanCollide = state end
+                end
+            end)
+        end
+        getgenv().KRIZ_NOCLIP_CONN = RS.Stepped:Connect(function()
+            if getgenv().KrizNoclipActive and LP.Character then
+                if not lastState then lastState = true; setCollisions(false) end
+                for _, v in pairs(LP.Character:GetDescendants()) do
+                    if v:IsA("BasePart") then v.CanCollide = false end
+                end
+                local root = LP.Character:FindFirstChild("HumanoidRootPart")
+                if root then
+                    local hit = workspace:FindPartOnRayWithIgnoreList(Ray.new(root.Position, Vector3.new(0, -6, 0)), {LP.Character})
+                    if hit then hit.CanCollide = true end
+                end
+            else
+                if lastState then lastState = false; setCollisions(true) end
+            end
+        end)
+        notify("NOCLIP: ON")
+        getgenv().KrizNoclipCleanup = function()
+            if getgenv().KRIZ_NOCLIP_CONN then getgenv().KRIZ_NOCLIP_CONN:Disconnect(); getgenv().KRIZ_NOCLIP_CONN = nil end
+            setCollisions(true)
+            notify("NOCLIP: OFF")
+        end
+    end,
+    OnDisable = function()
+        getgenv().KrizNoclipActive = false
+        if getgenv().KrizNoclipCleanup then pcall(getgenv().KrizNoclipCleanup) end
+    end
+})
+
+--------------------------------------------------
+-- MODULE: ANTI-FLING / ป้องกันฟลิง (หมวด Defense)
+--------------------------------------------------
+Core:RegisterModule({
+    Name = "Anti-Fling / ป้องกันฟลิง",
+    Category = "Defense",
+    OnEnable = function()
+        getgenv().KrizAntiFlingActive = true
+        local S = {Players = game:GetService("Players"), RunService = game:GetService("RunService"), StarterGui = game:GetService("StarterGui")}
+        local LP = S.Players.LocalPlayer
+        local antiFlingConnections = {}
+        local function notify(text)
+            task.spawn(function() pcall(function() S.StarterGui:SetCore("SendNotification", {Title = "KRIZ HUB", Text = text, Duration = 3}) end) end)
+        end
+        local function StartAntiFling()
+            local function PlayerAdded(Player)
+                local Character, PrimaryPart, Detected = nil, nil, false
+                local function CharacterAdded(NewChar)
+                    Character = NewChar
+                    repeat task.wait() PrimaryPart = NewChar:FindFirstChild("HumanoidRootPart") until PrimaryPart
+                    Detected = false
+                end
+                if Player.Character then CharacterAdded(Player.Character) end
+                table.insert(antiFlingConnections, Player.CharacterAdded:Connect(CharacterAdded))
+                table.insert(antiFlingConnections, S.RunService.Heartbeat:Connect(function()
+                    if not getgenv().KrizAntiFlingActive then return end
+                    if Character and PrimaryPart and Character:IsDescendantOf(workspace) then
+                        if PrimaryPart.AssemblyAngularVelocity.Magnitude > 50 or PrimaryPart.AssemblyLinearVelocity.Magnitude > 100 then
+                            if not Detected then
+                                pcall(function() S.StarterGui:SetCore("ChatMakeSystemMessage", {Text = "Fling Detected: " .. Player.Name, Color = Color3.new(1, 0.8, 0)}) end)
+                            end
+                            Detected = true
+                            for _, v in ipairs(Character:GetDescendants()) do
+                                if v:IsA("BasePart") then v.CanCollide, v.AssemblyAngularVelocity, v.AssemblyLinearVelocity = false, Vector3.zero, Vector3.zero end
+                            end
+                        end
+                    end
+                end))
+            end
+            for _, v in ipairs(S.Players:GetPlayers()) do if v ~= LP then PlayerAdded(v) end end
+            table.insert(antiFlingConnections, S.Players.PlayerAdded:Connect(PlayerAdded))
+            local LastPosition = nil
+            table.insert(antiFlingConnections, S.RunService.Heartbeat:Connect(function()
+                if not getgenv().KrizAntiFlingActive then return end
+                local Char, HRP = LP.Character, LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+                if not HRP then return end
+                if HRP.AssemblyLinearVelocity.Magnitude > 250 or HRP.AssemblyAngularVelocity.Magnitude > 250 then
+                    HRP.AssemblyAngularVelocity, HRP.AssemblyLinearVelocity = Vector3.zero, Vector3.zero
+                    if LastPosition then HRP.CFrame = LastPosition end
+                    notify("FLING NEUTRALIZED")
+                elseif HRP.AssemblyLinearVelocity.Magnitude < 50 then
+                    LastPosition = HRP.CFrame
+                end
+            end))
+        end
+        StartAntiFling()
+        notify("ANTI-FLING: ON")
+        getgenv().KrizAntiFlingCleanup = function()
+            for _, conn in pairs(antiFlingConnections) do pcall(function() conn:Disconnect() end) end
+            antiFlingConnections = {}
+            notify("ANTI-FLING: OFF")
+        end
+    end,
+    OnDisable = function()
+        getgenv().KrizAntiFlingActive = false
+        if getgenv().KrizAntiFlingCleanup then pcall(getgenv().KrizAntiFlingCleanup) end
+    end
+})
+--332--
+
+
+--------------------------------------------------
+-- MODULE: FULLBRIGHT / ปรับแสงสว่าง (หมวด Settings + ช่องปรับสว่างแคปซูล)
+--------------------------------------------------
+Core:RegisterModule({
+    Name = "Fullbright / ปรับแสงสว่าง",
+    Category = "Settings",
+    OnEnable = function()
+        getgenv().KrizFullbrightActive = true
+        local L, SG = game:GetService("Lighting"), game:GetService("StarterGui")
+        local brightnessValue = 3
+
+        local function notify(text)
+            task.spawn(function() pcall(function() SG:SetCore("SendNotification", {Title = "KRIZ HUB", Text = text, Duration = 3}) end) end)
+        end
+
+        local oldB, oldE, oldA, oldOA = L.Brightness, L.ExposureCompensation, L.Ambient, L.OutdoorAmbient
+
+        -- ค้นหา rowFrame จาก Container ของหมวด Settings
+        local rowFrame = nil
+        pcall(function()
+            if _G.KrizHubCore and _G.KrizHubCore.CategoryContainers and _G.KrizHubCore.CategoryContainers["Settings"] then
+                local settingsScroll = _G.KrizHubCore.CategoryContainers["Settings"].Scroll
+                for _, child in ipairs(settingsScroll:GetChildren()) do
+                    if child:IsA("Frame") then
+                        local lbl = child:FindFirstChild("Name")
+                        if lbl and (string.find(lbl.Text, "Fullbright") or string.find(lbl.Text, "ปรับแสงสว่าง")) then
+                            rowFrame = child
+                            break
+                        end
+                    end
+                end
+            end
+        end)
+
+        local brightBox
+        if rowFrame then
+            local nameLbl = rowFrame:FindFirstChild("Name")
+            if nameLbl then
+                nameLbl.Size = UDim2.new(1, -95, 1, 0)
+                nameLbl.ClipsDescendants = true
+            end
+
+            -- ช่องกรอกความสว่าง ทรงแคปซูลมาตรฐาน (-88px)
+            brightBox = Instance.new("TextBox", rowFrame)
+            brightBox.Name = "BrightBox"
+            brightBox.Size = UDim2.new(0, 36, 0, 20)
+            brightBox.Position = UDim2.new(1, -88, 0.5, -10)
+            brightBox.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+            brightBox.BackgroundTransparency = 0.15
+            brightBox.BorderSizePixel = 0
+            brightBox.Font = Enum.Font.Gotham
+            brightBox.Text = tostring(brightnessValue)
+            brightBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+            brightBox.TextSize = 10
+            brightBox.ClearTextOnFocus = false
+            brightBox.ZIndex = 10003
+            brightBox.PlaceholderText = "BRIGHT"
+
+            local corner = Instance.new("UICorner", brightBox)
+            corner.CornerRadius = UDim.new(1, 0)
+
+            local oldText = tostring(brightnessValue)
+            brightBox.Focused:Connect(function() oldText = brightBox.Text; brightBox.Text = "" end)
+            brightBox.FocusLost:Connect(function()
+                local val = tonumber(brightBox.Text)
+                if val and val >= 0 then
+                    brightnessValue = val
+                    brightBox.Text = tostring(brightnessValue)
+                    if getgenv().KrizFullbrightActive then L.Brightness = brightnessValue end
+                else
+                    brightBox.Text = oldText
+                end
+            end)
+        end
+
+        L.Brightness, L.ExposureCompensation, L.Ambient, L.OutdoorAmbient = brightnessValue, 1, Color3.fromRGB(200, 200, 200), Color3.fromRGB(220, 220, 220)
+        notify("FULLBRIGHT: ON")
+
+        getgenv().KrizFullbrightCleanup = function()
+            pcall(function() L.Brightness, L.ExposureCompensation, L.Ambient, L.OutdoorAmbient = oldB, oldE, oldA, oldOA end)
+            if brightBox then pcall(function() brightBox:Destroy() end) end
+            if rowFrame then
+                local nameLbl = rowFrame:FindFirstChild("Name")
+                if nameLbl then nameLbl.Size = UDim2.new(1, -60, 1, 0) end
+            end
+            notify("FULLBRIGHT: OFF")
+        end
+    end,
+    OnDisable = function()
+        getgenv().KrizFullbrightActive = false
+        if getgenv().KrizFullbrightCleanup then pcall(getgenv().KrizFullbrightCleanup) end
+    end
+})
+
+--------------------------------------------------
+-- MODULE: DEATH WARP / วาร์ปจุดเดิมตอนตาย (หมวด General)
+--------------------------------------------------
+Core:RegisterModule({
+    Name = "Death Warp / เกิดจุดเดิมที่ตาย",
+    Category = "General",
+    OnEnable = function()
+        getgenv().KrizDeathWarpActive = true
+        local P, SG, LP = game:GetService("Players"), game:GetService("StarterGui"), game:GetService("Players").LocalPlayer
+        local function notify(text)
+            task.spawn(function() pcall(function() SG:SetCore("SendNotification", {Title = "KRIZ HUB", Text = text, Duration = 3}) end) end)
+        end
+        local lastPosition, loopRunning = nil, true
+        task.spawn(function()
+            while loopRunning and getgenv().KrizDeathWarpActive do
+                task.wait(1)
+                if LP.Character then
+                    local hrp = LP.Character:FindFirstChild("HumanoidRootPart")
+                    if hrp then lastPosition = hrp.CFrame end
+                end
+            end
+        end)
+        local charConn = LP.CharacterAdded:Connect(function(char)
+            if lastPosition then
+                task.wait(0.1)
+                local hrp = char:WaitForChild("HumanoidRootPart", 5)
+                if hrp then hrp.CFrame = lastPosition end
+            end
+        end)
+        notify("DEATH WARP: ON")
+        getgenv().KrizDeathWarpCleanup = function()
+            loopRunning = false
+            if charConn then charConn:Disconnect() end
+            notify("DEATH WARP: OFF")
+        end
+    end,
+    OnDisable = function()
+        getgenv().KrizDeathWarpActive = false
+        if getgenv().KrizDeathWarpCleanup then pcall(getgenv().KrizDeathWarpCleanup) end
+    end
+})
+
+--------------------------------------------------
+-- MODULE: RESET CHARACTER / รีเซ็ตตัวละคร (หมวด Settings)
+--------------------------------------------------
+Core:RegisterModule({
+    Name = "Reset Character / รีเซ็ตตัว",
+    Category = "Settings",
+    OnEnable = function()
+        getgenv().KrizResetActive = true
+        local SG, LP = game:GetService("StarterGui"), game:GetService("Players").LocalPlayer
+        local function notify(text)
+            task.spawn(function() pcall(function() SG:SetCore("SendNotification", {Title = "KRIZ HUB", Text = text, Duration = 3}) end) end)
+        end
+        local char = LP.Character
+        if char then
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            if hum then hum.Health = 0; notify("RESET: CHARACTER") else notify("ERROR: HUMANOID NOT FOUND") end
+        else
+            notify("ERROR: CHARACTER NOT FOUND")
+        end
+        getgenv().KrizResetCleanup = function() getgenv().KrizResetActive = false end
+    end,
+    OnDisable = function()
+        getgenv().KrizResetActive = false
+        if getgenv().KrizResetCleanup then pcall(getgenv().KrizResetCleanup) end
+    end
+})
+
+--------------------------------------------------
+-- MODULE: SPEED / วิ่งเร็ว (หมวด Settings + ช่องปรับแคปซูลมาตรฐาน)
+--------------------------------------------------
+Core:RegisterModule({
+    Name = "Speed / วิ่งเร็ว",
+    Category = "Settings",
+    OnEnable = function()
+        getgenv().KrizSpeedActive = false
+        local speedActive = false
+        local CG, UIS, P, RS, SG, LP = game:GetService("CoreGui"), game:GetService("UserInputService"), game:GetService("Players"), game:GetService("RunService"), game:GetService("StarterGui"), game:GetService("Players").LocalPlayer
+        local function notify(text)
+            task.spawn(function() pcall(function() SG:SetCore("SendNotification", {Title = "KRIZ HUB", Text = text, Duration = 3}) end) end)
+        end
+        local speedValue = 50
+
+        if CG:FindFirstChild("KrizHubSpeedButtonUI") then CG.KrizHubSpeedButtonUI:Destroy() end
+        local ScreenGui = Instance.new("ScreenGui", CG)
+        ScreenGui.Name, ScreenGui.ZIndexBehavior, ScreenGui.DisplayOrder, ScreenGui.Enabled = "KrizHubSpeedButtonUI", Enum.ZIndexBehavior.Sibling, 999999, true
+
+        local Button = Instance.new("TextButton", ScreenGui)
+        Button.Name, Button.BackgroundColor3, Button.BackgroundTransparency, Button.Position, Button.Size, Button.AutoButtonColor, Button.Font, Button.Text, Button.TextColor3, Button.TextSize = "MainButton", Color3.fromRGB(0, 0, 0), 0.5, UDim2.new(0.5, -35, 0.4, -15), UDim2.new(0, 70, 0, 30), false, Enum.Font.GothamBold, "SPEED", Color3.fromRGB(255, 255, 255), 13
+
+        local dragging, dragStart, startPos, activeInput, isMoved = false, Vector3.new(0,0,0), UDim2.new(0,0,0,0), nil, false
+        Button.InputBegan:Connect(function(input)
+            if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and activeInput == nil then
+                dragging, isMoved, activeInput, dragStart, startPos = true, false, input, input.Position, Button.Position
+            end
+        end)
+        UIS.InputChanged:Connect(function(input)
+            if dragging and input == activeInput then
+                local delta = input.Position - dragStart
+                if math.abs(delta.X) > 5 or math.abs(delta.Y) > 5 then isMoved = true end
+                Button.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+            end
+        end)
+        local function endDrag(input) if input == activeInput then dragging, activeInput = false, nil end end
+        Button.InputEnded:Connect(endDrag)
+        UIS.InputEnded:Connect(endDrag)
+
+        -- ค้นหา rowFrame จาก Container ของหมวด Settings
+        local rowFrame = nil
+        pcall(function()
+            if _G.KrizHubCore and _G.KrizHubCore.CategoryContainers and _G.KrizHubCore.CategoryContainers["Settings"] then
+                local settingsScroll = _G.KrizHubCore.CategoryContainers["Settings"].Scroll
+                for _, child in ipairs(settingsScroll:GetChildren()) do
+                    if child:IsA("Frame") then
+                        local lbl = child:FindFirstChild("Name")
+                        if lbl and (string.find(lbl.Text, "Speed") or string.find(lbl.Text, "วิ่งเร็ว")) then
+                            rowFrame = child
+                            break
+                        end
+                    end
+                end
+            end
+        end)
+
+        local speedBox
+        if rowFrame then
+            local nameLbl = rowFrame:FindFirstChild("Name")
+            if nameLbl then
+                nameLbl.Size = UDim2.new(1, -95, 1, 0)
+                nameLbl.ClipsDescendants = true
+            end
+
+            -- ช่องกรอกความเร็ว ทรงแคปซูลมาตรฐาน (-88px)
+            speedBox = Instance.new("TextBox", rowFrame)
+            speedBox.Name = "SpeedBox"
+            speedBox.Size = UDim2.new(0, 36, 0, 20)
+            speedBox.Position = UDim2.new(1, -88, 0.5, -10)
+            speedBox.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+            speedBox.BackgroundTransparency = 0.15
+            speedBox.BorderSizePixel = 0
+            speedBox.Font = Enum.Font.Gotham
+            speedBox.Text = tostring(speedValue)
+            speedBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+            speedBox.TextSize = 10
+            speedBox.ClearTextOnFocus = false
+            speedBox.ZIndex = 10003
+            speedBox.PlaceholderText = "SPEED"
+
+            local corner = Instance.new("UICorner", speedBox)
+            corner.CornerRadius = UDim.new(1, 0)
+
+            local oldText = tostring(speedValue)
+            speedBox.Focused:Connect(function() oldText = speedBox.Text; speedBox.Text = "" end)
+            speedBox.FocusLost:Connect(function()
+                local val = tonumber(speedBox.Text)
+                if val and val > 0 then speedValue = val; speedBox.Text = tostring(speedValue) else speedBox.Text = oldText end
+            end)
+        end
+
+        local speedConn = RS.RenderStepped:Connect(function()
+            if not getgenv().KrizSpeedActive then return end
+            local char = LP.Character
+            if not char then return end
+            local hrp, hum = char:FindFirstChild("HumanoidRootPart"), char:FindFirstChild("Humanoid")
+            if hrp and hum and hum.Health > 0 and hum.MoveDirection.Magnitude > 0 then
+                local targetVelocity = hum.MoveDirection * speedValue
+                hrp.AssemblyLinearVelocity = Vector3.new(targetVelocity.X, hrp.AssemblyLinearVelocity.Y, targetVelocity.Z)
+            end
+        end)
+
+        Button.MouseButton1Click:Connect(function()
+            if not isMoved then
+                speedActive = not speedActive
+                getgenv().KrizSpeedActive = speedActive
+                Button.TextColor3 = speedActive and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 255, 255)
+                notify(speedActive and "SPEED: ON" or "SPEED: OFF")
+            end
+        end)
+        notify("SPEED UI: OPEN")
+
+        getgenv().KrizSpeedCleanup = function()
+            speedActive, getgenv().KrizSpeedActive = false, false
+            if speedConn then speedConn:Disconnect() end
+            if rowFrame then
+                local nameLbl = rowFrame:FindFirstChild("Name")
+                if nameLbl then nameLbl.Size = UDim2.new(1, -60, 1, 0) end
+            end
+            for _, obj in pairs({ScreenGui, speedBox}) do pcall(function() obj:Destroy() end) end
+            notify("SPEED: OFF")
+        end
+    end,
+    OnDisable = function()
+        getgenv().KrizSpeedActive = false
+        if getgenv().KrizSpeedCleanup then pcall(getgenv().KrizSpeedCleanup) end
+    end
+})
+--333--
+
+
+--------------------------------------------------
+-- MODULE: FLY + ULTIMATE NOCLIP / ระบบบินพร้อมทะลุทุกอย่าง (หมวด General + ปุ่มแคปซูลมาตรฐาน)
+--------------------------------------------------
+Core:RegisterModule({
+    Name = "Fly / บินทะลุ",
+    Category = "General",
+    OnEnable = function()
+        getgenv().KrizFlyModuleActive = true
+        local CG, UIS, P, RS, SG, LP = game:GetService("CoreGui"), game:GetService("UserInputService"), game:GetService("Players"), game:GetService("RunService"), game:GetService("StarterGui"), game:GetService("Players").LocalPlayer
+        local function notify(text)
+            task.spawn(function() pcall(function() SG:SetCore("SendNotification", {Title = "KRIZ HUB", Text = text, Duration = 3}) end) end)
+        end
+        local flyActive, flySpeed = false, 1
+        local ControlModule = require(LP:WaitForChild("PlayerScripts"):WaitForChild("PlayerModule"):WaitForChild("ControlModule"))
+        
+        if CG:FindFirstChild("KrizHubFlyButtonUI") then CG.KrizHubFlyButtonUI:Destroy() end
+        local ScreenGui = Instance.new("ScreenGui", CG)
+        ScreenGui.Name, ScreenGui.ZIndexBehavior, ScreenGui.DisplayOrder, ScreenGui.Enabled = "KrizHubFlyButtonUI", Enum.ZIndexBehavior.Sibling, 999999, true
+        
+        local Button = Instance.new("TextButton", ScreenGui)
+        Button.Name, Button.BackgroundColor3, Button.BackgroundTransparency, Button.Position, Button.Size, Button.AutoButtonColor, Button.Font, Button.Text, Button.TextColor3, Button.TextSize = "MainButton", Color3.fromRGB(0, 0, 0), 0.5, UDim2.new(0.5, -35, 0.4, -15), UDim2.new(0, 70, 0, 30), false, Enum.Font.GothamBold, "FLY", Color3.fromRGB(255, 255, 255), 13
+        
+        local dragging, dragStart, startPos, activeInput, isMoved = false, Vector3.new(0,0,0), UDim2.new(0,0,0,0), nil, false
+        Button.InputBegan:Connect(function(input)
+            if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and activeInput == nil then
+                dragging, isMoved, activeInput, dragStart, startPos = true, false, input, input.Position, Button.Position
+            end
+        end)
+        UIS.InputChanged:Connect(function(input)
+            if dragging and input == activeInput then
+                local delta = input.Position - dragStart
+                if math.abs(delta.X) > 5 or math.abs(delta.Y) > 5 then isMoved = true end
+                Button.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+            end
+        end)
+        local function endDrag(input) if input == activeInput then dragging, activeInput = false, nil end end
+        Button.InputEnded:Connect(endDrag)
+        UIS.InputEnded:Connect(endDrag)
+
+        -- ค้นหา rowFrame จาก Container ของหมวด General
+        local rowFrame = nil
+        pcall(function()
+            if _G.KrizHubCore and _G.KrizHubCore.CategoryContainers and _G.KrizHubCore.CategoryContainers["General"] then
+                local generalScroll = _G.KrizHubCore.CategoryContainers["General"].Scroll
+                for _, child in ipairs(generalScroll:GetChildren()) do
+                    if child:IsA("Frame") then
+                        local lbl = child:FindFirstChild("Name")
+                        if lbl and (string.find(lbl.Text, "Fly") or string.find(lbl.Text, "บินทะลุ")) then
+                            rowFrame = child
+                            break
+                        end
+                    end
+                end
+            end
+        end)
+
+        local speedBox
+        if rowFrame then
+            local nameLbl = rowFrame:FindFirstChild("Name")
+            if nameLbl then
+                nameLbl.Size = UDim2.new(1, -95, 1, 0)
+                nameLbl.ClipsDescendants = true
+            end
+
+            -- ช่องกรอกความเร็วบิน ทรงแคปซูลมาตรฐาน (-88px)
+            speedBox = Instance.new("TextBox", rowFrame)
+            speedBox.Name = "SpeedBox"
+            speedBox.Size = UDim2.new(0, 36, 0, 20)
+            speedBox.Position = UDim2.new(1, -88, 0.5, -10)
+            speedBox.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+            speedBox.BackgroundTransparency = 0.15
+            speedBox.BorderSizePixel = 0
+            speedBox.Font = Enum.Font.Gotham
+            speedBox.Text = tostring(flySpeed)
+            speedBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+            speedBox.TextSize = 10
+            speedBox.ClearTextOnFocus = false
+            speedBox.ZIndex = 10003
+            speedBox.PlaceholderText = "SPEED"
+
+            local corner = Instance.new("UICorner", speedBox)
+            corner.CornerRadius = UDim.new(1, 0)
+
+            local oldText = tostring(flySpeed)
+            speedBox.Focused:Connect(function() oldText = speedBox.Text; speedBox.Text = "" end)
+            speedBox.FocusLost:Connect(function()
+                local val = tonumber(speedBox.Text)
+                if val and val > 0 then flySpeed = val; speedBox.Text = tostring(flySpeed) else speedBox.Text = oldText end
+            end)
+        end
+
+        local function createFly(char)
+            local hrp = char:WaitForChild("HumanoidRootPart", 5)
+            if not hrp then return end
+            if hrp:FindFirstChild("KrizFly_Velocity") then hrp.KrizFly_Velocity:Destroy() end
+            if hrp:FindFirstChild("KrizFly_Gyro") then hrp.KrizFly_Gyro:Destroy() end
+            local bv = Instance.new("BodyVelocity", hrp)
+            bv.Name, bv.MaxForce, bv.Velocity = "KrizFly_Velocity", Vector3.new(9e9, 9e9, 9e9), Vector3.zero
+            local bg = Instance.new("BodyGyro", hrp)
+            bg.Name, bg.MaxTorque, bg.P, bg.D, bg.CFrame = "KrizFly_Gyro", Vector3.new(9e9, 9e9, 9e9), 1000, 50, hrp.CFrame
+        end
+
+        local charAddedConn = LP.CharacterAdded:Connect(function(char)
+            task.wait(0.5)
+            if flyActive and getgenv().KrizFlyModuleActive then createFly(char) end
+        end)
+
+        if getgenv().KRIZ_NOCLIP_CONN then getgenv().KRIZ_NOCLIP_CONN:Disconnect() end
+        local lastState = false
+        local function setCollisions(state)
+            pcall(function()
+                for _, obj in pairs(workspace:GetDescendants()) do
+                    if obj:IsA("BasePart") then obj.CanCollide = state end
+                end
+            end)
+        end
+
+        getgenv().KRIZ_NOCLIP_CONN = RS.Stepped:Connect(function()
+            if not getgenv().KrizFlyModuleActive then return end
+            if flyActive and LP.Character then
+                if not lastState then lastState = true; setCollisions(false) end
+                for _, v in pairs(LP.Character:GetDescendants()) do
+                    if v:IsA("BasePart") then v.CanCollide = false end
+                end
+                local root = LP.Character:FindFirstChild("HumanoidRootPart")
+                if root then
+                    local hit = workspace:FindPartOnRayWithIgnoreList(Ray.new(root.Position, Vector3.new(0, -6, 0)), {LP.Character})
+                    if hit then hit.CanCollide = true end
+                end
+            else
+                if lastState then lastState = false; setCollisions(true) end
+            end
+        end)
+
+        local flyConn = RS.RenderStepped:Connect(function()
+            if not getgenv().KrizFlyModuleActive or not flyActive then return end
+            local char, hrp, cam = LP.Character, LP.Character and LP.Character:FindFirstChild("HumanoidRootPart"), workspace.CurrentCamera
+            if hrp and hrp:FindFirstChild("KrizFly_Velocity") then
+                hrp.KrizFly_Gyro.CFrame = cam.CFrame
+                local dir = ControlModule:GetMoveVector()
+                hrp.KrizFly_Velocity.Velocity = (cam.CFrame.RightVector * dir.X * flySpeed * 50) - (cam.CFrame.LookVector * dir.Z * flySpeed * 50)
+            end
+        end)
+
+        local function toggleFly()
+            flyActive = not flyActive
+            if flyActive then
+                Button.TextColor3 = Color3.fromRGB(0, 255, 0)
+                if LP.Character then createFly(LP.Character) end
+                notify("FLY & NOCLIP: ON")
+            else
+                Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+                if LP.Character then
+                    local hrp = LP.Character:FindFirstChild("HumanoidRootPart")
+                    if hrp then
+                        if hrp:FindFirstChild("KrizFly_Velocity") then hrp.KrizFly_Velocity:Destroy() end
+                        if hrp:FindFirstChild("KrizFly_Gyro") then hrp.KrizFly_Gyro:Destroy() end
+                    end
+                end
+                setCollisions(true)
+                lastState = false
+                notify("FLY & NOCLIP: OFF")
+            end
+            return flyActive
+        end
+
+        Button.MouseButton1Click:Connect(function() if not isMoved then toggleFly() end end)
+        notify("FLY UI: OPEN")
+
+        getgenv().KrizFlyCleanup = function()
+            flyActive = false
+            if charAddedConn then charAddedConn:Disconnect() end
+            if getgenv().KRIZ_NOCLIP_CONN then getgenv().KRIZ_NOCLIP_CONN:Disconnect(); getgenv().KRIZ_NOCLIP_CONN = nil end
+            if flyConn then flyConn:Disconnect() end
+            if rowFrame then
+                local nameLbl = rowFrame:FindFirstChild("Name")
+                if nameLbl then nameLbl.Size = UDim2.new(1, -60, 1, 0) end
+            end
+            for _, obj in pairs({ScreenGui, speedBox}) do pcall(function() obj:Destroy() end) end
+            if LP.Character then
+                local hrp = LP.Character:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    if hrp:FindFirstChild("KrizFly_Velocity") then hrp.KrizFly_Velocity:Destroy() end
+                    if hrp:FindFirstChild("KrizFly_Gyro") then hrp.KrizFly_Gyro:Destroy() end
+                end
+            end
+            setCollisions(true)
+            notify("FLY: OFF")
+        end
+    end,
+    OnDisable = function()
+        getgenv().KrizFlyModuleActive = false
+        if getgenv().KrizFlyCleanup then pcall(getgenv().KrizFlyCleanup) end
+    end
+})
+
+--------------------------------------------------
+-- MODULE: INFINITE JUMP / กระโดดไม่จำกัด (หมวด Settings)
+--------------------------------------------------
+Core:RegisterModule({
+    Name = "Infinite Jump / กระโดดไม่จำกัด",
+    Category = "Settings",
+    OnEnable = function()
+        getgenv().KrizInfJumpActive = true
+        local UIS, SG, LP = game:GetService("UserInputService"), game:GetService("StarterGui"), game:GetService("Players").LocalPlayer
+        local function notify(text)
+            task.spawn(function() pcall(function() SG:SetCore("SendNotification", {Title = "KRIZ HUB", Text = text, Duration = 3}) end) end)
+        end
+        local infJumpConn = UIS.JumpRequest:Connect(function()
+            if getgenv().KrizInfJumpActive and LP.Character then
+                local hum = LP.Character:FindFirstChildOfClass("Humanoid")
+                if hum then hum:ChangeState(Enum.HumanoidStateType.Jumping) end
+            end
+        end)
+        notify("INF JUMP: ON")
+        getgenv().KrizInfJumpCleanup = function()
+            if infJumpConn then infJumpConn:Disconnect() end
+            notify("INF JUMP: OFF")
+        end
+    end,
+    OnDisable = function()
+        getgenv().KrizInfJumpActive = false
+        if getgenv().KrizInfJumpCleanup then pcall(getgenv().KrizInfJumpCleanup) end
+    end
+})
+
+--------------------------------------------------
+-- MODULE: HIGH JUMP / กระโดดสูง (หมวด Settings + ปุ่มแคปซูลมาตรฐาน)
+--------------------------------------------------
+Core:RegisterModule({
+    Name = "High Jump / กระโดดสูง",
+    Category = "Settings",
+    OnEnable = function()
+        getgenv().KrizHighJumpActive = true
+        local SG, LP = game:GetService("StarterGui"), game:GetService("Players").LocalPlayer
+        local customJumpPower, defaultJumpPower = 100, 50
+        local function notify(text)
+            task.spawn(function() pcall(function() SG:SetCore("SendNotification", {Title = "KRIZ HUB", Text = text, Duration = 3}) end) end)
+        end
+
+        -- ค้นหา rowFrame จาก Container ของหมวด Settings
+        local rowFrame = nil
+        pcall(function()
+            if _G.KrizHubCore and _G.KrizHubCore.CategoryContainers and _G.KrizHubCore.CategoryContainers["Settings"] then
+                local settingsScroll = _G.KrizHubCore.CategoryContainers["Settings"].Scroll
+                for _, child in ipairs(settingsScroll:GetChildren()) do
+                    if child:IsA("Frame") then
+                        local lbl = child:FindFirstChild("Name")
+                        if lbl and (string.find(lbl.Text, "High Jump") or string.find(lbl.Text, "กระโดดสูง")) then
+                            rowFrame = child
+                            break
+                        end
+                    end
+                end
+            end
+        end)
+
+        local jumpBox
+        if rowFrame then
+            local nameLbl = rowFrame:FindFirstChild("Name")
+            if nameLbl then
+                nameLbl.Size = UDim2.new(1, -95, 1, 0)
+                nameLbl.ClipsDescendants = true
+            end
+
+            -- ช่องกรอกแรงกระโดด ทรงแคปซูลมาตรฐาน (-88px)
+            jumpBox = Instance.new("TextBox", rowFrame)
+            jumpBox.Name = "JumpBox"
+            jumpBox.Size = UDim2.new(0, 36, 0, 20)
+            jumpBox.Position = UDim2.new(1, -88, 0.5, -10)
+            jumpBox.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+            jumpBox.BackgroundTransparency = 0.15
+            jumpBox.BorderSizePixel = 0
+            jumpBox.Font = Enum.Font.Gotham
+            jumpBox.Text = tostring(customJumpPower)
+            jumpBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+            jumpBox.TextSize = 10
+            jumpBox.ClearTextOnFocus = false
+            jumpBox.ZIndex = 10003
+            jumpBox.PlaceholderText = "JUMP"
+
+            local corner = Instance.new("UICorner", jumpBox)
+            corner.CornerRadius = UDim.new(1, 0)
+
+            local oldJumpText = tostring(customJumpPower)
+            jumpBox.Focused:Connect(function() oldJumpText = jumpBox.Text; jumpBox.Text = "" end)
+            jumpBox.FocusLost:Connect(function()
+                local val = tonumber(jumpBox.Text)
+                if val and val > 0 then
+                    customJumpPower = val
+                    jumpBox.Text = tostring(customJumpPower)
+                    if LP.Character then
+                        local hum = LP.Character:FindFirstChildOfClass("Humanoid")
+                        if hum then pcall(function() hum.UseJumpPower = true end); hum.JumpPower = customJumpPower end
+                    end
+                    notify("HIGH JUMP: " .. tostring(customJumpPower))
+                else
+                    jumpBox.Text = oldJumpText
+                end
+            end)
+        end
+
+        local function applyHighJump()
+            if LP.Character then
+                local hum = LP.Character:FindFirstChildOfClass("Humanoid")
+                if hum then pcall(function() hum.UseJumpPower = true end); hum.JumpPower = customJumpPower end
+            end
+        end
+        applyHighJump()
+
+        local charConn = LP.CharacterAdded:Connect(function()
+            task.wait(0.5)
+            if getgenv().KrizHighJumpActive then applyHighJump() end
+        end)
+
+        notify("HIGH JUMP: " .. tostring(customJumpPower))
+
+        getgenv().KrizHighJumpCleanup = function()
+            if charConn then charConn:Disconnect() end
+            if jumpBox then pcall(function() jumpBox:Destroy() end) end
+            if rowFrame then
+                local nameLbl = rowFrame:FindFirstChild("Name")
+                if nameLbl then nameLbl.Size = UDim2.new(1, -60, 1, 0) end
+            end
+            if LP.Character then
+                local hum = LP.Character:FindFirstChildOfClass("Humanoid")
+                if hum then pcall(function() hum.UseJumpPower = true end); hum.JumpPower = defaultJumpPower end
+            end
+            notify("HIGH JUMP: OFF")
+        end
+    end,
+    OnDisable = function()
+        getgenv().KrizHighJumpActive = false
+        if getgenv().KrizHighJumpCleanup then pcall(getgenv().KrizHighJumpCleanup) end
+    end
+})
+--441--
+
+
+--------------------------------------------------
+-- MODULE: FLING / ปัดผู้เล่นอื่นกระเด็น (หมวด General)
+--------------------------------------------------
+Core:RegisterModule({
+    Name = "Fling / ฟลิง",
+    Category = "General",
+    OnEnable = function()
+        getgenv().KrizFlingActive = true
+        local RS, P, SG, LP = game:GetService("RunService"), game:GetService("Players"), game:GetService("StarterGui"), game:GetService("Players").LocalPlayer
+        local function notify(text)
+            task.spawn(function() pcall(function() SG:SetCore("SendNotification", {Title = "KRIZ HUB", Text = text, Duration = 3}) end) end)
+        end
+        local flingPower, movel = 55000, 0.1
+        local flingConnection = RS.Heartbeat:Connect(function()
+            if not getgenv().KrizFlingActive then return end
+            local char, hrp = LP.Character, LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                local oldVel = hrp.Velocity
+                hrp.Velocity = oldVel * flingPower + Vector3.new(0, flingPower, 0)
+                task.spawn(function()
+                    RS.RenderStepped:Wait()
+                    if hrp and hrp.Parent then hrp.Velocity = oldVel end
+                    RS.Stepped:Wait()
+                    if hrp and hrp.Parent then hrp.Velocity = oldVel + Vector3.new(0, movel, 0); movel = movel * -1 end
+                end)
+            end
+        end)
+        notify("FLING: ON")
+        getgenv().KrizFlingCleanup = function()
+            if flingConnection then flingConnection:Disconnect() end
+            pcall(function()
+                if LP.Character and LP.Character:FindFirstChild("HumanoidRootPart") then
+                    LP.Character.HumanoidRootPart.Velocity, LP.Character.HumanoidRootPart.RotVelocity = Vector3.zero, Vector3.zero
+                end
+            end)
+            notify("FLING: OFF")
+        end
+    end,
+    OnDisable = function()
+        getgenv().KrizFlingActive = false
+        if getgenv().KrizFlingCleanup then pcall(getgenv().KrizFlingCleanup) end
+    end
+})
+
+--------------------------------------------------
+-- MODULE: FLING / ระบบวาร์ปเตะ (หมวด General)
+--------------------------------------------------
+Core:RegisterModule({
+    Name = "Fling / วาร์ปเตะ",
+    Category = "General",
+    OnEnable = function()
+        getgenv().KrizFlingModuleActive = true
+        local CG, P, SG, LP = game:GetService("CoreGui"), game:GetService("Players"), game:GetService("StarterGui"), game:GetService("Players").LocalPlayer
+        local function notify(text)
+            task.spawn(function() pcall(function() SG:SetCore("SendNotification", {Title = "KRIZ HUB", Text = text, Duration = 3}) end) end)
+        end
+        if CG:FindFirstChild("MidnightFlingUI") then CG.MidnightFlingUI:Destroy() end
+        local ScreenGui = Instance.new("ScreenGui", CG)
+        ScreenGui.Name, ScreenGui.ResetOnSpawn, ScreenGui.Enabled = "MidnightFlingUI", false, true
+        local MainFrame = Instance.new("Frame", ScreenGui)
+        MainFrame.Name, MainFrame.BackgroundColor3, MainFrame.BackgroundTransparency, MainFrame.Position, MainFrame.Size, MainFrame.Active, MainFrame.Draggable = "MainFrame", Color3.fromRGB(15, 15, 20), 0.5, UDim2.new(0.5, -90, 0.5, -50), UDim2.new(0, 180, 0, 105), true, true
+        local TextBox = Instance.new("TextBox", MainFrame)
+        TextBox.BackgroundColor3, TextBox.BackgroundTransparency, TextBox.Position, TextBox.Size, TextBox.Font, TextBox.PlaceholderText, TextBox.PlaceholderColor3, TextBox.Text, TextBox.TextColor3, TextBox.TextSize = Color3.fromRGB(25, 25, 30), 0.8, UDim2.new(0.08, 0, 0.15, 0), UDim2.new(0.84, 0, 0, 28), Enum.Font.Gotham, "ชี้เป้าหมาย", Color3.fromRGB(180, 180, 190), "", Color3.new(1, 1, 1), 12
+        local SingleBtn = Instance.new("TextButton", MainFrame)
+        SingleBtn.BackgroundColor3, SingleBtn.BackgroundTransparency, SingleBtn.Position, SingleBtn.Size, SingleBtn.Font, SingleBtn.Text, SingleBtn.TextColor3, SingleBtn.TextSize = Color3.fromRGB(25, 25, 30), 0.8, UDim2.new(0.08, 0, 0.58, 0), UDim2.new(0.4, 0, 0, 28), Enum.Font.GothamBold, "FLING", Color3.new(1, 1, 1), 11
+        local LoopBtn = Instance.new("TextButton", MainFrame)
+        LoopBtn.BackgroundColor3, LoopBtn.BackgroundTransparency, LoopBtn.Position, LoopBtn.Size, LoopBtn.Font, LoopBtn.Text, LoopBtn.TextColor3, LoopBtn.TextSize = Color3.fromRGB(25, 25, 30), 0.8, UDim2.new(0.52, 0, 0.58, 0), UDim2.new(0.4, 0, 0, 28), Enum.Font.GothamBold, "LOOP", Color3.new(1, 1, 1), 11
+        local function GetTarget(Name)
+            for _, v in pairs(P:GetPlayers()) do
+                if v ~= LP and (v.Name:lower():find(Name:lower()) or v.DisplayName:lower():find(Name:lower())) then return v end
+            end
+            return nil
+        end
+        local function ExecuteFling(Target)
+            if not getgenv().KrizFlingModuleActive or not Target or not Target.Character or not LP.Character then return end
+            local Root, TRoot, Hum, TargetHum = LP.Character:FindFirstChild("HumanoidRootPart"), Target.Character:FindFirstChild("HumanoidRootPart"), LP.Character:FindFirstChildOfClass("Humanoid"), Target.Character:FindFirstChildOfClass("Humanoid")
+            if Root and TRoot and Hum and TargetHum and TargetHum.Health > 0 and Hum.Health > 0 then
+                local OldPos = Root.CFrame
+                workspace.CurrentCamera.CameraSubject = TRoot
+                for _, part in ipairs(LP.Character:GetDescendants()) do if part:IsA("BasePart") then part.CanCollide = false end end
+                local BV = Instance.new("BodyVelocity", Root)
+                BV.Velocity, BV.MaxForce = Vector3.zero, Vector3.new(math.huge, math.huge, math.huge)
+                local StartTime = tick()
+                while tick() - StartTime < 1.2 and getgenv().KrizFlingModuleActive do
+                    if not TRoot or not Root or TargetHum.Health <= 0 or Hum.Health <= 0 then break end
+                    Root.CFrame, Root.RotVelocity = TRoot.CFrame, Vector3.new(50000, 50000, 50000)
+                    task.wait()
+                end
+                if BV then BV:Destroy() end
+                if LP.Character then
+                    for _, part in ipairs(LP.Character:GetDescendants()) do if part:IsA("BasePart") then part.CanCollide = true end end
+                end
+                workspace.CurrentCamera.CameraSubject = Hum
+                if Root then Root.CFrame, Root.Velocity, Root.RotVelocity = OldPos, Vector3.zero, Vector3.zero end
+            end
+        end
+        SingleBtn.MouseButton1Click:Connect(function()
+            if TextBox.Text ~= "" then
+                local target = GetTarget(TextBox.Text)
+                if target then ExecuteFling(target) else notify("TARGET NOT FOUND") end
+            end
+        end)
+        local isLooping, loopFlingActive = false, false
+        LoopBtn.MouseButton1Click:Connect(function()
+            isLooping = not isLooping
+            loopFlingActive = isLooping
+            if isLooping then
+                LoopBtn.TextColor3 = Color3.fromRGB(0, 255, 0)
+                task.spawn(function()
+                    while loopFlingActive and getgenv().KrizFlingModuleActive do
+                        if TextBox.Text ~= "" then
+                            local target = GetTarget(TextBox.Text)
+                            if target and target.Character then ExecuteFling(target) else loopFlingActive, isLooping, LoopBtn.TextColor3 = false, false, Color3.new(1, 1, 1); break end
+                        end
+                        task.wait(0.5)
+                    end
+                    LoopBtn.TextColor3 = Color3.new(1, 1, 1)
+                end)
+            else
+                LoopBtn.TextColor3 = Color3.new(1, 1, 1)
+            end
+        end)
+        notify("FLING UI: OPEN")
+        getgenv().KrizFlingCleanup = function()
+            loopFlingActive, isLooping = false, false
+            if ScreenGui then ScreenGui:Destroy() end
+            notify("FLING: OFF")
+        end
+    end,
+    OnDisable = function()
+        getgenv().KrizFlingModuleActive = false
+        if getgenv().KrizFlingCleanup then pcall(getgenv().KrizFlingCleanup) end
+    end
+})
+--442--
+
+
+
+--------------------------------------------------
+-- MODULE: SPECIAL ANIMATION / โมเดลพิเศษ (🥵)
+--------------------------------------------------
+
+Core:RegisterModule({
+
+    Name = "Special Animation / โมเดลพิเศษ 🥵",
+
+    OnEnable = function()
+        getgenv().KrizSpecialAnimActive = true
+
+        local Players = game:GetService("Players")
+        local RunService = game:GetService("RunService")
+        local StarterGui = game:GetService("StarterGui")
+        local ME = Players.LocalPlayer
+
+        local function notify(text)
+            task.spawn(function()
+                pcall(function()
+                    StarterGui:SetCore("SendNotification", {
+                        Title = "KRIZ HUB",
+                        Text = text,
+                        Duration = 3,
+                    })
+                end)
+            end)
+        end
+
+        _G.SIGNAL_ID = "rbxassetid://129423030"
+        _G.ActivexxxModels = _G.ActivexxxModels or {}
+        _G.SelfActivexxx = _G.SelfActivexxx or false
+        _G.LastDetected = _G.LastDetected or {}
+        _G.RemoteLastPulse = _G.RemoteLastPulse or {}
+
+        local specialColor = Color3.fromRGB(211, 130, 175)
+        local partsData = {
+            P1 = {OffsetPos = Vector3.new(0.45, -1.2, 0.55), Scale = Vector3.new(2, 2, 2)},
+            P2 = {OffsetPos = Vector3.new(-0.45, -1.2, 0.55), Scale = Vector3.new(2, 2, 2)},
+            P3 = {OffsetPos = Vector3.new(0.15, -1.15, -0.4), Scale = Vector3.new(0.6, 0.9, 0.9)},
+            P4 = {OffsetPos = Vector3.new(-0.15, -1.15, -0.4), Scale = Vector3.new(0.6, 0.9, 0.9)},
+            P5 = {OffsetPos = Vector3.new(0, -1.2, -0.4), Scale = Vector3.new(0.1, 0.8, 0.9)},
+            P6 = {OffsetPos = Vector3.new(0.4, 0.1, -0.65), Scale = Vector3.new(1.5, 1.5, 1.6)},
+            P7 = {OffsetPos = Vector3.new(-0.4, 0.1, -0.65), Scale = Vector3.new(1.5, 1.5, 1.6)},
+            P8 = {OffsetPos = Vector3.new(0.7, -0.1, -1.3), Scale = Vector3.new(0.4, 0.4, 0.5)},
+            P9 = {OffsetPos = Vector3.new(-0.7, -0.1, -1.3), Scale = Vector3.new(0.4, 0.4, 0.5)}
+        }
+
+        local function CleanxxxBody(charName)
+            local data = _G.ActivexxxModels[charName]
+            local pChar = Players:FindFirstChild(charName) and Players[charName].Character
+            if data then
+                if data.model then data.model:Destroy() end
+                if data.storage and pChar then
+                    for _, item in pairs(data.storage:GetChildren()) do item.Parent = pChar end
+                    data.storage:Destroy()
+                end
+            end
+            if pChar then
+                for _, n in pairs({"Left Leg", "Right Leg"}) do
+                    local limb = pChar:FindFirstChild(n)
+                    if limb then
+                        local m = limb:FindFirstChildOfClass("SpecialMesh")
+                        if m then m:Destroy() end
+                        limb.Material = Enum.Material.Plastic
+                    end
+                end
+            end
+            _G.ActivexxxModels[charName] = nil
+        end
+
+        local function BuildxxxBody(targetChar)
+            if not targetChar or _G.ActivexxxModels[targetChar.Name] then return end
+            local torso = targetChar:FindFirstChild("Torso") or targetChar:FindFirstChild("HumanoidRootPart")
+            if not torso then return end
+            for _, n in pairs({"Left Leg", "Right Leg"}) do
+                local l = targetChar:FindFirstChild(n)
+                if l then
+                    local m = Instance.new("SpecialMesh", l); m.Scale = Vector3.new(1.8, 1, 2)
+                    l.Material = Enum.Material.SmoothPlastic
+                end
+            end
+            local st = Instance.new("Folder", workspace.CurrentCamera); st.Name = "xxx_Storage_" .. targetChar.Name
+            for _, i in pairs(targetChar:GetChildren()) do if i:IsA("Shirt") or i:IsA("Pants") or i:IsA("ShirtGraphic") then i.Parent = st end end
+            local mod = Instance.new("Model", targetChar); local welds = {}
+            local skin = (targetChar:FindFirstChildOfClass("BodyColors") and targetChar:FindFirstChildOfClass("BodyColors").HeadColor3) or Color3.fromRGB(163, 110, 84)
+            for name, d in pairs(partsData) do
+                local p = Instance.new("Part", mod); p.Shape, p.Size, p.CanCollide, p.Massless = Enum.PartType.Ball, d.Scale, false, true
+                p.Color = (name=="P5" or name=="P8" or name=="P9") and specialColor or skin
+                p.Material = Enum.Material.SmoothPlastic
+                local w = Instance.new("Weld", p); w.Part0, w.Part1 = torso, p; w.C0 = CFrame.new(d.OffsetPos)
+                welds[name] = {weld = w, origC0 = w.C0}
+            end
+            _G.ActivexxxModels[targetChar.Name] = {model = mod, storage = st, welds = welds, sY = 0, sV = 0}
+        end
+
+        local lastPulse = tick()
+        local function sendPulse()
+            local hum = ME.Character and ME.Character:FindFirstChild("Humanoid")
+            if hum then
+                local anim = Instance.new("Animation"); anim.AnimationId = _G.SIGNAL_ID
+                local t = hum:LoadAnimation(anim); t.Priority = Enum.AnimationPriority.Action; t:Play()
+                task.wait(0.2); t:Stop()
+            end
+        end
+
+        -- เปิดใช้งานตัวละครของผู้เล่นเองทันทีเมื่อกดเปิดโมดูลในเมนู
+        _G.SelfActivexxx = true
+        lastPulse = tick()
+        sendPulse()
+        if ME.Character then BuildxxxBody(ME.Character) end
+
+        local renderConn = RunService.RenderStepped:Connect(function()
+            if not getgenv().KrizSpecialAnimActive then return end
+            for name, data in pairs(_G.ActivexxxModels) do
+                local char = Players:FindFirstChild(name) and Players[name].Character
+                local torso = char and (char:FindFirstChild("Torso") or char:FindFirstChild("HumanoidRootPart"))
+                local hum = char and char:FindFirstChild("Humanoid")
+                if torso and hum and data.welds then
+                    local t, speed = tick(), hum.MoveDirection.Magnitude
+                    local walkB, walkS = math.sin(t * 12) * 0.04 * speed, math.cos(t * 7) * 0.05 * speed
+                    local targetS = -torso.Velocity.Y * 0.015
+                    data.sV = (data.sV + (targetS - data.sY) * 0.1) * 0.75
+                    data.sY = data.sY + data.sV
+                    for pName, wD in pairs(data.welds) do
+                        local m = (pName == "P8" or pName == "P9") and 1.5 or 1
+                        wD.weld.C0 = wD.origC0 * CFrame.new(walkS * m, walkB + data.sY, 0) * CFrame.Angles(math.rad(data.sY * 10), 0, 0)
+                    end
+                end
+            end
+        end)
+
+        local heartbeatConn = RunService.Heartbeat:Connect(function()
+            if not getgenv().KrizSpecialAnimActive then return end
+            if _G.SelfActivexxx and (tick() - lastPulse) > 60 then
+                lastPulse = tick(); sendPulse()
+            end
+
+            for _, p in pairs(Players:GetPlayers()) do
+                if p ~= ME then
+                    local hum = p.Character and p.Character:FindFirstChild("Humanoid")
+                    if hum then
+                        local isPlaying = false
+                        for _, t in pairs(hum:GetPlayingAnimationTracks()) do
+                            if t.Animation.AnimationId == _G.SIGNAL_ID then isPlaying = true; break end
+                        end
+                        
+                        if isPlaying and not _G.LastDetected[p.Name] then
+                            local now = tick()
+                            local diff = now - (_G.RemoteLastPulse[p.Name] or 0)
+                            _G.RemoteLastPulse[p.Name] = now
+                            
+                            if diff >= 58 and diff <= 62 then
+                                BuildxxxBody(p.Character)
+                            else
+                                if _G.ActivexxxModels[p.Name] then CleanxxxBody(p.Name) else BuildxxxBody(p.Character) end
+                            end
+                        end
+                        _G.LastDetected[p.Name] = isPlaying
+                    end
+                end
+            end
+        end)
+
+        notify("SPECIAL ANIM: ON")
+
+        -- ฟังก์ชันทำความสะอาดเมื่อปิดโมดูลผ่าน UI หลัก
+        getgenv().KrizSpecialAnimCleanup = function()
+            _G.SelfActivexxx = false
+            if renderConn then renderConn:Disconnect() end
+            if heartbeatConn then heartbeatConn:Disconnect() end
+            
+            -- ล้างโมเดลของทุกคนที่ถูกสร้างขึ้น
+            for name, _ in pairs(_G.ActivexxxModels) do
+                CleanxxxBody(name)
+            end
+            _G.ActivexxxModels = {}
+            _G.LastDetected = {}
+            _G.RemoteLastPulse = {}
+            
+            if ME.Name then CleanxxxBody(ME.Name) end
+            notify("SPECIAL ANIM: OFF")
+        end
+    end,
+
+    OnDisable = function()
+        getgenv().KrizSpecialAnimActive = false
+        if getgenv().KrizSpecialAnimCleanup then
+            pcall(getgenv().KrizSpecialAnimCleanup)
+        end
+    end
+
+})
+--443--
+
+
+--------------------------------------------------
+-- MODULE: UNDERFOOT / มุดใต้เท้า -5 (หมวด Attack + ปุ่มแคปซูลมาตรฐาน 3 ปุ่ม)
+--------------------------------------------------
+Core:RegisterModule({
+    Name = "Underfoot / มุดใต้เท้า -5",
+    Category = "Attack",
+    OnEnable = function()
+        getgenv().KrizUnderfootActive = true
+        local CG, UIS, P, RS, SG, LP = game:GetService("CoreGui"), game:GetService("UserInputService"), game:GetService("Players"), game:GetService("RunService"), game:GetService("StarterGui"), game:GetService("Players").LocalPlayer
+        local function notify(text)
+            task.spawn(function() pcall(function() SG:SetCore("SendNotification", {Title = "KRIZ HUB", Text = text, Duration = 3}) end) end)
+        end
+
+        if CG:FindFirstChild("KrizHubFloatingUnderfoot") then CG.KrizHubFloatingUnderfoot:Destroy() end
+        local ScreenGui = Instance.new("ScreenGui", CG)
+        ScreenGui.Name, ScreenGui.ZIndexBehavior, ScreenGui.DisplayOrder, ScreenGui.Enabled = "KrizHubFloatingUnderfoot", Enum.ZIndexBehavior.Sibling, 999999, true
+
+        local Button = Instance.new("TextButton", ScreenGui)
+        Button.Name, Button.BackgroundColor3, Button.BackgroundTransparency, Button.Position, Button.Size, Button.AutoButtonColor, Button.Font, Button.Text, Button.TextColor3, Button.TextSize = "MainButton", Color3.fromRGB(0, 0, 0), 0.5, UDim2.new(0.5, -35, 0.4, -15), UDim2.new(0, 70, 0, 30), false, Enum.Font.GothamBold, "und", Color3.fromRGB(255, 255, 255), 15
+
+        local dragging, dragStart, startPos, activeInput, isMoved = false, Vector3.new(0,0,0), UDim2.new(0,0,0,0), nil, false
+        Button.InputBegan:Connect(function(input)
+            if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and activeInput == nil then
+                dragging, isMoved, activeInput, dragStart, startPos = true, false, input, input.Position, Button.Position
+            end
+        end)
+        UIS.InputChanged:Connect(function(input)
+            if dragging and input == activeInput then
+                local delta = input.Position - dragStart
+                if math.abs(delta.X) > 5 or math.abs(delta.Y) > 5 then isMoved = true end
+                Button.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+            end
+        end)
+        local function endDrag(input) if input == activeInput then dragging, activeInput = false, nil end end
+        Button.InputEnded:Connect(endDrag)
+        UIS.InputEnded:Connect(endDrag)
+
+        local depthValues, currentDepthIndex = {-5, -100}, 1
+        local modeNames, currentModeIndex = {"LIE", "STAND"}, 1
+        local spinSpeedValue = 5
+
+        -- ค้นหา rowFrame จาก Container ของหมวด Attack
+        local rowFrame = nil
+        pcall(function()
+            if _G.KrizHubCore and _G.KrizHubCore.CategoryContainers and _G.KrizHubCore.CategoryContainers["Attack"] then
+                local attackScroll = _G.KrizHubCore.CategoryContainers["Attack"].Scroll
+                for _, child in ipairs(attackScroll:GetChildren()) do
+                    if child:IsA("Frame") then
+                        local lbl = child:FindFirstChild("Name")
+                        if lbl and (string.find(lbl.Text, "Underfoot") or string.find(lbl.Text, "มุดใต้เท้า")) then
+                            rowFrame = child
+                            break
+                        end
+                    end
+                end
+            end
+        end)
+
+        local depthButton, modeButton, speedBox
+        if rowFrame then
+            -- ปรับหลบข้อความชื่อฟังก์ชันสำหรับ 3 ปุ่มย่อย (เหลือความกว้าง -215px)
+            local nameLbl = rowFrame:FindFirstChild("Name")
+            if nameLbl then
+                nameLbl.Size = UDim2.new(1, -215, 1, 0)
+                nameLbl.ClipsDescendants = true
+            end
+
+            -- ปุ่มที่ 1: Depth Button (-128px)
+            depthButton = Instance.new("TextButton", rowFrame)
+            depthButton.Name = "DepthButton"
+            depthButton.Size = UDim2.new(0, 36, 0, 20)
+            depthButton.Position = UDim2.new(1, -128, 0.5, -10)
+            depthButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+            depthButton.BackgroundTransparency = 0.15
+            depthButton.BorderSizePixel = 0
+            depthButton.Font = Enum.Font.GothamBold
+            depthButton.Text = tostring(depthValues[currentDepthIndex])
+            depthButton.TextColor3 = Color3.fromRGB(0, 255, 255)
+            depthButton.TextSize = 9
+            depthButton.ZIndex = 10003
+            local c1 = Instance.new("UICorner", depthButton) c1.CornerRadius = UDim.new(1, 0)
+
+            depthButton.MouseButton1Click:Connect(function()
+                currentDepthIndex = currentDepthIndex + 1
+                if currentDepthIndex > #depthValues then currentDepthIndex = 1 end
+                depthButton.Text = tostring(depthValues[currentDepthIndex])
+                notify("DEPTH: " .. tostring(depthValues[currentDepthIndex]))
+            end)
+
+            -- ปุ่มที่ 2: Mode Button (-168px)
+            modeButton = Instance.new("TextButton", rowFrame)
+            modeButton.Name = "ModeButton"
+            modeButton.Size = UDim2.new(0, 36, 0, 20)
+            modeButton.Position = UDim2.new(1, -168, 0.5, -10)
+            modeButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+            modeButton.BackgroundTransparency = 0.15
+            modeButton.BorderSizePixel = 0
+            modeButton.Font = Enum.Font.GothamBold
+            modeButton.Text = modeNames[currentModeIndex]
+            modeButton.TextColor3 = Color3.fromRGB(255, 255, 0)
+            modeButton.TextSize = 8
+            modeButton.ZIndex = 10003
+            local c2 = Instance.new("UICorner", modeButton) c2.CornerRadius = UDim.new(1, 0)
+
+            modeButton.MouseButton1Click:Connect(function()
+                currentModeIndex = currentModeIndex + 1
+                if currentModeIndex > #modeNames then currentModeIndex = 1 end
+                modeButton.Text = modeNames[currentModeIndex]
+                notify("MODE: " .. modeNames[currentModeIndex])
+            end)
+
+            -- ปุ่มที่ 3: Speed Box (-208px)
+            speedBox = Instance.new("TextBox", rowFrame)
+            speedBox.Name = "SpeedBox"
+            speedBox.Size = UDim2.new(0, 36, 0, 20)
+            speedBox.Position = UDim2.new(1, -208, 0.5, -10)
+            speedBox.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+            speedBox.BackgroundTransparency = 0.15
+            speedBox.BorderSizePixel = 0
+            speedBox.Font = Enum.Font.Gotham
+            speedBox.Text = tostring(spinSpeedValue)
+            speedBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+            speedBox.TextSize = 10
+            speedBox.ClearTextOnFocus = false
+            speedBox.ZIndex = 10003
+            speedBox.PlaceholderText = "SPIN"
+            local c3 = Instance.new("UICorner", speedBox) c3.CornerRadius = UDim.new(1, 0)
+
+            local oldSpeedText = tostring(spinSpeedValue)
+            speedBox.Focused:Connect(function() oldSpeedText = speedBox.Text; speedBox.Text = "" end)
+            speedBox.FocusLost:Connect(function()
+                local val = tonumber(speedBox.Text)
+                if val and val >= 0 then
+                    spinSpeedValue = val
+                    speedBox.Text = tostring(spinSpeedValue)
+                    notify("SPIN SPEED: " .. tostring(spinSpeedValue))
+                else
+                    speedBox.Text = oldSpeedText
+                end
+            end)
+        end
+
+        local isOpen, activeConnection, noclipConnection, targetPlayer = false, nil, nil, nil
+        local spinAngle = 0
+
+        local function forceResetCharacter()
+            pcall(function() LP.DevCameraOcclusionMode = Enum.DevCameraOcclusionMode.Zoom end)
+            local char = LP.Character
+            if char then
+                for _, part in ipairs(char:GetDescendants()) do if part:IsA("BasePart") then part.CanCollide = true end end
+                local hrp = char:FindFirstChild("HumanoidRootPart")
+                if hrp then hrp.Velocity, hrp.RotVelocity, hrp.CFrame = Vector3.zero, Vector3.zero, hrp.CFrame + Vector3.new(0, 5, 0) end
+                local hum = char:FindFirstChildOfClass("Humanoid")
+                if hum then hum.PlatformStand = false; hum:ChangeState(Enum.HumanoidStateType.GettingUp) end
+            end
+        end
+
+        local function getClosestPlayer()
+            local closest, shortestDist = nil, math.huge
+            local char = LP.Character
+            if not char or not char:FindFirstChild("HumanoidRootPart") then return nil end
+            local myPos = char.HumanoidRootPart.Position
+            for _, p in ipairs(P:GetPlayers()) do
+                if p ~= LP and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                    local hum = p.Character:FindFirstChildOfClass("Humanoid")
+                    if hum and hum.Health > 0 then
+                        local dist = (p.Character.HumanoidRootPart.Position - myPos).Magnitude
+                        if dist < shortestDist then shortestDist = dist; closest = p end
+                    end
+                end
+            end
+            return closest
+        end
+
+        Button.MouseButton1Click:Connect(function()
+            if not isMoved then
+                isOpen = not isOpen
+                if isOpen then
+                    Button.TextColor3 = Color3.fromRGB(0, 255, 0)
+                    targetPlayer = getClosestPlayer()
+                    if not targetPlayer then isOpen = false; Button.TextColor3 = Color3.fromRGB(255, 255, 255); notify("TARGET NOT FOUND"); return end
+                    LP.DevCameraOcclusionMode = Enum.DevCameraOcclusionMode.Invisicam
+                    noclipConnection = RS.Stepped:Connect(function()
+                        if not getgenv().KrizUnderfootActive then return end
+                        local char = LP.Character
+                        if char then for _, part in ipairs(char:GetDescendants()) do if part:IsA("BasePart") then part.CanCollide = false end end end
+                    end)
+                    activeConnection = RS.Heartbeat:Connect(function(dt)
+                        if not getgenv().KrizUnderfootActive then return end
+                        local char = LP.Character
+                        if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+                        local hrp = char.HumanoidRootPart
+                        if not targetPlayer or not targetPlayer.Parent or not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                            isOpen = false
+                            Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+                            if activeConnection then activeConnection:Disconnect(); activeConnection = nil end
+                            if noclipConnection then noclipConnection:Disconnect(); noclipConnection = nil end
+                            forceResetCharacter()
+                            return
+                        end
+                        local targetHRP = targetPlayer.Character.HumanoidRootPart
+                        spinAngle = spinAngle + (spinSpeedValue * dt * 10)
+                        local currentDepth = depthValues[currentDepthIndex]
+                        local mode = modeNames[currentModeIndex]
+                        if mode == "LIE" then
+                            local offsetPos = CFrame.new(math.cos(spinAngle) * 1.5, currentDepth, math.sin(spinAngle) * 1.5)
+                            hrp.CFrame = targetHRP.CFrame * offsetPos * CFrame.Angles(math.rad(90), 0, 0)
+                        else
+                            local offsetPos = CFrame.new(math.cos(spinAngle) * 2, 0, math.sin(spinAngle) * 2)
+                            hrp.CFrame = CFrame.new(targetHRP.Position + offsetPos.Position, targetHRP.Position)
+                        end
+                        hrp.Velocity, hrp.RotVelocity = Vector3.zero, Vector3.zero
+                    end)
+                    notify("UNDERFOOT: ON")
+                else
+                    Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    if activeConnection then activeConnection:Disconnect(); activeConnection = nil end
+                    if noclipConnection then noclipConnection:Disconnect(); noclipConnection = nil end
+                    forceResetCharacter()
+                    targetPlayer = nil
+                    notify("UNDERFOOT: OFF")
+                end
+            end
+        end)
+
+        getgenv().KrizUnderfootCleanup = function()
+            isOpen = false
+            if activeConnection then activeConnection:Disconnect(); activeConnection = nil end
+            if noclipConnection then noclipConnection:Disconnect(); noclipConnection = nil end
+            forceResetCharacter()
+            for _, obj in pairs({ScreenGui, depthButton, modeButton, speedBox}) do pcall(function() obj:Destroy() end) end
+            if rowFrame then
+                local nameLbl = rowFrame:FindFirstChild("Name")
+                if nameLbl then nameLbl.Size = UDim2.new(1, -60, 1, 0) end
+            end
+            notify("UNDERFOOT: OFF")
+        end
+    end,
+    OnDisable = function()
+        getgenv().KrizUnderfootActive = false
+        if getgenv().KrizUnderfootCleanup then pcall(getgenv().KrizUnderfootCleanup) end
+    end
+})
+--444--
+
+
+--------------------------------------------------
+-- MODULE: INVISIBLE / ระบบล่องหน (หมวด General + แก้ไขปุ่มลอยลากได้ & ไม่เปิดอัตโนมัติ)
+--------------------------------------------------
+Core:RegisterModule({
+    Name = "Invisible / ล่องหน",
+    Category = "General",
+    OnEnable = function()
+        getgenv().KrizInvisActive = true
+        local CG, UIS, P, RS, SG, LP = game:GetService("CoreGui"), game:GetService("UserInputService"), game:GetService("Players"), game:GetService("RunService"), game:GetService("StarterGui"), game:GetService("Players").LocalPlayer
+        
+        local function notify(text)
+            task.spawn(function() pcall(function() SG:SetCore("SendNotification", {Title = "KRIZ HUB", Text = text, Duration = 3}) end) end)
+        end
+
+        if CG:FindFirstChild("KrizHubInvisButtonUI") then CG.KrizHubInvisButtonUI:Destroy() end
+        local ScreenGui = Instance.new("ScreenGui", CG)
+        ScreenGui.Name, ScreenGui.ZIndexBehavior, ScreenGui.DisplayOrder, ScreenGui.Enabled = "KrizHubInvisButtonUI", Enum.ZIndexBehavior.Sibling, 999999, true
+
+        local Button = Instance.new("TextButton", ScreenGui)
+        Button.Name, Button.BackgroundColor3, Button.BackgroundTransparency, Button.Position, Button.Size, Button.AutoButtonColor, Button.Font, Button.Text, Button.TextColor3, Button.TextSize = "MainButton", Color3.fromRGB(0, 0, 0), 0.5, UDim2.new(0.5, -35, 0.4, -15), UDim2.new(0, 70, 0, 30), false, Enum.Font.GothamBold, "INVIS", Color3.fromRGB(255, 255, 255), 13
+
+        -- ระบบ Drag & Touch สำหรับปุ่มลอย
+        local dragging, dragStart, startPos, activeInput, isMoved = false, Vector3.new(0,0,0), UDim2.new(0,0,0,0), nil, false
+        Button.InputBegan:Connect(function(input)
+            if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and activeInput == nil then
+                dragging, isMoved, activeInput, dragStart, startPos = true, false, input, input.Position, Button.Position
+            end
+        end)
+
+        UIS.InputChanged:Connect(function(input)
+            if dragging and input == activeInput then
+                local delta = input.Position - dragStart
+                if math.abs(delta.X) > 5 or math.abs(delta.Y) > 5 then isMoved = true end
+                Button.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+            end
+        end)
+
+        local function endDrag(input)
+            if input == activeInput then
+                dragging, activeInput = false, nil
+            end
+        end
+        Button.InputEnded:Connect(endDrag)
+        UIS.InputEnded:Connect(endDrag)
+
+        -- สถานะเปิด-ปิด ล่องหนภายในปุ่มลอย (เริ่มต้นที่ OFF)
+        local invisEffectActive = false
+        local invisConn = nil
+
+        local function enableInvisLoop()
+            if invisConn then invisConn:Disconnect() end
+            invisConn = RS.Heartbeat:Connect(function()
+                if not getgenv().KrizInvisActive or not invisEffectActive or not LP.Character then return end
+                local char, rootPart, humanoid = LP.Character, LP.Character:FindFirstChild("HumanoidRootPart"), LP.Character:FindFirstChild("Humanoid")
+                if rootPart and humanoid then
+                    for _, v in pairs(char:GetDescendants()) do
+                        if v:IsA("BasePart") and v.Name ~= "HumanoidRootPart" then 
+                            v.Transparency = 0.5 
+                        elseif v:IsA("Decal") then 
+                            v.Transparency = 0.5 
+                        end
+                    end
+                    local cf, camOff = rootPart.CFrame, humanoid.CameraOffset
+                    rootPart.CFrame, humanoid.CameraOffset = cf * CFrame.new(0, -40, 0), Vector3.new(camOff.X, camOff.Y + 40, camOff.Z)
+                    RS.RenderStepped:Wait()
+                    rootPart.CFrame, humanoid.CameraOffset = cf, camOff
+                end
+            end)
+        end
+
+        local function resetCharacterVisibility()
+            if LP.Character then
+                for _, v in pairs(LP.Character:GetDescendants()) do
+                    if v:IsA("BasePart") then 
+                        v.Transparency = (v.Name == "HumanoidRootPart") and 1 or 0 
+                    elseif v:IsA("Decal") then 
+                        v.Transparency = 0 
+                    end
+                end
+            end
+        end
+
+        Button.MouseButton1Click:Connect(function()
+            if not isMoved then
+                invisEffectActive = not invisEffectActive
+                if invisEffectActive then
+                    Button.TextColor3 = Color3.fromRGB(0, 255, 0)
+                    enableInvisLoop()
+                    notify("INVISIBLE: ON")
+                else
+                    Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    if invisConn then invisConn:Disconnect(); invisConn = nil end
+                    resetCharacterVisibility()
+                    notify("INVISIBLE: OFF")
+                end
+            end
+        end)
+
+        notify("INVISIBLE UI: OPEN")
+
+        getgenv().KrizInvisCleanup = function()
+            invisEffectActive = false
+            if invisConn then invisConn:Disconnect(); invisConn = nil end
+            if ScreenGui then ScreenGui:Destroy() end
+            resetCharacterVisibility()
+            notify("INVISIBLE: OFF")
+        end
+    end,
+    OnDisable = function()
+        getgenv().KrizInvisActive = false
+        if getgenv().KrizInvisCleanup then pcall(getgenv().KrizInvisCleanup) end
+    end
+})
+
+--445--
+
+
+--------------------------------------------------
+-- MODULE: SERVER HOP / ย้ายเซิร์ฟเวอร์ (หมวด Settings)
+--------------------------------------------------
+Core:RegisterModule({
+    Name = "Server Hop / ย้ายเซิร์ฟ",
+    Category = "Settings",
+    OnEnable = function()
+        getgenv().KrizServerHopActive = true
+        local HS, TS, P, SG, LP = game:GetService("HttpService"), game:GetService("TeleportService"), game:GetService("Players"), game:GetService("StarterGui"), game:GetService("Players").LocalPlayer
+        local function notify(text)
+            task.spawn(function() pcall(function() SG:SetCore("SendNotification", {Title = "KRIZ HUB", Text = text, Duration = 3}) end) end)
+        end
+        notify("HOPPING SERVER...")
+        pcall(function()
+            local success, result = pcall(function() return HS:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Desc&limit=100")) end)
+            if success and result and result.data then
+                local bestServerId, highestPlaying = nil, -1
+                for _, server in ipairs(result.data) do
+                    if server.id ~= game.JobId and server.playing < (server.maxPlayers - 3) and server.playing > highestPlaying then
+                        highestPlaying, bestServerId = server.playing, server.id
+                    end
+                end
+                if bestServerId then TS:TeleportToPlaceInstance(game.PlaceId, bestServerId, LP); return end
+            end
+            TS:Teleport(game.PlaceId, LP)
+        end)
+        getgenv().KrizServerHopCleanup = function() getgenv().KrizServerHopActive = false end
+    end,
+    OnDisable = function()
+        getgenv().KrizServerHopActive = false
+        if getgenv().KrizServerHopCleanup then pcall(getgenv().KrizServerHopCleanup) end
+    end
+})
+
+--------------------------------------------------
+-- MODULE: REJOIN / เข้าเซิร์ฟเดิมใหม่ (หมวด Settings)
+--------------------------------------------------
+Core:RegisterModule({
+    Name = "Rejoin / เข้าเซิร์ฟเดิม",
+    Category = "Settings",
+    OnEnable = function()
+        getgenv().KrizRejoinActive = true
+        local TS, P, SG, LP = game:GetService("TeleportService"), game:GetService("Players"), game:GetService("StarterGui"), game:GetService("Players").LocalPlayer
+        local function notify(text)
+            task.spawn(function() pcall(function() SG:SetCore("SendNotification", {Title = "KRIZ HUB", Text = text, Duration = 3}) end) end)
+        end
+        notify("REJOINING...")
+        pcall(function()
+            if #P:GetPlayers() <= 1 then TS:Teleport(game.PlaceId, LP) else TS:TeleportToPlaceInstance(game.PlaceId, game.JobId, LP) end
+        end)
+        getgenv().KrizRejoinCleanup = function() getgenv().KrizRejoinActive = false end
+    end,
+    OnDisable = function()
+        getgenv().KrizRejoinActive = false
+        if getgenv().KrizRejoinCleanup then pcall(getgenv().KrizRejoinCleanup) end
+    end
+})
+
+--------------------------------------------------
+-- MODULE: VEHICLE FLIGHT CONTROLLER (หมวด General)
+--------------------------------------------------
+Core:RegisterModule({
+    Name = "Vehicle Flight / บินยานพาหนะ",
+    Category = "General",
+    OnEnable = function()
+        getgenv().KrizVehicleFlightActive = true
+        local P, RS, W, LP = game:GetService("Players"), game:GetService("RunService"), game:GetService("Workspace"), game:GetService("Players").LocalPlayer
+        local activeGui, renderConn, charRespawnConn, seatChangedConn = nil, nil, nil, nil
+        local currentSpeedIndex, speeds = 1, {20, 50, 100, 500, 1000}
+        local moveInputs = {Forward = false, Backward = false, Left = false, Right = false, Up = false, Down = false}
+        local heldYPosition, isHoldingVertical = nil, false
+        local function GetTargetVehicle()
+            local char = LP.Character
+            if not char then return nil, nil end
+            local humanoid = char:FindFirstChildOfClass("Humanoid")
+            if not humanoid then return nil, nil end
+            local seat = humanoid.SeatPart
+            if seat and (seat:IsA("VehicleSeat") or seat:IsA("Seat")) then
+                local model = seat:FindFirstAncestorOfClass("Model")
+                return seat, (model or seat)
+            end
+            return nil, nil
+        end
+        local screenGui = Instance.new("ScreenGui")
+        screenGui.Name, screenGui.ResetOnSpawn, screenGui.DisplayOrder = "KrizVehicleFlightGui", false, 999
+        local mainFrame = Instance.new("Frame", screenGui)
+        mainFrame.Name, mainFrame.Size, mainFrame.Position, mainFrame.BackgroundColor3, mainFrame.BackgroundTransparency, mainFrame.BorderSizePixel, mainFrame.Active, mainFrame.Draggable = "ControlPanel", UDim2.new(0, 220, 0, 118), UDim2.new(0.05, 0, 0.4, 0), Color3.new(0, 0, 0), 0.5, 0, true, true
+        local speedButton = Instance.new("TextButton", mainFrame)
+        speedButton.Size, speedButton.Position, speedButton.BackgroundColor3, speedButton.BackgroundTransparency, speedButton.BorderSizePixel, speedButton.TextColor3, speedButton.TextSize, speedButton.Font, speedButton.Text = UDim2.new(1, -12, 0, 30), UDim2.new(0, 6, 0, 6), Color3.fromRGB(30, 30, 30), 0.3, 0, Color3.new(1, 1, 1), 14, Enum.Font.SourceSansBold, "Speed: " .. speeds[currentSpeedIndex]
+        speedButton.MouseButton1Click:Connect(function()
+            currentSpeedIndex = currentSpeedIndex % #speeds + 1
+            speedButton.Text = "Speed: " .. speeds[currentSpeedIndex]
+        end)
+        local function CreateDirButton(name, text, posX, posY, sizeX, sizeY, inputKey)
+            local btn = Instance.new("TextButton", mainFrame)
+            btn.Name, btn.Size, btn.Position, btn.BackgroundColor3, btn.BackgroundTransparency, btn.BorderSizePixel, btn.TextColor3, btn.TextSize, btn.Font, btn.Text = name, UDim2.new(0, sizeX, 0, sizeY), UDim2.new(0, posX, 0, posY), Color3.fromRGB(40, 40, 40), 0.4, 0, Color3.new(1, 1, 1), 15, Enum.Font.SourceSansBold, text
+            local function SetInput(state)
+                moveInputs[inputKey] = state
+                if inputKey == "Up" or inputKey == "Down" then
+                    if state then isHoldingVertical = true else local _, veh = GetTargetVehicle(); local root = veh and (veh:IsA("Model") and veh.PrimaryPart or veh); if root then heldYPosition = root.Position.Y end; isHoldingVertical = false end
+                end
+            end
+            btn.MouseButton1Down:Connect(function() SetInput(true) end)
+            btn.MouseButton1Up:Connect(function() SetInput(false) end)
+            btn.MouseLeave:Connect(function() SetInput(false) end)
+            btn.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.Touch then SetInput(true) end end)
+            btn.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.Touch then SetInput(false) end end)
+            return btn
+        end
+        CreateDirButton("BtnUp", "UP", 6, 42, 65, 33, "Up")
+        CreateDirButton("BtnForward", "^", 77, 42, 65, 33, "Forward")
+        CreateDirButton("BtnDown", "DOWN", 148, 42, 65, 33, "Down")
+        CreateDirButton("BtnLeft", "<", 6, 79, 65, 33, "Left")
+        CreateDirButton("BtnBackward", "v", 77, 79, 65, 33, "Backward")
+        CreateDirButton("BtnRight", ">", 148, 79, 65, 33, "Right")
+        pcall(function() screenGui.Parent = LP:WaitForChild("PlayerGui") end)
+        if not screenGui.Parent then pcall(function() screenGui.Parent = game:GetService("CoreGui") end) end
+        activeGui = screenGui
+        local lastActiveVehicle = nil
+        local lastTick = tick()
+        renderConn = RS.RenderStepped:Connect(function()
+            if not getgenv().KrizVehicleFlightActive then return end
+            lastTick = tick()
+            local seat, vehicle = GetTargetVehicle()
+            if not vehicle then lastActiveVehicle, heldYPosition = nil, nil; return end
+            if vehicle:IsA("Model") and not vehicle.PrimaryPart then
+                local root = vehicle:FindFirstChild("HumanoidRootPart") or vehicle:FindFirstChild("Body") or seat
+                if root and root:IsA("BasePart") then vehicle.PrimaryPart = root end
+            end
+            local rootPart = vehicle:IsA("Model") and vehicle.PrimaryPart or vehicle
+            if not rootPart then return end
+            if lastActiveVehicle ~= vehicle then lastActiveVehicle, heldYPosition = vehicle, rootPart.Position.Y end
+            if not heldYPosition then heldYPosition = rootPart.Position.Y end
+            local currentSpeed, verticalSpeed = speeds[currentSpeedIndex], speeds[currentSpeedIndex] / 2
+            local cam = W.CurrentCamera
+            local camCF = cam and cam.CFrame or CFrame.new()
+            local lookFlat = Vector3.new(camCF.LookVector.X, 0, camCF.LookVector.Z)
+            lookFlat = lookFlat.Magnitude > 0 and lookFlat.Unit or Vector3.new(0, 0, -1)
+            local rightFlat = Vector3.new(camCF.RightVector.X, 0, camCF.RightVector.Z)
+            rightFlat = rightFlat.Magnitude > 0 and rightFlat.Unit or Vector3.new(1, 0, 0)
+            local moveDir = Vector3.zero
+            if moveInputs.Forward then moveDir = moveDir + lookFlat end
+            if moveInputs.Backward then moveDir = moveDir - lookFlat end
+            if moveInputs.Left then moveDir = moveDir - rightFlat end
+            if moveInputs.Right then moveDir = moveDir + rightFlat end
+            if moveInputs.Up then moveDir = moveDir + Vector3.new(0, 1, 0) end
+            if moveInputs.Down then moveDir = moveDir - Vector3.new(0, 1, 0) end
+            pcall(function()
+                local currentPos = rootPart.Position
+                local targetVelocity = Vector3.zero
+                if moveDir.Magnitude > 0 then
+                    local horizontalMove = Vector3.new(moveDir.X, 0, moveDir.Z)
+                    horizontalMove = horizontalMove.Magnitude > 0 and horizontalMove.Unit or horizontalMove
+                    local verticalMove = Vector3.new(0, moveDir.Y, 0)
+                    targetVelocity = (moveInputs.Up or moveInputs.Down) and ((horizontalMove * currentSpeed) + (verticalMove * verticalSpeed)) or (horizontalMove * currentSpeed)
+                    rootPart.AssemblyLinearVelocity, rootPart.AssemblyAngularVelocity = targetVelocity, Vector3.zero
+                    local fixedY = (moveInputs.Up or moveInputs.Down) and currentPos.Y or heldYPosition
+                    local newPos = Vector3.new(currentPos.X, fixedY, currentPos.Z)
+                    if vehicle:IsA("Model") then vehicle:SetPrimaryPartCFrame(CFrame.new(newPos)) else rootPart.CFrame = CFrame.new(newPos) end
+                else
+                    rootPart.AssemblyLinearVelocity, rootPart.AssemblyAngularVelocity = Vector3.zero, Vector3.zero
+                    local newPos = Vector3.new(currentPos.X, heldYPosition, currentPos.Z)
+                    if vehicle:IsA("Model") then vehicle:SetPrimaryPartCFrame(CFrame.new(newPos)) else rootPart.CFrame = CFrame.new(newPos) end
+                end
+            end)
+        end)
+        getgenv().KrizVehicleFlightCleanup = function()
+            getgenv().KrizVehicleFlightActive = false
+            if renderConn then pcall(function() renderConn:Disconnect() end); renderConn = nil end
+            if charRespawnConn then pcall(function() charRespawnConn:Disconnect() end); charRespawnConn = nil end
+            if seatChangedConn then pcall(function() seatChangedConn:Disconnect() end); seatChangedConn = nil end
+            if activeGui then pcall(function() activeGui:Destroy() end); activeGui = nil end
+            heldYPosition = nil
+        end
+    end,
+    OnDisable = function()
+        getgenv().KrizVehicleFlightActive = false
+        if getgenv().KrizVehicleFlightCleanup then pcall(getgenv().KrizVehicleFlightCleanup) end
+    end
+})
+--551--
+
+--------------------------------------------------
+-- MODULE: REACH HITBOX (ดึง Hitbox มาอยู่ตรงหน้า)
+--------------------------------------------------
+Core:RegisterModule({
+    Name = "Reach Hitbox / ดึงฮิตบ็อกซ์มาตรงหน้า",
+    Category = "Attack",
+    OnEnable = function()
+        getgenv().KrizReachActive = true
+        local RunService = game:GetService("RunService")
+        local Players = game:GetService("Players")
+        local LocalPlayer = Players.LocalPlayer
+        local hitboxSize = 15 -- ขนาด Hitbox ที่ขยาย
+
+        local conn
+        conn = RunService.RenderStepped:Connect(function()
+            if not getgenv().KrizReachActive then
+                if conn then conn:Disconnect() end
+                return
+            end
+            
+            if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then return end
+            local myRoot = LocalPlayer.Character.HumanoidRootPart
+
+            for _, player in ipairs(Players:GetPlayers()) do
+                if player ~= LocalPlayer and player.Character then
+                    local enemyRoot = player.Character:FindFirstChild("HumanoidRootPart")
+                    local enemyHum = player.Character:FindFirstChildOfClass("Humanoid")
+
+                    if enemyRoot and enemyHum and enemyHum.Health > 0 then
+                        -- 🎯 ปรับยื่นไปข้างหน้า 7 หน่วย (ไม่ดันตัวเราแล้ว และตีโดนง่ายสุดๆ)
+                        enemyRoot.CFrame = myRoot.CFrame * CFrame.new(0, 0, -7)
+                        enemyRoot.Size = Vector3.new(hitboxSize, hitboxSize, hitboxSize)
+                        enemyRoot.Transparency = 0.7
+                        enemyRoot.CanCollide = false
+                    end
+                end
+            end
+        end)
+
+        getgenv().KrizReachCleanup = function()
+            if conn then pcall(function() conn:Disconnect() end) end
+            for _, player in ipairs(Players:GetPlayers()) do
+                if player ~= LocalPlayer and player.Character then
+                    local enemyRoot = player.Character:FindFirstChild("HumanoidRootPart")
+                    if enemyRoot then
+                        enemyRoot.Size = Vector3.new(2, 2, 1) -- คืนค่าขนาดปกติ
+                        enemyRoot.Transparency = 1
+                        enemyRoot.CanCollide = true
+                    end
+                end
+            end
+        end
+    end,
+    OnDisable = function()
+        getgenv().KrizReachActive = false
+        if getgenv().KrizReachCleanup then pcall(getgenv().KrizReachCleanup) end
+    end
+})
+
+
+--------------------------------------------------
+-- MODULE: AUTO-TELEPORT EXECUTIONER (ปรับตำแหน่งปุ่มแคปซูลไม่ทับข้อความ)
+--------------------------------------------------
+Core:RegisterModule({
+    Name = "Auto Executioner / วาร์ปล่าฆ่าอัตโนมัติ",
+    Category = "Attack",
+    OnEnable = function()
+        getgenv().KrizExecutionerActive = true
+        local RunService = game:GetService("RunService")
+        local Players = game:GetService("Players")
+        local VirtualInputManager = game:GetService("VirtualInputManager")
+        local StarterGui = game:GetService("StarterGui")
+        local Camera = workspace.CurrentCamera
+        local LocalPlayer = Players.LocalPlayer
+
+        local targetModes, targetModeNames, currentModeIndex = {"All", "Enemy"}, {"TARGET: ALL (ทุกคน)", "TARGET: ENEMY (เฉพาะศัตรู)"}, 1
+        local currentTarget = nil
+        local lastHealth = 0
+        local timer = 0
+        local blacklistedTargets = {}
+        local lastClickTime = 0
+
+        local function notify(text)
+            task.spawn(function()
+                pcall(function()
+                    StarterGui:SetCore("SendNotification", {Title = "KRIZ HUB", Text = text, Duration = 3})
+                end)
+            end)
+        end
+
+        -- ค้นหา rowFrame จาก Container ของหมวด Attack
+        local rowFrame = nil
+        pcall(function()
+            if _G.KrizHubCore and _G.KrizHubCore.CategoryContainers and _G.KrizHubCore.CategoryContainers["Attack"] then
+                local attackScroll = _G.KrizHubCore.CategoryContainers["Attack"].Scroll
+                for _, child in ipairs(attackScroll:GetChildren()) do
+                    if child:IsA("Frame") then
+                        local lbl = child:FindFirstChild("Name")
+                        if lbl and (string.find(lbl.Text, "Auto Executioner") or string.find(lbl.Text, "วาร์ปล่าฆ่าอัตโนมัติ")) then
+                            rowFrame = child
+                            break
+                        end
+                    end
+                end
+            end
+        end)
+
+        -- สร้างปุ่มสลับโหมดแคปซูล (วางตำแหน่งปุ่มที่ 1 ถัดจากสวิตช์หลักพอดีเป๊ะ)
+        local modeButton
+        if rowFrame then
+            -- ปรับหลบข้อความชื่อฟังก์ชันไม่ให้โดนทับ
+            local nameLbl = rowFrame:FindFirstChild("Name")
+            if nameLbl then
+                nameLbl.Size = UDim2.new(1, -95, 1, 0)
+                nameLbl.ClipsDescendants = true
+            end
+
+            modeButton = Instance.new("TextButton", rowFrame)
+            modeButton.Name = "ExecutionerModeBtn"
+            -- ปุ่มกว้าง 36px, เว้นระยะห่างจากสวิตช์หลัก 4px -> UDim2.new(1, -88, 0.5, -10)
+            modeButton.Size = UDim2.new(0, 36, 0, 20)
+            modeButton.Position = UDim2.new(1, -88, 0.5, -10)
+            modeButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+            modeButton.BackgroundTransparency = 0.15
+            modeButton.BorderSizePixel = 0
+            modeButton.Font = Enum.Font.GothamBold
+            modeButton.Text = "ALL"
+            modeButton.TextColor3 = Color3.fromRGB(0, 255, 255)
+            modeButton.TextSize = 8
+            modeButton.ZIndex = 10003
+
+            local corner = Instance.new("UICorner", modeButton)
+            corner.CornerRadius = UDim.new(1, 0)
+
+            modeButton.MouseButton1Click:Connect(function()
+                currentModeIndex = currentModeIndex + 1
+                if currentModeIndex > #targetModes then currentModeIndex = 1 end
+                
+                local selectedMode = targetModes[currentModeIndex]
+                modeButton.Text = selectedMode == "All" and "ALL" or "ENEMY"
+                modeButton.TextColor3 = selectedMode == "All" and Color3.fromRGB(0, 255, 255) or Color3.fromRGB(255, 100, 100)
+                
+                currentTarget = nil
+                notify("EXECUTIONER: " .. targetModeNames[currentModeIndex])
+            end)
+        end
+
+        local conn
+        conn = RunService.RenderStepped:Connect(function(dt)
+            if not getgenv().KrizExecutionerActive then
+                if conn then conn:Disconnect() end
+                return
+            end
+
+            local char = LocalPlayer.Character
+            if not char then return end
+            
+            -- ระบบป้องกันการนั่งอัตโนมัติ
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            if hum and hum.Sit then
+                hum.Sit = false
+                pcall(function()
+                    if char:FindFirstChild("HumanoidRootPart") then
+                        char.HumanoidRootPart.CFrame = char.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0)
+                    end
+                end)
+            end
+
+            if not char:FindFirstChild("HumanoidRootPart") then return end
+            local myRoot = char.HumanoidRootPart
+
+            local function isValidTarget(p)
+                if not p or p == LocalPlayer or blacklistedTargets[p] then return false end
+                
+                local currentMode = targetModes[currentModeIndex]
+                if currentMode == "Enemy" and p.Team and LocalPlayer.Team and p.Team == LocalPlayer.Team then
+                    return false
+                end
+
+                local pChar = p.Character
+                if not pChar then return false end
+                local pHum = pChar:FindFirstChildOfClass("Humanoid")
+                local hrp = pChar:FindFirstChild("HumanoidRootPart")
+                if not pHum or not hrp or pHum.Health <= 0 then return false end
+                return true
+            end
+
+            if not isValidTarget(currentTarget) then
+                currentTarget = nil
+                for _, p in ipairs(Players:GetPlayers()) do
+                    if isValidTarget(p) then
+                        currentTarget = p
+                        local pHum = p.Character:FindFirstChildOfClass("Humanoid")
+                        lastHealth = pHum.Health
+                        timer = 0
+                        break
+                    end
+                end
+            end
+
+            if currentTarget and currentTarget.Character then
+                local eRoot = currentTarget.Character:FindFirstChild("HumanoidRootPart")
+                local eHum = currentTarget.Character:FindFirstChildOfClass("Humanoid")
+
+                if eRoot and eHum then
+                    myRoot.CFrame = eRoot.CFrame * CFrame.new(0, 0, 4)
+                    Camera.CFrame = CFrame.new(Camera.CFrame.Position, eRoot.Position)
+
+                    local now = tick()
+                    if now - lastClickTime >= 0.1 then
+                        lastClickTime = now
+                        VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
+                        VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
+                    end
+
+                    if eHum.Health < lastHealth then
+                        lastHealth = eHum.Health
+                        timer = 0
+                    else
+                        timer = timer + dt
+                        if timer >= 3 then
+                            blacklistedTargets[currentTarget] = true
+                            task.delay(5, function()
+                                blacklistedTargets[currentTarget] = nil
+                            end)
+                            currentTarget = nil
+                            timer = 0
+                        end
+                    end
+                end
+            end
+        end)
+
+        getgenv().KrizExecutionerCleanup = function()
+            if conn then pcall(function() conn:Disconnect() end) end
+            if modeButton then pcall(function() modeButton:Destroy() end) end
+            -- คืนค่าความกว้างชื่อฟังก์ชันตามเดิมเมื่อปิด
+            if rowFrame then
+                local nameLbl = rowFrame:FindFirstChild("Name")
+                if nameLbl then nameLbl.Size = UDim2.new(1, -60, 1, 0) end
+            end
+        end
+    end,
+    OnDisable = function()
+        getgenv().KrizExecutionerActive = false
+        if getgenv().KrizExecutionerCleanup then pcall(getgenv().KrizExecutionerCleanup) end
+    end
+})
+--552--
+
+
+--------------------------------------------------
+-- MODULE: ESP SKELETON / โครงกระดูก (หมวด Settings)
+--------------------------------------------------
+local P, RS, Cam, lp = game:GetService("Players"), game:GetService("RunService"), workspace.CurrentCamera, game:GetService("Players").LocalPlayer
+
+local function GetCol(p)
+    local c, b = p.Character, p:FindFirstChild("Backpack")
+    if c and (c:FindFirstChild("Knife") or (b and b:FindFirstChild("Knife"))) then return Color3.new(1,0,0) end
+    if c and (c:FindFirstChild("Gun") or (b and b:FindFirstChild("Gun"))) then return Color3.new(0,0,1) end
+    return (p.Team and p.Team ~= lp.Team) and p.TeamColor.Color or Color3.new(1,1,1)
+end
+
+Core:RegisterModule({
+    Name = "ESP Skeleton / โครงกระดูก",
+    Category = "Settings",
+    OnEnable = function()
+        getgenv().KrizSkeletonActive = true
+        local dList = {}
+
+        local function CreateSkeleton(p)
+            if p == lp then return end
+            local lines = {
+                Spine = Drawing.new("Line"), Chest = Drawing.new("Line"),
+                LArm1 = Drawing.new("Line"), LArm2 = Drawing.new("Line"),
+                RArm1 = Drawing.new("Line"), RArm2 = Drawing.new("Line"),
+                LLeg1 = Drawing.new("Line"), LLeg2 = Drawing.new("Line"),
+                RLeg1 = Drawing.new("Line"), RLeg2 = Drawing.new("Line")
+            }
+            for _, l in pairs(lines) do
+                table.insert(dList, l)
+                l.Visible, l.Thickness, l.Transparency, l.Outline, l.OutlineColor = false, 1.2, 0.8, true, Color3.new(0, 0, 0)
+            end
+
+            local conn
+            conn = RS.RenderStepped:Connect(function()
+                if not getgenv().KrizSkeletonActive then
+                    for _, l in pairs(lines) do l.Visible = false end
+                    if conn then conn:Disconnect() end
+                    return
+                end
+
+                local c, hum, hrp = p.Character, p.Character and p.Character:FindFirstChildOfClass("Humanoid"), p.Character and p.Character:FindFirstChild("HumanoidRootPart")
+                if c and hum and hum.Health > 0 and hrp then
+                    local head = c:FindFirstChild("Head")
+                    if head then
+                        local pHead, visH = Cam:WorldToViewportPoint(head.Position)
+                        local clr = GetCol(p)
+                        if visH then
+                            if hum.RigType == Enum.HumanoidRigType.R6 then
+                                local torso = c:FindFirstChild("Torso")
+                                if torso then
+                                    local pTorso, visT = Cam:WorldToViewportPoint(torso.Position)
+                                    local tPos = Vector2.new(pTorso.X, pTorso.Y)
+                                    lines.Chest.Visible, lines.LArm2.Visible, lines.RArm2.Visible, lines.LLeg2.Visible, lines.RLeg2.Visible = false, false, false, false, false
+                                    if visT then
+                                        lines.Spine.From, lines.Spine.To, lines.Spine.Color, lines.Spine.Visible = Vector2.new(pHead.X, pHead.Y), tPos, clr, true
+                                        local function setR6(line, partName)
+                                            local part = c:FindFirstChild(partName)
+                                            if part then
+                                                local pos, vis = Cam:WorldToViewportPoint(part.Position)
+                                                if vis then line.From, line.To, line.Color, line.Visible = tPos, Vector2.new(pos.X, pos.Y), clr, true else line.Visible = false end
+                                            else line.Visible = false end
+                                        end
+                                        setR6(lines.LArm1, "Left Arm") setR6(lines.RArm1, "Right Arm")
+                                        setR6(lines.LLeg1, "Left Leg") setR6(lines.RLeg1, "Right Leg")
+                                    else
+                                        for _, l in pairs(lines) do l.Visible = false end
+                                    end
+                                end
+                            elseif hum.RigType == Enum.HumanoidRigType.R15 then
+                                local uTorso, lTorso = c:FindFirstChild("UpperTorso"), c:FindFirstChild("LowerTorso")
+                                local lUA, lLA = c:FindFirstChild("LeftUpperArm"), c:FindFirstChild("LeftLowerArm")
+                                local rUA, rLA = c:FindFirstChild("RightUpperArm"), c:FindFirstChild("RightLowerArm")
+                                local lUL, lLL = c:FindFirstChild("LeftUpperLeg"), c:FindFirstChild("LeftLowerLeg")
+                                local rUL, rLL = c:FindFirstChild("RightUpperLeg"), c:FindFirstChild("RightLowerLeg") or c:FindFirstChild("RightFoot")
+
+                                if uTorso and lTorso then
+                                    local pUpper, vU = Cam:WorldToViewportPoint(uTorso.Position)
+                                    local pLower, vL = Cam:WorldToViewportPoint(lTorso.Position)
+                                    local uPos, lPos = Vector2.new(pUpper.X, pUpper.Y), Vector2.new(pLower.X, pLower.Y)
+                                    if vU or vL then
+                                        lines.Spine.From, lines.Spine.To, lines.Spine.Color, lines.Spine.Visible = Vector2.new(pHead.X, pHead.Y), uPos, clr, true
+                                        lines.Chest.From, lines.Chest.To, lines.Chest.Color, lines.Chest.Visible = uPos, lPos, clr, true
+
+                                        local function setR15(l1, l2, pA, pB, fromPos)
+                                            if pA and pB then
+                                                local pos1, vis1 = Cam:WorldToViewportPoint(pA.Position)
+                                                local pos2, vis2 = Cam:WorldToViewportPoint(pB.Position)
+                                                if vis1 then l1.From, l1.To, l1.Color, l1.Visible = fromPos, Vector2.new(pos1.X, pos1.Y), clr, true else l1.Visible = false end
+                                                if vis1 and vis2 then l2.From, l2.To, l2.Color, l2.Visible = Vector2.new(pos1.X, pos1.Y), Vector2.new(pos2.X, pos2.Y), clr, true else l2.Visible = false end
+                                            else l1.Visible, l2.Visible = false, false end
+                                        end
+                                        setR15(lines.LArm1, lines.LArm2, lUA, lLA, uPos)
+                                        setR15(lines.RArm1, lines.RArm2, rUA, rLA, uPos)
+                                        setR15(lines.LLeg1, lines.LLeg2, lUL, lLL, lPos)
+                                        setR15(lines.RLeg1, lines.RLeg2, rUL, rLL, lPos)
+                                    else
+                                        for _, l in pairs(lines) do l.Visible = false end
+                                    end
+                                end
+                            end
+                        else
+                            for _, l in pairs(lines) do l.Visible = false end
+                        end
+                    else
+                        for _, l in pairs(lines) do l.Visible = false end
+                    end
+                else
+                    for _, l in pairs(lines) do l.Visible = false end
+                    if not p.Parent then conn:Disconnect() end
+                end
+            end)
+        end
+
+        for _, p in pairs(P:GetPlayers()) do CreateSkeleton(p) end
+        local addConn = P.PlayerAdded:Connect(CreateSkeleton)
+
+        getgenv().KrizSkeletonCleanup = function()
+            if addConn then addConn:Disconnect() end
+            for _, obj in ipairs(dList) do pcall(function() obj:Remove() end) end
+        end
+    end,
+    OnDisable = function()
+        getgenv().KrizSkeletonActive = false
+        if getgenv().KrizSkeletonCleanup then pcall(getgenv().KrizSkeletonCleanup) end
+    end
+})
+
+--------------------------------------------------
+-- MODULE: ESP TRACER / เส้นจากด้านล่าง (หมวด Settings)
+--------------------------------------------------
+Core:RegisterModule({
+    Name = "ESP Tracer / เส้นจากด้านล่าง",
+    Category = "Settings",
+    OnEnable = function()
+        getgenv().KrizTracerActive = true
+        local dList = {}
+
+        local function CreateTracer(p)
+            if p == lp then return end
+            local line = Drawing.new("Line")
+            table.insert(dList, line)
+            line.Visible, line.Thickness, line.Transparency, line.Outline, line.OutlineColor = false, 1.2, 0.8, true, Color3.new(0, 0, 0)
+
+            local conn
+            conn = RS.RenderStepped:Connect(function()
+                if not getgenv().KrizTracerActive then
+                    line.Visible = false
+                    if conn then conn:Disconnect() end
+                    return
+                end
+
+                local c, hum, hrp = p.Character, p.Character and p.Character:FindFirstChildOfClass("Humanoid"), p.Character and p.Character:FindFirstChild("HumanoidRootPart")
+                if c and hum and hum.Health > 0 and hrp then
+                    local pos, vis = Cam:WorldToViewportPoint(hrp.Position)
+                    if vis then
+                        line.From = Vector2.new(Cam.ViewportSize.X / 2, Cam.ViewportSize.Y)
+                        line.To = Vector2.new(pos.X, pos.Y)
+                        line.Color = GetCol(p)
+                        line.Visible = true
+                    else
+                        line.Visible = false
+                    end
+                else
+                    line.Visible = false
+                    if not p.Parent then conn:Disconnect() end
+                end
+            end)
+        end
+
+        for _, p in pairs(P:GetPlayers()) do CreateTracer(p) end
+        local addConn = P.PlayerAdded:Connect(CreateTracer)
+
+        getgenv().KrizTracerCleanup = function()
+            if addConn then addConn:Disconnect() end
+            for _, obj in ipairs(dList) do pcall(function() obj:Remove() end) end
+        end
+    end,
+    OnDisable = function()
+        getgenv().KrizTracerActive = false
+        if getgenv().KrizTracerCleanup then pcall(getgenv().KrizTracerCleanup) end
+    end
+})
+
+
+--------------------------------------------------
+-- MODULE: PROXIMITY DISTANCE ESP / เส้นบอกระยะประชิด (หมวด Settings)
+--------------------------------------------------
+local P, RS, Cam, LP = game:GetService("Players"), game:GetService("RunService"), workspace.CurrentCamera, game:GetService("Players").LocalPlayer
+
+local function GetTargetColor(p)
+    local c, b = p.Character, p:FindFirstChild("Backpack")
+    -- เช็กอาวุธร้ายแรงก่อน
+    if c and (c:FindFirstChild("Knife") or (b and b:FindFirstChild("Knife"))) then return Color3.fromRGB(255, 50, 50) end
+    if c and (c:FindFirstChild("Gun") or (b and b:FindFirstChild("Gun"))) then return Color3.fromRGB(50, 150, 255) end
+    
+    -- เช็กสีตามทีม (ถ้าต่างทีมใช้สีแดง/สีทีม, ถ้าทีมเดียวกันใช้สีเขียว)
+    if p.Team and LP.Team then
+        return (p.Team ~= LP.Team) and (p.TeamColor and p.TeamColor.Color or Color3.fromRGB(255, 60, 60)) or Color3.fromRGB(50, 255, 100)
+    end
+    return Color3.fromRGB(255, 80, 80) -- สีเริ่มต้นสำหรับศัตรูในเกมไม่มีทีม
+end
+
+Core:RegisterModule({
+    Name = "Proximity Line / เส้นบอกระยะประชิด",
+    Category = "Settings",
+    OnEnable = function()
+        getgenv().KrizProximityActive = true
+        local drawObjects = {}
+        local maxDistanceStuds = 50 -- ระยะตรวจจับ (ประมาณรถยนต์จอดต่อกัน 2-3 คัน)
+
+        local function CreateProximityESP(p)
+            if p == LP then return end
+
+            local line = Drawing.new("Line")
+            line.Visible, line.Thickness, line.Transparency, line.Outline, line.OutlineColor = false, 1.5, 0.9, true, Color3.new(0, 0, 0)
+
+            local text = Drawing.new("Text")
+            text.Visible, text.Size, text.Center, text.Outline, text.OutlineColor = false, 13, true, true, Color3.new(0, 0, 0)
+
+            table.insert(drawObjects, line)
+            table.insert(drawObjects, text)
+
+            local conn
+            conn = RS.RenderStepped:Connect(function()
+                if not getgenv().KrizProximityActive then
+                    line.Visible, text.Visible = false, false
+                    if conn then conn:Disconnect() end
+                    return
+                end
+
+                local myChar = LP.Character
+                local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+                local targetChar = p.Character
+                local targetHum = targetChar and targetChar:FindFirstChildOfClass("Humanoid")
+                local targetRoot = targetChar and targetChar:FindFirstChild("HumanoidRootPart")
+
+                if myRoot and targetRoot and targetHum and targetHum.Health > 0 then
+                    -- คำนวณระยะทางระหว่างเรากับเป้าหมาย (Studs)
+                    local distStuds = (targetRoot.Position - myRoot.Position).Magnitude
+
+                    -- ตรวจสอบว่าอยู่ในรัศมีระยะประชิด (ไม่เกิน 2-3 คันรถ) หรือไม่
+                    if distStuds <= maxDistanceStuds then
+                        local myScreenPos, myVis = Cam:WorldToViewportPoint(myRoot.Position)
+                        local targetScreenPos, targetVis = Cam:WorldToViewportPoint(targetRoot.Position)
+
+                        if myVis or targetVis then
+                            local startVec = Vector2.new(myScreenPos.X, myScreenPos.Y)
+                            local endVec = Vector2.new(targetScreenPos.X, targetScreenPos.Y)
+                            local color = GetTargetColor(p)
+
+                            -- ลากเส้นจากตัวเราไปหาศัตรู
+                            line.From = startVec
+                            line.To = endVec
+                            line.Color = color
+                            line.Visible = true
+
+                            -- วางข้อความระยะทางไว้กึ่งกลางเส้นพอดี
+                            local midPoint = Vector2.new((startVec.X + endVec.X) / 2, (startVec.Y + endVec.Y) / 2)
+                            local distMeters = math.floor(distStuds * 0.28) -- แปลง Studs เป็นเมตรโดยประมาณ
+                            
+                            text.Position = midPoint
+                            text.Text = tostring(distMeters) .. "m"
+                            text.Color = color
+                            text.Visible = true
+                        else
+                            line.Visible, text.Visible = false, false
+                        end
+                    else
+                        -- ถ้าระยะเกิน 2-3 คันรถ ให้ซ่อนเส้นและตัวเลข
+                        line.Visible, text.Visible = false, false
+                    end
+                else
+                    line.Visible, text.Visible = false, false
+                    if not p.Parent then conn:Disconnect() end
+                end
+            end)
+        end
+
+        -- ติดตั้ง ESP ให้ผู้เล่นทุกคนในเซิร์ฟเวอร์
+        for _, p in pairs(P:GetPlayers()) do CreateProximityESP(p) end
+        local addConn = P.PlayerAdded:Connect(CreateProximityESP)
+
+        getgenv().KrizProximityCleanup = function()
+            if addConn then addConn:Disconnect() end
+            for _, obj in ipairs(drawObjects) do pcall(function() obj:Remove() end) end
+        end
+    end,
+    OnDisable = function()
+        getgenv().KrizProximityActive = false
+        if getgenv().KrizProximityCleanup then pcall(getgenv().KrizProximityCleanup) end
+    end
+})
+
+
+--------------------------------------------------
+-- MODULE: ESP ARROW / ลูกศรบนหัว (ขนาดคงที่ ไม่ขยายตามระยะทาง)
+--------------------------------------------------
+local P,RS,Cam,LP=game:GetService("Players"),game:GetService("RunService"),workspace.CurrentCamera,game:GetService("Players").LocalPlayer
+local function GetCol(p)
+    local c,b=p.Character,p:FindFirstChild("Backpack")
+    if c and(c:FindFirstChild("Knife")or(b and b:FindFirstChild("Knife")))then return Color3.fromRGB(255,50,50)end
+    if c and(c:FindFirstChild("Gun")or(b and b:FindFirstChild("Gun")))then return Color3.fromRGB(50,150,255)end
+    if p.Team and LP.Team then return(p.Team~=LP.Team)and(p.TeamColor and p.TeamColor.Color or Color3.fromRGB(255,60,60))or Color3.fromRGB(50,255,100)end
+    return Color3.fromRGB(255,80,80)
+end
+
+Core:RegisterModule({
+    Name = "ESP Arrow / ลูกศรบนหัว",
+    Category = "Settings",
+    OnEnable = function()
+        getgenv().KrizArrowActive=true local dList={}
+        local function CreateArrow(p)
+            if p==LP then return end
+            local arrow=Drawing.new("Text")
+            -- ล็อกขนาดพิกเซลบนจอให้คงที่ (Size = 13 เล็กกะทัดรัด ไม่ขยายใหญ่ตามระยะทาง)
+            arrow.Visible,arrow.Size,arrow.Center,arrow.Outline,arrow.OutlineColor,arrow.Text=false,13,true,true,Color3.new(0,0,0),"v"
+            table.insert(dList,arrow)
+            local conn
+            conn=RS.RenderStepped:Connect(function()
+                if not getgenv().KrizArrowActive then arrow.Visible=false if conn then conn:Disconnect() end return end
+                local c=p.Character local hum=c and c:FindFirstChildOfClass("Humanoid") local head=c and c:FindFirstChild("Head")
+                if c and hum and hum.Health>0 and head then
+                    local yOffset=2.2+(math.sin(tick()*8)*0.4)
+                    local pos,vis=Cam:WorldToViewportPoint(head.Position+Vector3.new(0,yOffset,0))
+                    if vis then
+                        arrow.Position=Vector2.new(pos.X,pos.Y)
+                        arrow.Color=GetCol(p)
+                        arrow.Visible=true
+                    else arrow.Visible=false end
+                else arrow.Visible=false if not p.Parent then conn:Disconnect() end end
+            end)
+        end
+        for _,p in pairs(P:GetPlayers())do CreateArrow(p)end
+        local addConn=P.PlayerAdded:Connect(CreateArrow)
+        getgenv().KrizArrowCleanup=function()
+            if addConn then addConn:Disconnect() end
+            for _,obj in ipairs(dList)do pcall(function() obj:Remove() end)end
+        end
+    end,
+    OnDisable = function()
+        getgenv().KrizArrowActive=false
+        if getgenv().KrizArrowCleanup then pcall(getgenv().KrizArrowCleanup) end
+    end
+})
+--553--
+
+
+--------------------------------------------------
+-- 🛠️ ฟังก์ชันระบบสีทีมส่วนกลาง (ใช้ร่วมกันทั้ง 3 โมดูล)
+--------------------------------------------------
+local P,RS,Cam,LP=game:GetService("Players"),game:GetService("RunService"),workspace.CurrentCamera,game:GetService("Players").LocalPlayer
+local function GetCol(p)
+    local c,b=p.Character,p:FindFirstChild("Backpack")
+    if c and(c:FindFirstChild("Knife")or(b and b:FindFirstChild("Knife")))then return Color3.fromRGB(255,50,50)end
+    if c and(c:FindFirstChild("Gun")or(b and b:FindFirstChild("Gun")))then return Color3.fromRGB(50,150,255)end
+    if p.Team and LP.Team then return(p.Team~=LP.Team)and(p.TeamColor and p.TeamColor.Color or Color3.fromRGB(255,60,60))or Color3.fromRGB(50,255,100)end
+    return Color3.fromRGB(255,80,80)
+end
+
+--------------------------------------------------
+-- 1. MODULE: ESP BOX / กรอบสี่เหลี่ยม
+--------------------------------------------------
+Core:RegisterModule({
+    Name = "ESP Box / กรอบสี่เหลี่ยม",
+    Category = "Settings",
+    OnEnable = function()
+        getgenv().KrizBoxActive=true local dList={}
+        local function CreateBox(p)
+            if p==LP then return end
+            local box=Drawing.new("Square")
+            box.Visible,box.Thickness,box.Filled,box.Transparency=false,1.2,false,0.8
+            table.insert(dList,box)
+            local conn
+            conn=RS.RenderStepped:Connect(function()
+                if not getgenv().KrizBoxActive then box.Visible=false if conn then conn:Disconnect() end return end
+                local c=p.Character local hum=c and c:FindFirstChildOfClass("Humanoid") local hrp=c and c:FindFirstChild("HumanoidRootPart")
+                if c and hum and hum.Health>0 and hrp then
+                    local pos,vis=Cam:WorldToViewportPoint(hrp.Position)
+                    if vis then
+                        local size=Vector2.new(2200/pos.Z, 3300/pos.Z)
+                        box.Size=size
+                        box.Position=Vector2.new(pos.X - size.X/2, pos.Y - size.Y/2)
+                        box.Color=GetCol(p)
+                        box.Visible=true
+                    else box.Visible=false end
+                else box.Visible=false if not p.Parent then conn:Disconnect() end end
+            end)
+        end
+        for _,p in pairs(P:GetPlayers())do CreateBox(p)end
+        local addConn=P.PlayerAdded:Connect(CreateBox)
+        getgenv().KrizBoxCleanup=function()
+            if addConn then addConn:Disconnect() end
+            for _,obj in ipairs(dList)do pcall(function() obj:Remove() end)end
+        end
+    end,
+    OnDisable = function()
+        getgenv().KrizBoxActive=false
+        if getgenv().KrizBoxCleanup then pcall(getgenv().KrizBoxCleanup) end
+    end
+})
+
+--------------------------------------------------
+-- 2. MODULE: ESP NAME / ชื่อบนหัว
+--------------------------------------------------
+Core:RegisterModule({
+    Name = "ESP Name / ชื่อบนหัว",
+    Category = "Settings",
+    OnEnable = function()
+        getgenv().KrizNameActive=true local dList={}
+        local function CreateName(p)
+            if p==LP then return end
+            local txt=Drawing.new("Text")
+            txt.Visible,txt.Size,txt.Center,txt.Outline,txt.OutlineColor,txt.Text=false,12,true,true,Color3.new(0,0,0),p.Name
+            table.insert(dList,txt)
+            local conn
+            conn=RS.RenderStepped:Connect(function()
+                if not getgenv().KrizNameActive then txt.Visible=false if conn then conn:Disconnect() end return end
+                local c=p.Character local hum=c and c:FindFirstChildOfClass("Humanoid") local head=c and c:FindFirstChild("Head")
+                if c and hum and hum.Health>0 and head then
+                    local pos,vis=Cam:WorldToViewportPoint(head.Position+Vector3.new(0,1.5,0))
+                    if vis then
+                        txt.Position=Vector2.new(pos.X,pos.Y)
+                        txt.Color=GetCol(p)
+                        txt.Visible=true
+                    else txt.Visible=false end
+                else txt.Visible=false if not p.Parent then conn:Disconnect() end end
+            end)
+        end
+        for _,p in pairs(P:GetPlayers())do CreateName(p)end
+        local addConn=P.PlayerAdded:Connect(CreateName)
+        getgenv().KrizNameCleanup=function()
+            if addConn then addConn:Disconnect() end
+            for _,obj in ipairs(dList)do pcall(function() obj:Remove() end)end
+        end
+    end,
+    OnDisable = function()
+        getgenv().KrizNameActive=false
+        if getgenv().KrizNameCleanup then pcall(getgenv().KrizNameCleanup) end
+    end
+})
+
+--------------------------------------------------
+-- 3. MODULE: ESP HEALTH / หลอดเลือดบนหัว
+--------------------------------------------------
+Core:RegisterModule({
+    Name = "ESP Health / หลอดเลือดบนหัว",
+    Category = "Settings",
+    OnEnable = function()
+        getgenv().KrizHpActive=true local dList={}
+        local function CreateHp(p)
+            if p==LP then return end
+            local bar=Drawing.new("Line")
+            bar.Visible,bar.Thickness=false,3
+            table.insert(dList,bar)
+            local conn
+            conn=RS.RenderStepped:Connect(function()
+                if not getgenv().KrizHpActive then bar.Visible=false if conn then conn:Disconnect() end return end
+                local c=p.Character local hum=c and c:FindFirstChildOfClass("Humanoid") local head=c and c:FindFirstChild("Head")
+                if c and hum and hum.Health>0 and head then
+                    local pos,vis=Cam:WorldToViewportPoint(head.Position+Vector3.new(0,2.5,0))
+                    if vis then
+                        local hpRatio=math.clamp(hum.Health/hum.MaxHealth,0,1)
+                        local w=24
+                        bar.From=Vector2.new(pos.X - w/2, pos.Y)
+                        bar.To=Vector2.new(pos.X - w/2 + (w * hpRatio), pos.Y)
+                        bar.Color=Color3.fromHSV(hpRatio * 0.3, 1, 1) -- เปลี่ยนสีตามเลือด (เขียว -> แดง)
+                        bar.Visible=true
+                    else bar.Visible=false end
+                else bar.Visible=false if not p.Parent then conn:Disconnect() end end
+            end)
+        end
+        for _,p in pairs(P:GetPlayers())do CreateHp(p)end
+        valAddConn=P.PlayerAdded:Connect(CreateHp)
+        getgenv().KrizHpCleanup=function()
+            if valAddConn then valAddConn:Disconnect() end
+            for _,obj in ipairs(dList)do pcall(function() obj:Remove() end)end
+        end
+    end,
+    OnDisable = function()
+        getgenv().KrizHpActive=false
+        if getgenv().KrizHpCleanup then pcall(getgenv().KrizHpCleanup) end
+    end
+})
+
+
+--------------------------------------------------
+-- MODULE: ITEM ESP / ตรวจจับไอเทมเก็บได้อัตโนมัติ (สีม่วง - หมวด Settings)
+--------------------------------------------------
+local P,RS,Cam,LP=game:GetService("Players"),game:GetService("RunService"),workspace.CurrentCamera,game:GetService("Players").LocalPlayer
+
+Core:RegisterModule({
+    Name = "ESP Item / สิ่งของที่เก็บได้",
+    Category = "Settings",
+    OnEnable = function()
+        getgenv().KrizItemActive=true
+        local activeItems={}
+
+        local function IsCollectible(obj)
+            if not obj or not obj:IsA("PVInstance") or obj:IsDescendantOf(LP.Character) then return false end
+            if obj:FindFirstChildOfClass("ProximityPrompt") or obj:IsA("ProximityPrompt") then return true end
+            if obj:FindFirstChildOfClass("ClickDetector") or obj:IsA("ClickDetector") then return true end
+            if obj:IsA("Tool") or (obj:IsA("BasePart") and obj.CanTouch and not obj.Anchored and obj.Size.Magnitude < 10) then return true end
+            return false
+        end
+
+        local function ClearItem(data)
+            if data.Highlight then pcall(function() data.Highlight:Destroy() end) end
+            if data.Text then pcall(function() data.Text:Remove() end) end
+        end
+
+        local function ScanWorkspace()
+            if not getgenv().KrizItemActive then return end
+            local myChar=LP.Character local myRoot=myChar and myChar:FindFirstChild("HumanoidRootPart")
+            if not myRoot then return end
+
+            for _, obj in ipairs(workspace:GetDescendants()) do
+                if not getgenv().KrizItemActive then break end
+                if IsCollectible(obj) and not activeItems[obj] then
+                    local targetPart = obj:IsA("BasePart") and obj or obj:FindFirstChildOfClass("BasePart") or obj.PrimaryPart
+                    if targetPart then
+                        -- เปลี่ยนสี Highlight เป็นสีม่วง (Purple)
+                        local hl = Instance.new("Highlight")
+                        hl.Name = "KrizItemHighlight"
+                        hl.FillColor = Color3.fromRGB(170, 50, 255)
+                        hl.OutlineColor = Color3.fromRGB(230, 200, 255)
+                        hl.FillTransparency = 0.5
+                        hl.OutlineTransparency = 0
+                        hl.Adornee = obj
+                        pcall(function() hl.Parent = game:GetService("CoreGui") end)
+
+                        -- เปลี่ยนสี Text เป็นสีม่วงสว่าง
+                        local txt = Drawing.new("Text")
+                        txt.Visible, txt.Size, txt.Center, txt.Outline, txt.OutlineColor, txt.Color = false, 13, true, true, Color3.new(0,0,0), Color3.fromRGB(200, 100, 255)
+
+                        activeItems[obj] = { Target = targetPart, Highlight = hl, Text = txt, Name = obj.Name }
+                    end
+                end
+            end
+        end
+
+        local renderConn
+        renderConn = RS.RenderStepped:Connect(function()
+            if not getgenv().KrizItemActive then
+                if renderConn then renderConn:Disconnect() end
+                return
+            end
+
+            local myChar=LP.Character local myRoot=myChar and myChar:FindFirstChild("HumanoidRootPart")
+
+            for obj, data in pairs(activeItems) do
+                if obj and obj.Parent and data.Target and data.Target.Parent then
+                    if myRoot then
+                        local dist = (data.Target.Position - myRoot.Position).Magnitude
+                        if dist <= 300 then
+                            local pos, vis = Cam:WorldToViewportPoint(data.Target.Position)
+                            if vis then
+                                local meters = math.floor(dist * 0.28)
+                                data.Text.Position = Vector2.new(pos.X, pos.Y)
+                                data.Text.Text = "[" .. data.Name .. "] " .. tostring(meters) .. "m"
+                                data.Text.Visible = true
+                            else data.Text.Visible = false end
+                        else data.Text.Visible = false end
+                    end
+                else
+                    ClearItem(data)
+                    activeItems[obj] = nil
+                end
+            end
+        end)
+
+        task.spawn(function()
+            while getgenv().KrizItemActive do
+                ScanWorkspace()
+                task.wait(2)
+            end
+        end)
+
+        getgenv().KrizItemCleanup = function()
+            if renderConn then pcall(function() renderConn:Disconnect() end) end
+            for obj, data in pairs(activeItems) do ClearItem(data) end
+            activeItems = {}
+        end
+    end,
+    OnDisable = function()
+        getgenv().KrizItemActive = false
+        if getgenv().KrizItemCleanup then pcall(getgenv().KrizItemCleanup) end
+    end
+})
