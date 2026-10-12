@@ -1,625 +1,150 @@
---1/2--
+--UI--
 
+if _G.KrizHubCore then pcall(function() _G.KrizHubCore:Destroy() end) end
+local P, UIS = game:GetService("Players"), game:GetService("UserInputService")
+local LP, PlayerGui = P.LocalPlayer, P.LocalPlayer:WaitForChild("PlayerGui")
+if PlayerGui:FindFirstChild("KrizHub_Core_Mask") then PlayerGui.KrizHub_Core_Mask:Destroy() end
 
--- 🛡️ ระบบป้องกันการรันซ้ำและเคลียร์หน้าต่างเก่าทิ้งแบบเด็ดขาด 100%
-if _G.KrizHubCore then
-    pcall(function()
-        _G.KrizHubCore:Destroy()
-    end)
-end
-
-local Players, UIS = game:GetService("Players"), game:GetService("UserInputService")
-local Player, PlayerGui = Players.LocalPlayer, Players.LocalPlayer:WaitForChild("PlayerGui")
-
--- กวาดล้าง ScreenGui ตัวเก่าที่อาจตกค้างในหน้าจอให้เกลี้ยงทันที ป้องกันหน้าต่างซ้อนกัน
-local oldMask = PlayerGui:FindFirstChild("KrizHub_Core_Mask")
-if oldMask then
-    oldMask:Destroy()
-end
-
-local Core = { 
-    Modules = {}, ModuleInstances = {}, Settings = {}, SettingInstances = {}, 
-    Connections = {}, CurrentTab = "General", CategoryContainers = {}, NavButtons = {} 
-}
+local Core = {Modules={}, ModuleInstances={}, Connections={}, CurrentTab="General", LastTab="General", CategoryContainers={}, NavButtons={}}
 _G.KrizHubCore = Core
 
-function Core:Connect(signal, callback) local conn = signal:Connect(callback) table.insert(self.Connections, conn) return conn end
-local function addCorner(parent, radius) local c = Instance.new("UICorner", parent) c.CornerRadius = radius or UDim.new(0, 8) return c end
-local function addStroke(parent, color, thickness) local s = Instance.new("UIStroke", parent) s.Color, s.Thickness = color or Color3.fromRGB(230, 50, 50), thickness or 1.5 return s end
+local function C(p, r) local c = Instance.new("UICorner", p) c.CornerRadius = r or UDim.new(0,8) return c end
+local function S(p, col, t) local s = Instance.new("UIStroke", p) s.Color, s.Thickness = col or Color3.fromRGB(230,50,50), t or 1.5 return s end
 
 local ScreenGui = Instance.new("ScreenGui", PlayerGui)
-ScreenGui.Name, ScreenGui.ResetOnSpawn, ScreenGui.IgnoreGuiInset, ScreenGui.ZIndexBehavior, ScreenGui.DisplayOrder = "KrizHub_Core_Mask", false, true, Enum.ZIndexBehavior.Sibling, 999999
+ScreenGui.Name, ScreenGui.ResetOnSpawn, ScreenGui.IgnoreGuiInset, ScreenGui.ZIndexBehavior, ScreenGui.DisplayOrder = "KrizHub_Core_Mask", false, true, Enum.ZIndexBehavior.Sibling, 999999999
 Core.ScreenGui = ScreenGui
 
 local MainMenu = Instance.new("Frame", ScreenGui)
-MainMenu.Name, MainMenu.AnchorPoint, MainMenu.Size, MainMenu.Position = "MainMenu", Vector2.new(0.5, 0.5), UDim2.new(0, 280, 0, 360), UDim2.fromScale(0.5, 0.5)
-MainMenu.BackgroundColor3, MainMenu.BackgroundTransparency, MainMenu.BorderSizePixel, MainMenu.Visible, MainMenu.ZIndex = Color3.fromRGB(0, 0, 0), 0.35, 0, false, 10000
-Core.MainMenu = MainMenu
-addCorner(MainMenu, UDim.new(0, 10)) addStroke(MainMenu)
+MainMenu.Name, MainMenu.AnchorPoint, MainMenu.Size, MainMenu.Position, MainMenu.BackgroundColor3, MainMenu.BackgroundTransparency, MainMenu.Visible, MainMenu.ZIndex = "MainMenu", Vector2.new(0.5,0.5), UDim2.new(0,280,0,360), UDim2.fromScale(0.5,0.5), Color3.fromRGB(0,0,0), 0.35, false, 9999999
+Core.MainMenu = MainMenu C(MainMenu, UDim.new(0,10)) S(MainMenu)
 
-local Title = Instance.new("TextLabel", MainMenu)
-Title.Name, Title.Size, Title.Position, Title.BackgroundTransparency, Title.Text, Title.ZIndex = "Title", UDim2.new(1, 0, 0, 42), UDim2.new(0, 0, 0, 0), 1, "", 10001
-local Txt1 = Instance.new("TextLabel", Title) Txt1.Size, Txt1.Position, Txt1.BackgroundTransparency, Txt1.Text, Txt1.TextColor3, Txt1.TextSize, Txt1.Font, Txt1.ZIndex, Txt1.TextXAlignment = UDim2.new(0, 50, 1, 0), UDim2.new(0.5, -52, 0, 0), 1, "KRIZ", Color3.fromRGB(255, 255, 255), 16, Enum.Font.GothamBold, 10001, Enum.TextXAlignment.Right
-local Txt2 = Instance.new("TextLabel", Title) Txt2.Size, Txt2.Position, Txt2.BackgroundTransparency, Txt2.Text, Txt2.TextColor3, Txt2.TextSize, Txt2.Font, Txt2.ZIndex, Txt2.TextXAlignment = UDim2.new(0, 50, 1, 0), UDim2.new(0.5, 2, 0, 0), 1, "HUB", Color3.fromRGB(230, 50, 50), 16, Enum.Font.GothamBold, 10001, Enum.TextXAlignment.Left
+local Title = Instance.new("TextLabel", MainMenu) Title.Size, Title.BackgroundTransparency, Title.Text, Title.ZIndex = UDim2.new(1,0,0,42), 1, "", 10000001
+local T1 = Instance.new("TextLabel", Title) T1.Size, T1.Position, T1.BackgroundTransparency, T1.Text, T1.TextColor3, T1.TextSize, T1.Font, T1.ZIndex, T1.TextXAlignment = UDim2.new(0,50,1,0), UDim2.new(0.5,-52,0,0), 1, "KRIZ", Color3.fromRGB(255,255,255), 16, Enum.Font.GothamBold, 10000001, Enum.TextXAlignment.Right
+local T2 = Instance.new("TextLabel", Title) T2.Size, T2.Position, T2.BackgroundTransparency, T2.Text, T2.TextColor3, T2.TextSize, T2.Font, T2.ZIndex, T2.TextXAlignment = UDim2.new(0,50,1,0), UDim2.new(0.5,2,0,0), 1, "HUB", Color3.fromRGB(230,50,50), 16, Enum.Font.GothamBold, 10000001, Enum.TextXAlignment.Left
 
--- 🗂️ แถบเมนูด้านบน (กึ่งกลางเป๊ะ + ไฮไลท์สีแดง)
-local NavBar = Instance.new("Frame", MainMenu)
-NavBar.AnchorPoint = Vector2.new(0.5, 0)
-NavBar.Size, NavBar.Position, NavBar.BackgroundTransparency, NavBar.ZIndex = UDim2.new(0, 260, 0, 28), UDim2.new(0.5, 0, 0, 44), 1, 10001
+-- ⚙️ Qarqarsi buttoon Settings qindaa'ee qarqara buttoonota waliin akka sirriitti akka wal qixxaatu taasifameera
+local SettingsHolder = Instance.new("Frame", MainMenu) SettingsHolder.Size, SettingsHolder.Position, SettingsHolder.BackgroundTransparency, SettingsHolder.ZIndex = UDim2.new(0,20,0,20), UDim2.new(1,-40,0,10), 1, 10000002 C(SettingsHolder, UDim.new(0,4)) S(SettingsHolder, Color3.fromRGB(230,50,50), 1.2)
+local isSettingsOpen = false
+local SettingsBtn = Instance.new("TextButton", SettingsHolder) SettingsBtn.Size, SettingsBtn.BackgroundColor3, SettingsBtn.BackgroundTransparency, SettingsBtn.Text, SettingsBtn.TextColor3, SettingsBtn.TextSize, SettingsBtn.Font, SettingsBtn.ZIndex = UDim2.new(1,0,1,0), Color3.fromRGB(20,20,20), 0.35, "+", Color3.fromRGB(200,200,200), 10, Enum.Font.GothamBold, 10000003 C(SettingsBtn, UDim.new(0,4))
+Core.NavButtons["Settings"] = SettingsBtn
 
-local NavLayout = Instance.new("UIListLayout", NavBar)
-NavLayout.FillDirection = Enum.FillDirection.Horizontal
-NavLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-NavLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-NavLayout.SortOrder = Enum.SortOrder.LayoutOrder
-NavLayout.Padding = UDim.new(0, 6)
+local VerLabel = Instance.new("TextLabel", MainMenu) VerLabel.Size, VerLabel.Position, VerLabel.BackgroundTransparency, VerLabel.TextXAlignment, VerLabel.Text, VerLabel.TextColor3, VerLabel.TextSize, VerLabel.Font, VerLabel.ZIndex = UDim2.new(0,60,0,16), UDim2.new(0,10,1,-18), 1, Enum.TextXAlignment.Left, "v1.0.2", Color3.fromRGB(120,120,120), 10, Enum.Font.Gotham, 10000005
 
-local categories = {
-    { Name = "General", Icon = "หน้าหลัก" },
-    { Name = "Attack", Icon = "โจมตี" },
-    { Name = "Defense", Icon = "ป้องกัน" },
-    { Name = "Settings", Icon = "ตั้งค่า" }
-}
+local NavBar = Instance.new("Frame", MainMenu) NavBar.AnchorPoint, NavBar.Size, NavBar.Position, NavBar.BackgroundTransparency, NavBar.ZIndex = Vector2.new(0.5,0), UDim2.new(0,260,0,26), UDim2.new(0.5,0,0,42), 1, 10000001
+local NavLayout = Instance.new("UIListLayout", NavBar) NavLayout.FillDirection, NavLayout.HorizontalAlignment, NavLayout.VerticalAlignment, NavLayout.SortOrder, NavLayout.Padding = Enum.FillDirection.Horizontal, Enum.HorizontalAlignment.Center, Enum.VerticalAlignment.Center, Enum.SortOrder.LayoutOrder, UDim.new(0,8)
 
--- ฟังก์ชันสำหรับสลับสีไอคอนหมวดหมู่เป็นสีแดง
+local categories = {{Name="General",Icon="หน้าหลัก"},{Name="Attack",Icon="โจมตี"},{Name="Defense",Icon="ป้องกัน"},{Name="Visual",Icon="มอง"}}
+
 local function updateNavColors()
-    for catName, navBtn in pairs(Core.NavButtons) do
-        if catName == Core.CurrentTab then
-            navBtn.TextColor3 = Color3.fromRGB(230, 50, 50) -- สีแดง (เปิดอยู่)
-        else
-            navBtn.TextColor3 = Color3.fromRGB(200, 200, 200) -- สีขาว/เทา (ไม่ได้เปิด)
-        end
+    for name, btn in pairs(Core.NavButtons) do
+        btn.TextColor3 = (name == Core.CurrentTab) and Color3.fromRGB(230,50,50) or Color3.fromRGB(200,200,200)
     end
 end
 
 local function createScroll()
-    local f = Instance.new("ScrollingFrame", MainMenu)
-    f.Size, f.Position, f.BackgroundTransparency, f.BorderSizePixel, f.ScrollBarThickness, f.ScrollingDirection, f.CanvasSize, f.ZIndex = UDim2.new(1, -16, 1, -86), UDim2.new(0, 8, 0, 78), 1, 0, 0, Enum.ScrollingDirection.Y, UDim2.new(0,0,0,0), 10001
-    local pad = Instance.new("UIPadding", f) pad.PaddingTop, pad.PaddingBottom = UDim.new(0, 4), UDim.new(0, 4)
-    local list = Instance.new("UIListLayout", f) list.FillDirection, list.HorizontalAlignment, list.SortOrder, list.Padding = Enum.FillDirection.Vertical, Enum.HorizontalAlignment.Center, Enum.SortOrder.LayoutOrder, UDim.new(0, 6)
+    local f = Instance.new("ScrollingFrame", MainMenu) f.Size, f.Position, f.BackgroundTransparency, f.BorderSizePixel, f.ScrollBarThickness, f.CanvasSize, f.ZIndex = UDim2.new(1,-16,1,-94), UDim2.new(0,8,0,78), 1, 0, 0, UDim2.new(0,0,0,0), 10000001
+    local pad = Instance.new("UIPadding", f) pad.PaddingTop, pad.PaddingBottom = UDim.new(0,4), UDim.new(0,12)
+    local list = Instance.new("UIListLayout", f) list.FillDirection, list.HorizontalAlignment, list.SortOrder, list.Padding = Enum.FillDirection.Vertical, Enum.HorizontalAlignment.Center, Enum.SortOrder.LayoutOrder, UDim.new(0,6)
     return f, list
 end
 
 for i, cat in ipairs(categories) do
-    local Holder = Instance.new("Frame", NavBar)
-    Holder.Size = UDim2.new(0, 58, 1, 0)
-    Holder.LayoutOrder = i
-    Holder.BackgroundTransparency = 1
-    Holder.ZIndex = 10002
-    addCorner(Holder, UDim.new(0, 6))
-    addStroke(Holder, Color3.fromRGB(230, 50, 50), 1.5)
-
-    -- สีเริ่มต้น: ถ้าเป็น General ให้เป็นสีแดงสดทันที
-    local initialColor = (cat.Name == "General") and Color3.fromRGB(230, 50, 50) or Color3.fromRGB(200, 200, 200)
-
-    local btn = Instance.new("TextButton", Holder)
-    btn.Size = UDim2.new(1, 0, 1, 0)
-    btn.Position = UDim2.new(0, 0, 0, 0)
-    btn.BackgroundColor3, btn.BackgroundTransparency, btn.BorderSizePixel, btn.Text, btn.TextColor3, btn.TextSize, btn.Font, btn.ZIndex = Color3.fromRGB(20, 20, 20), 0.35, 0, cat.Icon, initialColor, 12, Enum.Font.GothamBold, 10003
-    addCorner(btn, UDim.new(0, 6))
-
+    local Holder = Instance.new("Frame", NavBar) Holder.Size, Holder.LayoutOrder, Holder.BackgroundTransparency, Holder.ZIndex = UDim2.new(0,58,1,0), i, 1, 10000002 C(Holder, UDim.new(0,6)) S(Holder, Color3.fromRGB(230,50,50), 1.5)
+    local btn = Instance.new("TextButton", Holder) btn.Size, btn.BackgroundColor3, btn.BackgroundTransparency, btn.Text, btn.TextColor3, btn.TextSize, btn.Font, btn.ZIndex = UDim2.new(1,0,1,0), Color3.fromRGB(20,20,20), 0.35, cat.Icon, (cat.Name=="General") and Color3.fromRGB(230,50,50) or Color3.fromRGB(200,200,200), 11, Enum.Font.GothamBold, 10000003 C(btn, UDim.new(0,6))
     Core.NavButtons[cat.Name] = btn
 
-    local scroll, layout = createScroll()
-    scroll.Name = cat.Name .. "List"
-    scroll.Visible = (cat.Name == "General")
-    Core.CategoryContainers[cat.Name] = { Scroll = scroll, Layout = layout }
+    local scroll, layout = createScroll() scroll.Name, scroll.Visible = cat.Name.."List", (cat.Name=="General")
+    Core.CategoryContainers[cat.Name] = {Scroll=scroll, Layout=layout}
 
     layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        if Core.CurrentTab == cat.Name then
-            scroll.CanvasSize = UDim2.new(0, 0, 0, math.max(layout.AbsoluteContentSize.Y + 8, 0))
-        end
+        if Core.CurrentTab == cat.Name then scroll.CanvasSize = UDim2.new(0,0,0,math.max(layout.AbsoluteContentSize.Y+16,0)) end
     end)
 
     btn.Activated:Connect(function()
         Core.CurrentTab = cat.Name
-        updateNavColors() -- เปลี่ยนสีไอคอนเป็นสีแดงทันทีที่กดเลือก
-
+        if not isSettingsOpen then
+            Core.LastTab = cat.Name
+        end
+        isSettingsOpen, SettingsBtn.Text = false, "+"
+        updateNavColors()
         for cName, cData in pairs(Core.CategoryContainers) do
             cData.Scroll.Visible = (cName == cat.Name)
-            if cName == cat.Name then
-                cData.Scroll.CanvasSize = UDim2.new(0, 0, 0, math.max(cData.Layout.AbsoluteContentSize.Y + 8, 0))
-            end
+            if cName == cat.Name then cData.Scroll.CanvasSize = UDim2.new(0,0,0,math.max(cData.Layout.AbsoluteContentSize.Y+16,0)) end
         end
     end)
 end
+
+local settingsScroll, settingsLayout = createScroll() settingsScroll.Name, settingsScroll.Visible = "SettingsList", false
+Core.CategoryContainers["Settings"] = {Scroll=settingsScroll, Layout=settingsLayout}
+settingsLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    if Core.CurrentTab == "Settings" then settingsScroll.CanvasSize = UDim2.new(0,0,0,math.max(settingsLayout.AbsoluteContentSize.Y+16,0)) end
+end)
+
+SettingsBtn.Activated:Connect(function()
+    isSettingsOpen = not isSettingsOpen
+    SettingsBtn.Text = isSettingsOpen and "-" or "+"
+    
+    if isSettingsOpen then
+        if Core.CurrentTab ~= "Settings" then
+            Core.LastTab = Core.CurrentTab
+        end
+        Core.CurrentTab = "Settings"
+    else
+        Core.CurrentTab = Core.LastTab
+    end
+
+    updateNavColors()
+    for cName, cData in pairs(Core.CategoryContainers) do
+        cData.Scroll.Visible = (cName == Core.CurrentTab)
+        if cName == Core.CurrentTab then cData.Scroll.CanvasSize = UDim2.new(0,0,0,math.max(cData.Layout.AbsoluteContentSize.Y+16,0)) end
+    end
+end)
 
 Core.ScrollContainer = Core.CategoryContainers["General"].Scroll
 
-local IconContainer = Instance.new("Frame", ScreenGui)
-IconContainer.Size, IconContainer.Position, IconContainer.BackgroundTransparency, IconContainer.BorderSizePixel, IconContainer.ZIndex = UDim2.new(0, 46, 0, 46), UDim2.new(1, -62, 0, 16), 1, 0, 20000
-addCorner(IconContainer, UDim.new(0, 10)) addStroke(IconContainer)
+local IconContainer = Instance.new("Frame", ScreenGui) IconContainer.Size, IconContainer.Position, IconContainer.BackgroundTransparency, IconContainer.ZIndex = UDim2.new(0,46,0,46), UDim2.new(1,-62,0,16), 1, 10000010 C(IconContainer, UDim.new(0,10)) S(IconContainer)
+local IconBtn = Instance.new("TextButton", IconContainer) IconBtn.Size, IconBtn.BackgroundColor3, IconBtn.BackgroundTransparency, IconBtn.Text, IconBtn.TextSize, IconBtn.AutoButtonColor, IconBtn.ZIndex = UDim2.new(1,0,1,0), Color3.fromRGB(0,0,0), 0.5, "👻", 22, false, 10000011 Core.Icon = IconBtn C(IconBtn, UDim.new(0,10))
 
-local IconBtn = Instance.new("TextButton", IconContainer)
-IconBtn.Size, IconBtn.Position, IconBtn.BackgroundColor3, IconBtn.BackgroundTransparency, IconBtn.BorderSizePixel, IconBtn.Text, IconBtn.TextSize, IconBtn.AutoButtonColor, IconBtn.ZIndex = UDim2.new(1, 0, 1, 0), UDim2.new(0, 0, 0, 0), Color3.fromRGB(0, 0, 0), 0.5, 0, "👻", 22, false, 20001
-Core.Icon = IconBtn addCorner(IconBtn, UDim.new(0, 10))
+local activeTouch, dragStart, dragGuiStart, totalDist = nil, nil, nil, 0
+table.insert(Core.Connections, IconBtn.InputBegan:Connect(function(i) if (i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.UserInputType.MouseButton1) and not activeTouch then activeTouch, dragStart, dragGuiStart, totalDist = i, i.Position, IconContainer.Position, 0 end end))
+table.insert(Core.Connections, UIS.InputChanged:Connect(function(i) if activeTouch and i == activeTouch then local d = i.Position - dragStart totalDist = totalDist + d.Magnitude IconContainer.Position = UDim2.new(dragGuiStart.X.Scale, dragGuiStart.X.Offset + d.X, dragGuiStart.Y.Scale, dragGuiStart.Y.Offset + d.Y) end end))
+table.insert(Core.Connections, UIS.InputEnded:Connect(function(i) if activeTouch and i == activeTouch then if totalDist < 12 then MainMenu.Visible = not MainMenu.Visible end activeTouch, dragStart, totalDist = nil, nil, 0 end end))
 
-local activeTouchInput, dragStartPosition, dragStartGuiPosition, totalDistanceMoved = nil, nil, nil, 0
-Core:Connect(IconBtn.InputBegan, function(input) if (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1) and activeTouchInput == nil then activeTouchInput, dragStartPosition, dragStartGuiPosition, totalDistanceMoved = input, input.Position, IconContainer.Position, 0 end end)
-Core:Connect(UIS.InputChanged, function(input) if activeTouchInput and input == activeTouchInput then local delta = input.Position - dragStartPosition totalDistanceMoved = totalDistanceMoved + delta.Magnitude IconContainer.Position = UDim2.new(dragStartGuiPosition.X.Scale, dragStartGuiPosition.X.Offset + delta.X, dragStartGuiPosition.Y.Scale, dragStartGuiPosition.Y.Offset + delta.Y) end end)
-Core:Connect(UIS.InputEnded, function(input) if activeTouchInput and input == activeTouchInput then if totalDistanceMoved < 12 then MainMenu.Visible = not MainMenu.Visible end activeTouchInput, dragStartPosition, totalDistanceMoved = nil, nil, 0 end end)
---2/2--
+function Core:RegisterModule(m)
+    if type(m) ~= "table" or type(m.Name) ~= "string" or self.Modules[m.Name] then return end
+    local cat = m.Category or "General"
+    local cData = self.CategoryContainers[cat] or self.CategoryContainers["General"]
+    local inst = {Name=m.Name, Data=m, Enabled=false, Category=cat}
 
-function Core:RegisterModule(moduleData)
-    if type(moduleData) ~= "table" or type(moduleData.Name) ~= "string" then return nil end
-    local name = moduleData.Name if self.Modules[name] then return nil end
-    local cat = moduleData.Category or "General"
-    local containerData = self.CategoryContainers[cat] or self.CategoryContainers["General"]
-    local inst = { Name = name, Data = moduleData, Enabled = false, Category = cat }
+    local Row = Instance.new("Frame", cData.Scroll) Row.Name, Row.Size, Row.BackgroundColor3, Row.BackgroundTransparency, Row.ZIndex = "Function_"..m.Name, UDim2.new(1,-6,0,40), Color3.fromRGB(20,20,20), 0.35, 10000002 C(Row) S(Row)
+    local Lbl = Instance.new("TextLabel", Row) Lbl.Name, Lbl.Size, Lbl.Position, Lbl.BackgroundTransparency, Lbl.Text, Lbl.TextColor3, Lbl.TextSize, Lbl.Font, Lbl.TextXAlignment, Lbl.ZIndex = "Name", UDim2.new(1,-60,1,0), UDim2.new(0,10,0,0), 1, m.Name, Color3.fromRGB(255,255,255), 14, Enum.Font.Gotham, Enum.TextXAlignment.Left, 10000003
+    local Tgl = Instance.new("TextButton", Row) Tgl.Name, Tgl.Size, Tgl.Position, Tgl.BackgroundColor3, Tgl.BackgroundTransparency, Tgl.Text, Tgl.AutoButtonColor, Tgl.ZIndex = "Toggle", UDim2.new(0,38,0,20), UDim2.new(1,-48,0.5,-10), Color3.fromRGB(55,55,55), 0.15, "", false, 10000003 C(Tgl, UDim.new(1,0))
+    local Dot = Instance.new("Frame", Tgl) Dot.Name, Dot.Size, Dot.Position, Dot.BackgroundColor3, Dot.ZIndex = "Dot", UDim2.new(0,16,0,16), UDim2.new(0,2,0.5,-8), Color3.fromRGB(230,50,50), 10000004 C(Dot, UDim.new(1,0))
 
-    local Row = Instance.new("Frame", containerData.Scroll)
-    -- ตั้งชื่อให้ตรงกับโค้ดคำสั่งเดิมของคุณเป๊ะๆ เพื่อให้หาเจอผ่าน FindFirstChild
-    Row.Name = "Function_" .. name
-    Row.Size, Row.BackgroundColor3, Row.BackgroundTransparency, Row.BorderSizePixel, Row.ZIndex = UDim2.new(1, -6, 0, 40), Color3.fromRGB(20, 20, 20), 0.35, 0, 10002
-    inst.Row = Row addCorner(Row) addStroke(Row)
-
-    local NameLabel = Instance.new("TextLabel", Row)
-    NameLabel.Name = "Name"
-    NameLabel.Size, NameLabel.Position, NameLabel.BackgroundTransparency, NameLabel.Text, NameLabel.TextColor3, NameLabel.TextSize, NameLabel.Font, NameLabel.TextXAlignment, NameLabel.TextYAlignment, NameLabel.ZIndex = UDim2.new(1, -60, 1, 0), UDim2.new(0, 10, 0, 0), 1, name, Color3.fromRGB(255, 255, 255), 14, Enum.Font.Gotham, Enum.TextXAlignment.Left, Enum.TextYAlignment.Center, 10003
-
-    local Toggle = Instance.new("TextButton", Row)
-    Toggle.Name = "Toggle"
-    Toggle.Size, Toggle.Position, Toggle.BackgroundColor3, Toggle.BackgroundTransparency, Toggle.BorderSizePixel, Toggle.Text, Toggle.AutoButtonColor, Toggle.ZIndex = UDim2.new(0, 38, 0, 20), UDim2.new(1, -48, 0.5, -10), Color3.fromRGB(55, 55, 55), 0.15, 0, "", false, 10003
-    inst.Toggle = Toggle addCorner(Toggle, UDim.new(1, 0))
-
-    local Dot = Instance.new("Frame", Toggle)
-    Dot.Name = "Dot"
-    Dot.Size, Dot.Position, Dot.BackgroundColor3, Dot.BorderSizePixel, Dot.ZIndex = UDim2.new(0, 16, 0, 16), UDim2.new(0, 2, 0.5, -8), Color3.fromRGB(230, 50, 50), 0, 10004
-    inst.Dot = Dot addCorner(Dot, UDim.new(1, 0))
-
-    local function setEnabled(state)
-        inst.Enabled = state
-        Dot.Position = state and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
-        Dot.BackgroundColor3 = state and Color3.fromRGB(50, 230, 50) or Color3.fromRGB(230, 50, 50)
-        Toggle.BackgroundColor3 = state and Color3.fromRGB(70, 70, 70) or Color3.fromRGB(55, 55, 55)
-    end
-
-    inst.Connection = Toggle.Activated:Connect(function()
-        setEnabled(not inst.Enabled)
-        local cb = moduleData[inst.Enabled and "OnEnable" or "OnDisable"]
+    inst.Connection = Tgl.Activated:Connect(function()
+        inst.Enabled = not inst.Enabled
+        Dot.Position = inst.Enabled and UDim2.new(1,-18,0.5,-8) or UDim2.new(0,2,0.5,-8)
+        Dot.BackgroundColor3 = inst.Enabled and Color3.fromRGB(50,230,50) or Color3.fromRGB(230,50,50)
+        Tgl.BackgroundColor3 = inst.Enabled and Color3.fromRGB(70,70,70) or Color3.fromRGB(55,55,55)
+        local cb = m[inst.Enabled and "OnEnable" or "OnDisable"]
         if type(cb) == "function" then pcall(cb) end
     end)
     table.insert(self.Connections, inst.Connection)
-    self.Modules[name] = inst table.insert(self.ModuleInstances, inst)
-    task.defer(function() containerData.Scroll.CanvasSize = UDim2.new(0, 0, 0, math.max(containerData.Layout.AbsoluteContentSize.Y + 8, 0)) end)
+    self.Modules[m.Name] = inst table.insert(self.ModuleInstances, inst)
+    task.defer(function() cData.Scroll.CanvasSize = UDim2.new(0,0,0,math.max(cData.Layout.AbsoluteContentSize.Y+16,0)) end)
     return inst
-end
-
-function Core:UnregisterModule(name)
-    local inst = self.Modules[name] if not inst then return false end
-    if inst.Enabled then inst.Enabled = false pcall(inst.Data.OnDisable) end
-    if inst.Connection then pcall(function() inst.Connection:Disconnect() end) end
-    if inst.Row then inst.Row:Destroy() end
-    for i, m in ipairs(self.ModuleInstances) do if m == inst then table.remove(self.ModuleInstances, i) break end end
-    self.Modules[name] = nil return true
-end
-
-function Core:RegisterSetting(settingData)
-    if type(settingData) ~= "table" or type(settingData.Name) ~= "string" or type(settingData.Type) ~= "string" then return nil end
-    local sName = settingData.Name if self.Settings[sName] then return nil end
-    local inst = { Name = sName, Data = settingData }
-    local settingsContainer = self.CategoryContainers["Settings"]
-
-    local Row = Instance.new("Frame", settingsContainer.Scroll)
-    Row.Size, Row.BackgroundColor3, Row.BackgroundTransparency, Row.BorderSizePixel, Row.ZIndex = UDim2.new(1, -6, 0, 40), Color3.fromRGB(20, 20, 20), 0.35, 0, 10002
-    inst.Row = Row addCorner(Row) addStroke(Row)
-
-    local NameLabel = Instance.new("TextLabel", Row)
-    NameLabel.Size, NameLabel.Position, NameLabel.BackgroundTransparency, NameLabel.Text, NameLabel.TextColor3, NameLabel.TextSize, NameLabel.Font, NameLabel.TextXAlignment, NameLabel.TextYAlignment, NameLabel.ZIndex = UDim2.new(0, 120, 1, 0), UDim2.new(0, 10, 0, 0), 1, sName, Color3.fromRGB(255, 255, 255), 13, Enum.Font.Gotham, Enum.TextXAlignment.Left, Enum.TextYAlignment.Center, 10003
-
-    local sType = settingData.Type
-    if sType == "Toggle" then
-        local Toggle = Instance.new("TextButton", Row)
-        Toggle.Size, Toggle.Position, Toggle.BackgroundColor3, Toggle.BackgroundTransparency, Toggle.BorderSizePixel, Toggle.Text, Toggle.AutoButtonColor, Toggle.ZIndex = UDim2.new(0, 38, 0, 20), UDim2.new(1, -48, 0.5, -10), Color3.fromRGB(55, 55, 55), 0.15, 0, "", false, 10003
-        addCorner(Toggle, UDim.new(1, 0))
-        local Dot = Instance.new("Frame", Toggle)
-        Dot.Size, Dot.Position, Dot.BackgroundColor3, Dot.BorderSizePixel, Dot.ZIndex = UDim2.new(0, 16, 0, 16), UDim2.new(0, 2, 0.5, -8), Color3.fromRGB(230, 50, 50), 0, 10004
-        addCorner(Dot, UDim.new(1, 0))
-        local val = settingData.Default == true
-        if val then Dot.Position, Dot.BackgroundColor3, Toggle.BackgroundColor3 = UDim2.new(1, -18, 0.5, -8), Color3.fromRGB(50, 230, 50), Color3.fromRGB(70, 70, 70) end
-        inst.Connection = Toggle.Activated:Connect(function()
-            val = not val
-            Dot.Position = val and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
-            Dot.BackgroundColor3 = val and Color3.fromRGB(50, 230, 50) or Color3.fromRGB(230, 50, 50)
-            Toggle.BackgroundColor3 = val and Color3.fromRGB(70, 70, 70) or Color3.fromRGB(55, 55, 55)
-            if type(settingData.Callback) == "function" then pcall(function() settingData.Callback(val) end) end
-        end)
-        table.insert(Core.Connections, inst.Connection)
-
-    elseif sType == "Slider" or sType == "VerticalSlider" then
-        local min, max, step = settingData.Min or 0, settingData.Max or 100, settingData.Step or 1
-        local val = settingData.Default or min
-        local ValLabel = Instance.new("TextLabel", Row)
-        ValLabel.Size, ValLabel.Position, ValLabel.BackgroundTransparency, ValLabel.Text, ValLabel.TextColor3, ValLabel.TextSize, ValLabel.Font, ValLabel.TextXAlignment, ValLabel.TextYAlignment, ValLabel.ZIndex = UDim2.new(0, 80, 1, 0), UDim2.new(1, -90, 0, 0), 1, tostring(val), Color3.fromRGB(200, 200, 200), 12, Enum.Font.Gotham, Enum.TextXAlignment.Right, Enum.TextYAlignment.Center, 10003
-        local SliderBar = Instance.new("Frame", Row)
-        SliderBar.Size, SliderBar.Position, SliderBar.BackgroundColor3, SliderBar.BackgroundTransparency, SliderBar.BorderSizePixel, SliderBar.ZIndex = UDim2.new(0, 90, 0, 6), UDim2.new(1, -195, 0.5, -3), Color3.fromRGB(55, 55, 55), 0.2, 0, 10003
-        addCorner(SliderBar, UDim.new(1, 0))
-        local FillBar = Instance.new("Frame", SliderBar)
-        FillBar.Size, FillBar.BackgroundColor3, FillBar.BorderSizePixel, FillBar.ZIndex = UDim2.new(math.clamp((val - min) / (max - min), 0, 1), 0, 1, 0), Color3.fromRGB(230, 50, 50), 0, 10004
-        addCorner(FillBar, UDim.new(1, 0))
-
-        local dragging = false
-        local function updateSlider(input)
-            local posRatio = math.clamp((input.Position.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X, 0, 1)
-            val = math.clamp(math.floor((min + (max - min) * posRatio) / step + 0.5) * step, min, max)
-            FillBar.Size, ValLabel.Text = UDim2.new((val - min) / (max - min), 0, 1, 0), tostring(val)
-            if type(settingData.Callback) == "function" then pcall(function() settingData.Callback(val) end) end
-        end
-        table.insert(Core.Connections, SliderBar.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = true updateSlider(input) end end))
-        table.insert(Core.Connections, UIS.InputChanged:Connect(function(input) if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then updateSlider(input) end end))
-        table.insert(Core.Connections, UIS.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = false end end))
-
-    elseif sType == "Input" then
-        local TextBox = Instance.new("TextBox", Row)
-        TextBox.Size, TextBox.Position, TextBox.BackgroundColor3, TextBox.BackgroundTransparency, TextBox.BorderSizePixel, TextBox.Text, TextBox.TextColor3, TextBox.TextSize, TextBox.Font, TextBox.ZIndex = UDim2.new(0, 90, 0, 26), UDim2.new(1, -100, 0.5, -13), Color3.fromRGB(45, 45, 45), 0.1, 0, tostring(settingData.Default or ""), Color3.fromRGB(255, 255, 255), 12, Enum.Font.Gotham, 10003
-        addCorner(TextBox, UDim.new(0, 6)) addStroke(TextBox, Color3.fromRGB(100, 100, 100), 1)
-        inst.Connection = TextBox.FocusLost:Connect(function() if type(settingData.Callback) == "function" then pcall(function() settingData.Callback(TextBox.Text) end) end end)
-        table.insert(Core.Connections, inst.Connection)
-
-    elseif sType == "Button" then
-        NameLabel.Size = UDim2.new(1, -20, 1, 0)
-        local Btn = Instance.new("TextButton", Row)
-        Btn.Size, Btn.Position, Btn.BackgroundColor3, Btn.BackgroundTransparency, Btn.BorderSizePixel, Btn.Text, Btn.TextColor3, Btn.TextSize,Btn.Font, Btn.AutoButtonColor, Btn.ZIndex = UDim2.new(0, 80, 0, 26), UDim2.new(1, -90, 0.5, -13), Color3.fromRGB(70, 70, 70), 0.1, 0, settingData.ButtonText or "Click", Color3.fromRGB(255, 255, 255), 12, Enum.Font.GothamBold, false, 10003
-        addCorner(Btn, UDim.new(0, 6))
-        inst.Connection = Btn.Activated:Connect(function() if type(settingData.Callback) == "function" then pcall(function() settingData.Callback() end) end end)
-        table.insert(Core.Connections, inst.Connection)
-
-    elseif sType == "Dropdown" then
-        local DropBtn = Instance.new("TextButton", Row)
-        DropBtn.Size, DropBtn.Position, DropBtn.BackgroundColor3, DropBtn.BackgroundTransparency, DropBtn.BorderSizePixel, DropBtn.Text, DropBtn.TextColor3, DropBtn.TextSize, DropBtn.Font, DropBtn.AutoButtonColor, DropBtn.ZIndex = UDim2.new(0, 90, 0, 26), UDim2.new(1, -100, 0.5, -13), Color3.fromRGB(45, 45, 45), 0.1, 0, tostring(settingData.Default or "Select"), Color3.fromRGB(255, 255, 255), 11, Enum.Font.Gotham, false, 10003
-        addCorner(DropBtn, UDim.new(0, 6))
-        local options, currentIndex = settingData.Options or {}, 1
-        for i, opt in ipairs(options) do if opt == settingData.Default then currentIndex = i break end end
-        inst.Connection = DropBtn.Activated:Connect(function()
-            if #options == 0 then return end
-            currentIndex = (currentIndex % #options) + 1
-            local selected = options[currentIndex]
-            DropBtn.Text = tostring(selected)
-            if type(settingData.Callback) == "function" then pcall(function() settingData.Callback(selected) end) end
-        end)
-        table.insert(Core.Connections, inst.Connection)
-    end
-
-    self.Settings[sName] = inst table.insert(self.SettingInstances, inst)
-    task.defer(function() settingsContainer.Scroll.CanvasSize = UDim2.new(0, 0, 0, math.max(settingsContainer.Layout.AbsoluteContentSize.Y + 8, 0)) end)
-    return inst
-end
-
-function Core:UnregisterSetting(sName)
-    local inst = self.Settings[sName] if not inst then return false end
-    if inst.Connection then pcall(function() inst.Connection:Disconnect() end) end
-    if inst.Row then inst.Row:Destroy() end
-    for i, s in ipairs(self.SettingInstances) do if s == inst then table.remove(self.SettingInstances, i) break end end
-    self.Settings[sName] = nil return true
 end
 
 function Core:Destroy()
     for _, inst in ipairs(self.ModuleInstances) do if inst.Enabled then pcall(inst.Data.OnDisable) end end
     for _, conn in ipairs(self.Connections) do pcall(function() if conn.Connected then conn:Disconnect() end end) end
-    self.Connections = {}
     if self.ScreenGui then pcall(function() self.ScreenGui:Destroy() end) end
-    self.Modules, self.ModuleInstances, self.Settings, self.SettingInstances, self.CategoryContainers = {}, {}, {}, {}, {}
-    self.ScreenGui, self.MainMenu, Core.Icon, Core.ScrollContainer, Core.SettingsScrollContainer = nil, nil, nil, nil, nil
+    self.Modules, self.ModuleInstances, self.CategoryContainers, self.Connections = {}, {}, {}, {}
     if _G.KrizHubCore == self then _G.KrizHubCore = nil end
 end
 
-print("[KRIZ HUB] Core UI loaded successfully.")
---111--
-
-
-local P, RS, Cam = game:GetService("Players"), game:GetService("RunService"), workspace.CurrentCamera
-local lp = P.LocalPlayer
-local function GetCol(p)
-    local c, b = p.Character, p:FindFirstChild("Backpack")
-    if c then
-        if c:FindFirstChild("Knife") or (b and b:FindFirstChild("Knife")) then return Color3.new(1,0,0) end
-        if c:FindFirstChild("Gun") or (b and b:FindFirstChild("Gun")) then return Color3.new(0,0,1) end
-    end
-    return (p.Team and p.Team ~= lp.Team) and p.TeamColor.Color or Color3.new(1,1,1)
-end
-
---------------------------------------------------
--- MODULE: ESP (บ็อกซ์ + เลือด + ชื่อ + ระยะทาง)
---------------------------------------------------
-Core:RegisterModule({
-    Name = "ESP / มองทะลุ",
-    Category = "Settings",
-    OnEnable = function()
-        getgenv().KrizEspActive = true
-        local dList = {}
-        local function CreateESP(p)
-            if p == lp then return end
-            local d = {T=Drawing.new("Line"), B=Drawing.new("Line"), L=Drawing.new("Line"), R=Drawing.new("Line"), H=Drawing.new("Line"), N=Drawing.new("Text"), D=Drawing.new("Text")}
-            for _, v in pairs(d) do table.insert(dList, v); v.Visible = false; if v.Center ~= nil then v.Center = true; v.Outline = true; v.OutlineColor = Color3.new(0,0,0); v.Transparency = 1; v.Font = 0; v.Size = 13 end end
-            local conn
-            conn = RS.RenderStepped:Connect(function()
-                if not getgenv().KrizEspActive then
-                    for _, v in pairs(d) do v.Visible = false end
-                    if conn then conn:Disconnect() end
-                    return
-                end
-                local c, hum, hrp = p.Character, p.Character and p.Character:FindFirstChildOfClass("Humanoid"), p.Character and p.Character:FindFirstChild("HumanoidRootPart")
-                if hrp and hum and hum.Health > 0 then
-                    local pos, vis = Cam:WorldToViewportPoint(hrp.Position)
-                    if vis then
-                        local dist = (hrp.Position - Cam.CFrame.Position).Magnitude
-                        local head = Cam:WorldToViewportPoint(c.Head.Position + Vector3.new(0,0.5,0))
-                        local leg = Cam:WorldToViewportPoint(hrp.Position - Vector3.new(0,3,0))
-                        local h = math.abs(head.Y - leg.Y)
-                        local w = h / 1.5
-                        local clr = GetCol(p)
-                        local thk, trans = math.clamp(1.2 * (40/dist), 0.5, 1.2), math.clamp(70/dist, 0.4, 0.9)
-                        d.T.From, d.T.To = Vector2.new(pos.X-w/2, pos.Y-h/2), Vector2.new(pos.X+w/2, pos.Y-h/2)
-                        d.B.From, d.B.To = Vector2.new(pos.X-w/2, pos.Y+h/2), Vector2.new(pos.X+w/2, pos.Y+h/2)
-                        d.L.From, d.L.To = Vector2.new(pos.X-w/2, pos.Y-h/2), Vector2.new(pos.X-w/2, pos.Y+h/2)
-                        d.R.From, d.R.To = Vector2.new(pos.X+w/2, pos.Y-h/2), Vector2.new(pos.X+w/2, pos.Y+h/2)
-                        for _, l in pairs({d.T, d.B, d.L, d.R}) do l.Thickness, l.Transparency, l.Color, l.Visible = thk, trans, clr, true end
-                        local hThk, barX = math.clamp(3 * (40/dist), 1.5, 2.5), pos.X-w/2-5
-                        d.H.From, d.H.To = Vector2.new(barX, pos.Y+h/2), Vector2.new(barX, pos.Y+h/2-(h*(hum.Health/hum.MaxHealth)))
-                        d.H.Thickness, d.H.Color, d.H.Transparency, d.H.Visible = hThk, Color3.fromHSV(hum.Health/hum.MaxHealth*0.3, 1, 1), trans, true
-                        d.N.Position, d.N.Text, d.N.Color, d.N.Visible = Vector2.new(pos.X, pos.Y-h/2-16), p.Name, clr, true
-                        d.D.Position, d.D.Text, d.D.Color, d.D.Visible = Vector2.new(pos.X, pos.Y+h/2+2), math.floor(dist).."m", Color3.new(1,1,1), true
-                    else 
-                        for _, v in pairs(d) do v.Visible = false end 
-                    end
-                else
-                    for _, v in pairs(d) do v.Visible = false end
-                    if not p.Parent then conn:Disconnect() end
-                end
-            end)
-        end
-        for _, p in pairs(P:GetPlayers()) do CreateESP(p) end
-        local addConn = P.PlayerAdded:Connect(CreateESP)
-        getgenv().KrizEspCleanup = function()
-            if addConn then addConn:Disconnect() end
-            for _, obj in ipairs(dList) do pcall(function() obj:Remove() end) end
-        end
-    end,
-    OnDisable = function()
-        getgenv().KrizEspActive = false
-        if getgenv().KrizEspCleanup then pcall(getgenv().KrizEspCleanup) end
-    end
-})
-
---------------------------------------------------
--- MODULE: ESP HIGHLIGHT (ไฮไลท์ตัวละคร + แก้ไขระบบปิดและเคลียร์ข้อมูล)
---------------------------------------------------
-Core:RegisterModule({
-    Name = "ESP Highlight / ไฮไลท์",
-    Category = "Settings",
-    OnEnable = function()
-        getgenv().KrizHighlightActive = true
-        local highlights, pConns = {}, {}
-        local addConn, remConn, updConn
-        local function RemoveHL(p)
-            if highlights[p] then pcall(function() highlights[p]:Destroy() end); highlights[p] = nil end
-        end
-        local function SetupPlayer(p)
-            if p == lp then return end
-            local function OnChar(char)
-                if not getgenv().KrizHighlightActive then return end
-                RemoveHL(p)
-                if char then
-                    local hl = Instance.new("Highlight")
-                    hl.Name, hl.Adornee, hl.FillTransparency, hl.OutlineTransparency, hl.Parent = "KrizHighlight_"..p.Name, char, 0.5, 0, char
-                    highlights[p] = hl
-                end
-            end
-            if p.Character and getgenv().KrizHighlightActive then task.spawn(function() OnChar(p.Character) end) end
-            pConns[p] = {CharAdded = p.CharacterAdded:Connect(OnChar)}
-        end
-        local function CleanupPlayer(p)
-            RemoveHL(p)
-            if pConns[p] then if pConns[p].CharAdded then pcall(function() pConns[p].CharAdded:Disconnect() end) end; pConns[p] = nil end
-        end
-        for _, p in pairs(P:GetPlayers()) do SetupPlayer(p) end
-        addConn, remConn = P.PlayerAdded:Connect(SetupPlayer), P.PlayerRemoving:Connect(CleanupPlayer)
-        updConn = RS.RenderStepped:Connect(function()
-            if not getgenv().KrizHighlightActive then return end
-            for p, hl in pairs(highlights) do
-                if hl and hl.Parent then
-                    local color = GetCol(p)
-                    hl.FillColor, hl.OutlineColor = color, color
-                end
-            end
-        end)
-        getgenv().KrizHighlightCleanup = function()
-            if updConn then pcall(function() updConn:Disconnect() end); updConn = nil end
-            if addConn then pcall(function() addConn:Disconnect() end); addConn = nil end
-            if remConn then pcall(function() remConn:Disconnect() end); remConn = nil end
-            for _, p in ipairs(P:GetPlayers()) do CleanupPlayer(p) end
-            highlights, pConns = {}, {}
-        end
-    end,
-    OnDisable = function()
-        getgenv().KrizHighlightActive = false
-        if getgenv().KrizHighlightCleanup then pcall(getgenv().KrizHighlightCleanup) end
-    end
-})
-
---------------------------------------------------
--- MODULE: ESP TRACER (เส้นจากด้านบนหน้าจอ -> ผู้เล่น)
---------------------------------------------------
-Core:RegisterModule({
-    Name = "ESP Tracer / เส้นจากด้านบน",
-    Category = "Settings",
-    OnEnable = function()
-        getgenv().KrizTracerTopActive = true
-        local tracers, pConns = {}, {}
-        local addConn, remConn, updConn
-        local function RemoveTracer(p)
-            if tracers[p] then pcall(function() tracers[p]:Remove() end); tracers[p] = nil end
-        end
-        local function SetupPlayer(p)
-            if p == lp then return end
-            local function OnChar(char)
-                if not getgenv().KrizTracerTopActive then return end
-                RemoveTracer(p)
-                local line = Drawing.new("Line")
-                line.Visible, line.Thickness, line.Transparency = false, 1.5, 0.8
-                tracers[p] = line
-            end
-            if p.Character and getgenv().KrizTracerTopActive then task.spawn(function() OnChar(p.Character) end) end
-            pConns[p] = {CharAdded = p.CharacterAdded:Connect(OnChar)}
-        end
-        local function CleanupPlayer(p)
-            RemoveTracer(p)
-            if pConns[p] then if pConns[p].CharAdded then pcall(function() pConns[p].CharAdded:Disconnect() end) end; pConns[p] = nil end
-        end
-        for _, p in pairs(P:GetPlayers()) do SetupPlayer(p) end
-        addConn, remConn = P.PlayerAdded:Connect(SetupPlayer), P.PlayerRemoving:Connect(CleanupPlayer)
-        updConn = RS.RenderStepped:Connect(function()
-            if not getgenv().KrizTracerTopActive then return end
-            local origin = Vector2.new(Cam.ViewportSize.X / 2, 0)
-            for p, line in pairs(tracers) do
-                local hrp, hum = p.Character and p.Character:FindFirstChild("HumanoidRootPart"), p.Character and p.Character:FindFirstChildOfClass("Humanoid")
-                if hrp and hum and hum.Health > 0 then
-                    local screenPos, onScreen = Cam:WorldToViewportPoint(hrp.Position)
-                    if onScreen then
-                        line.From, line.To, line.Color, line.Visible = origin, Vector2.new(screenPos.X, screenPos.Y), GetCol(p), true
-                    else
-                        line.Visible = false
-                    end
-                else
-                    line.Visible = false
-                end
-            end
-        end)
-        getgenv().KrizTracerTopCleanup = function()
-            if updConn then pcall(function() updConn:Disconnect() end); updConn = nil end
-            if addConn then pcall(function() addConn:Disconnect() end); addConn = nil end
-            if remConn then pcall(function() remConn:Disconnect() end); remConn = nil end
-            for _, p in ipairs(P:GetPlayers()) do CleanupPlayer(p) end
-            tracers, pConns = {}, {}
-        end
-    end,
-    OnDisable = function()
-        getgenv().KrizTracerTopActive = false
-        if getgenv().KrizTracerTopCleanup then pcall(getgenv().KrizTracerTopCleanup) end
-    end
-})
-
-
-
---------------------------------------------------
--- MODULE: NPC HIGHLIGHT ESP + NAME (สำหรับ KRIZ HUB)
---------------------------------------------------
-local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
-
-Core:RegisterModule({
-    Name = "ESP NPC Highlight / ไฮไลท์ NPC",
-    Category = "Settings",
-    OnEnable = function()
-        getgenv().KrizNPCHighlightActive = true
-        local highlights = {}
-        local nameTags = {}
-        local trackedConnections = {}
-
-        local function removeNPC(model)
-            if highlights[model] then
-                pcall(function() highlights[model]:Destroy() end)
-                highlights[model] = nil
-            end
-            if nameTags[model] then
-                pcall(function() nameTags[model]:Destroy() end)
-                nameTags[model] = nil
-            end
-            if trackedConnections[model] then
-                for _, conn in pairs(trackedConnections[model]) do
-                    pcall(function() conn:Disconnect() end)
-                end
-                trackedConnections[model] = nil
-            end
-        end
-
-        local function setupNPC(model)
-            if not model:IsA("Model") then return end
-            -- กรองผู้เล่นจริงออก ให้ทำงานกับ NPC เท่านั้น
-            if Players:GetPlayerFromCharacter(model) then return end
-            
-            local humanoid = model:FindFirstChildOfClass("Humanoid")
-            local head = model:FindFirstChild("Head")
-            local hrp = model:FindFirstChild("HumanoidRootPart")
-            
-            if not humanoid or not head or not hrp then return end
-            if highlights[model] then return end -- ป้องกันการสร้างซ้ำ
-
-            -- 1. สร้าง Highlight สีเขียว
-            local hl = Instance.new("Highlight")
-            hl.Name = "KrizNPCHighlight"
-            hl.Adornee = model
-            hl.FillColor = Color3.fromRGB(0, 255, 0)
-            hl.OutlineColor = Color3.fromRGB(0, 255, 0)
-            hl.FillTransparency = 0.5
-            hl.OutlineTransparency = 0
-            hl.Parent = model
-            highlights[model] = hl
-
-            -- 2. สร้าง BillboardGui แสดงชื่อ NPC ลอยบนหัว
-            local billboard = Instance.new("BillboardGui")
-            billboard.Name = "KrizNPCNameTag"
-            billboard.Adornee = head
-            billboard.Size = UDim2.new(0, 150, 0, 30)
-            billboard.StudsOffset = Vector3.new(0, 2.5, 0)
-            billboard.AlwaysOnTop = true
-
-            local textLabel = Instance.new("TextLabel", billboard)
-            textLabel.Size = UDim2.new(1, 0, 1, 0)
-            textLabel.BackgroundTransparency = 1
-            textLabel.Text = "NPC : " .. (model.Name ~= "" and model.Name or "Unknown")
-            textLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
-            textLabel.TextSize = 13
-            textLabel.Font = Enum.Font.GothamBold
-            textLabel.TextStrokeTransparency = 0.2
-            textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-
-            billboard.Parent = model
-            nameTags[model] = billboard
-
-            -- จัดการเมื่อ NPC ถูกลบหรือออกจากแมพ
-            local destroyConn = model.Destroying:Connect(function()
-                removeNPC(model)
-            end)
-
-            trackedConnections[model] = {Destroying = destroyConn}
-        end
-
-        -- สแกนหา NPC ที่มีอยู่แล้วใน Workspace
-        for _, obj in ipairs(Workspace:GetDescendants()) do
-            if obj:IsA("Model") then
-                setupNPC(obj)
-            end
-        end
-
-        -- ตรวจจับ NPC ที่เกิดเพิ่มภายหลัง
-        local addConn = Workspace.DescendantAdded:Connect(function(obj)
-            if obj:IsA("Model") and getgenv().KrizNPCHighlightActive then
-                task.spawn(function()
-                    task.wait(0.2)
-                    setupNPC(obj)
-                end)
-            end
-        end)
-
-        -- ฟังก์ชันเคลียร์ข้อมูลและลบ Highlight + NameTag ทั้งหมดเมื่อปิดโมดูล
-        getgenv().KrizNPCHighlightCleanup = function()
-            if addConn then pcall(function() addConn:Disconnect() end) end
-            for model, _ in pairs(highlights) do
-                removeNPC(model)
-            end
-            highlights = {}
-            nameTags = {}
-            trackedConnections = {}
-        end
-    end,
-    OnDisable = function()
-        getgenv().KrizNPCHighlightActive = false
-        if getgenv().KrizNPCHighlightCleanup then 
-            pcall(getgenv().KrizNPCHighlightCleanup) 
-        end
-    end
-})
+print("[KRIZ HUB] Core UI loaded.")
 --221--
 
 
@@ -2966,595 +2491,304 @@ Core:RegisterModule({
         if getgenv().KrizExecutionerCleanup then pcall(getgenv().KrizExecutionerCleanup) end
     end
 })
---552--
+--ESP 1--
 
+if not _G.KrizHubCore then return end
+local Core, P, RS, Cam, LP = _G.KrizHubCore, game:GetService("Players"), game:GetService("RunService"), workspace.CurrentCamera, game:GetService("Players").LocalPlayer
 
---------------------------------------------------
--- MODULE: ESP SKELETON / โครงกระดูก (หมวด Settings)
---------------------------------------------------
-local P, RS, Cam, lp = game:GetService("Players"), game:GetService("RunService"), workspace.CurrentCamera, game:GetService("Players").LocalPlayer
+-- 1. ESP / มองทะลุ
+Core:RegisterModule({Name="ESP / มองทะลุ", Category="Visual", OnEnable=function()
+    getgenv().KEsp = true local d = {}
+    local function M(p)
+        if p == LP then return end
+        local o = {T=Drawing.new("Line"),B=Drawing.new("Line"),L=Drawing.new("Line"),R=Drawing.new("Line"),H=Drawing.new("Line"),N=Drawing.new("Text"),D=Drawing.new("Text")}
+        for _,v in pairs(o) do table.insert(d,v) v.Visible,v.Center,v.Outline,v.OutlineColor,v.Transparency,v.Size = false,true,true,Color3.new(),1,13 end
+        local cn; cn = RS.RenderStepped:Connect(function()
+            if not getgenv().KEsp then for _,v in pairs(o) do v.Visible=false end cn:Disconnect() return end
+            local c,hum,hrp = p.Character, p.Character and p.Character:FindFirstChildOfClass("Humanoid"), p.Character and p.Character:FindFirstChild("HumanoidRootPart")
+            if hrp and hum and hum.Health>0 then
+                local pos,vis = Cam:WorldToViewportPoint(hrp.Position)
+                if vis then
+                    local dist = (hrp.Position-Cam.CFrame.Position).Magnitude
+                    local h = math.abs(Cam:WorldToViewportPoint(c.Head.Position+Vector3.new(0,.5,0)).Y - Cam:WorldToViewportPoint(hrp.Position-Vector3.new(0,3,0)).Y)
+                    local w,t,tr = h/1.5, math.clamp(1.2*(40/dist),.5,1.2), math.clamp(70/dist,.4,.9)
+                    local clr = (p.Team and p.Team ~= LP.Team) and p.TeamColor.Color or Color3.new(1,1,1)
+                    o.T.From,o.T.To,o.B.From,o.B.To = Vector2.new(pos.X-w/2,pos.Y-h/2),Vector2.new(pos.X+w/2,pos.Y-h/2),Vector2.new(pos.X-w/2,pos.Y+h/2),Vector2.new(pos.X+w/2,pos.Y+h/2)
+                    o.L.From,o.L.To,o.R.From,o.R.To = Vector2.new(pos.X-w/2,pos.Y-h/2),Vector2.new(pos.X-w/2,pos.Y+h/2),Vector2.new(pos.X+w/2,pos.Y-h/2),Vector2.new(pos.X+w/2,pos.Y+h/2)
+                    for _,l in pairs({o.T,o.B,o.L,o.R}) do l.Thickness,l.Transparency,l.Color,l.Visible = t,tr,clr,true end
+                    local bX = pos.X-w/2-5
+                    o.H.From,o.H.To,o.H.Thickness,o.H.Color,o.H.Transparency,o.H.Visible = Vector2.new(bX,pos.Y+h/2),Vector2.new(bX,pos.Y+h/2-(h*(hum.Health/hum.MaxHealth))),math.clamp(3*(40/dist),1.5,2.5),Color3.fromHSV(hum.Health/hum.MaxHealth*.3,1,1),tr,true
+                    o.N.Position,o.N.Text,o.N.Color,o.N.Visible = Vector2.new(pos.X,pos.Y-h/2-16),p.Name,clr,true
+                    o.D.Position,o.D.Text,o.D.Color,o.D.Visible = Vector2.new(pos.X,pos.Y+h/2+2),math.floor(dist).."m",Color3.new(1,1,1),true
+                else for _,v in pairs(o) do v.Visible=false end end
+            else for _,v in pairs(o) do v.Visible=false end if not p.Parent then cn:Disconnect() end end
+        end)
+    end
+    for _,p in pairs(P:GetPlayers()) do M(p) end local a = P.PlayerAdded:Connect(M)
+    getgenv().KCE = function() a:Disconnect() for _,v in ipairs(d) do pcall(function() v:Remove() end) end end
+end, OnDisable=function() getgenv().KEsp=false if getgenv().KCE then pcall(getgenv().KCE) end end})
 
-local function GetCol(p)
-    local c, b = p.Character, p:FindFirstChild("Backpack")
-    if c and (c:FindFirstChild("Knife") or (b and b:FindFirstChild("Knife"))) then return Color3.new(1,0,0) end
-    if c and (c:FindFirstChild("Gun") or (b and b:FindFirstChild("Gun"))) then return Color3.new(0,0,1) end
-    return (p.Team and p.Team ~= lp.Team) and p.TeamColor.Color or Color3.new(1,1,1)
-end
+-- 2. ESP Tracer / เส้นบน
+Core:RegisterModule({Name="ESP Tracer / เส้นบน", Category="Visual", OnEnable=function()
+    getgenv().KTT = true local tr, pc = {}, {}
+    local function S(p)
+        if p == LP then return end
+        local l = Drawing.new("Line") l.Visible,l.Thickness,l.Transparency=false,1.5,.8 tr[p]=l
+        pc[p] = p.CharacterAdded:Connect(function() tr[p]=l end)
+    end
+    for _,p in pairs(P:GetPlayers()) do S(p) end
+    local a,r = P.PlayerAdded:Connect(S), P.PlayerRemoving:Connect(function(p) if tr[p] then tr[p]:Remove() tr[p]=nil end end)
+    local u = RS.RenderStepped:Connect(function()
+        if not getgenv().KTT then return end local orig = Vector2.new(Cam.ViewportSize.X/2, 0)
+        for p,l in pairs(tr) do
+            local hrp,hum = p.Character and p.Character:FindFirstChild("HumanoidRootPart"), p.Character and p.Character:FindFirstChildOfClass("Humanoid")
+            if hrp and hum and hum.Health>0 then
+                local pos, vis = Cam:WorldToViewportPoint(hrp.Position)
+                local clr = (p.Team and p.Team ~= LP.Team) and p.TeamColor.Color or Color3.new(1,1,1)
+                if vis then l.From,l.To,l.Color,l.Visible = orig,Vector2.new(pos.X,pos.Y),clr,true else l.Visible=false end
+            else l.Visible=false end
+        end
+    end)
+    getgenv().KTTC = function() u:Disconnect() a:Disconnect() r:Disconnect() for _,l in pairs(tr) do l:Remove() end end
+end, OnDisable=function() getgenv().KTT=false if getgenv().KTTC then pcall(getgenv().KTTC) end end})
 
-Core:RegisterModule({
-    Name = "ESP Skeleton / โครงกระดูก",
-    Category = "Settings",
-    OnEnable = function()
-        getgenv().KrizSkeletonActive = true
-        local dList = {}
+-- 3. ESP NPC Highlight / ไฮไลท์ NPC
+Core:RegisterModule({Name="ESP NPC Highlight / ไฮไลท์ NPC", Category="Visual", OnEnable=function()
+    getgenv().KNPC = true local hl, tag = {}, {}
+    local function SN(m)
+        if not m:IsA("Model") or P:GetPlayerFromCharacter(m) or hl[m] then return end
+        local hum, head = m:FindFirstChildOfClass("Humanoid"), m:FindFirstChild("Head")
+        if not hum or not head then return end
+        local h = Instance.new("Highlight") h.Adornee,h.FillColor,h.OutlineColor,h.FillTransparency,h.Parent = m,Color3.fromRGB(0,255,0),Color3.fromRGB(0,255,0),.5,m hl[m]=h
+        local b = Instance.new("BillboardGui") b.Adornee,b.Size,b.StudsOffset,b.AlwaysOnTop = head,UDim2.new(0,150,0,30),Vector3.new(0,2.5,0),true
+        local t = Instance.new("TextLabel",b) t.Size,t.BackgroundTransparency,t.Text,t.TextColor3,t.TextSize,t.Font = UDim2.new(1,0,1,0),1,"NPC : "..(m.Name~="" and m.Name or "Unknown"),Color3.fromRGB(0,255,0),13,Enum.Font.GothamBold b.Parent=m tag[m]=b
+    end
+    for _,o in ipairs(workspace:GetDescendants()) do if o:IsA("Model") then SN(o) end end
+    local a = workspace.DescendantAdded:Connect(function(o) if o:IsA("Model") and getgenv().KNPC then task.delay(.2,function() SN(o) end) end end)
+    getgenv().KNPCC = function() a:Disconnect() for m,_ in pairs(hl) do if hl[m] then hl[m]:Destroy() end if tag[m] then tag[m]:Destroy() end end hl,tag={},{} end
+end, OnDisable=function() getgenv().KNPC=false if getgenv().KNPCC then pcall(getgenv().KNPCC) end end})
 
-        local function CreateSkeleton(p)
-            if p == lp then return end
-            local lines = {
-                Spine = Drawing.new("Line"), Chest = Drawing.new("Line"),
-                LArm1 = Drawing.new("Line"), LArm2 = Drawing.new("Line"),
-                RArm1 = Drawing.new("Line"), RArm2 = Drawing.new("Line"),
-                LLeg1 = Drawing.new("Line"), LLeg2 = Drawing.new("Line"),
-                RLeg1 = Drawing.new("Line"), RLeg2 = Drawing.new("Line")
-            }
-            for _, l in pairs(lines) do
-                table.insert(dList, l)
-                l.Visible, l.Thickness, l.Transparency, l.Outline, l.OutlineColor = false, 1.2, 0.8, true, Color3.new(0, 0, 0)
-            end
-
-            local conn
-            conn = RS.RenderStepped:Connect(function()
-                if not getgenv().KrizSkeletonActive then
-                    for _, l in pairs(lines) do l.Visible = false end
-                    if conn then conn:Disconnect() end
-                    return
-                end
-
-                local c, hum, hrp = p.Character, p.Character and p.Character:FindFirstChildOfClass("Humanoid"), p.Character and p.Character:FindFirstChild("HumanoidRootPart")
-                if c and hum and hum.Health > 0 and hrp then
-                    local head = c:FindFirstChild("Head")
-                    if head then
-                        local pHead, visH = Cam:WorldToViewportPoint(head.Position)
-                        local clr = GetCol(p)
-                        if visH then
-                            if hum.RigType == Enum.HumanoidRigType.R6 then
-                                local torso = c:FindFirstChild("Torso")
-                                if torso then
-                                    local pTorso, visT = Cam:WorldToViewportPoint(torso.Position)
-                                    local tPos = Vector2.new(pTorso.X, pTorso.Y)
-                                    lines.Chest.Visible, lines.LArm2.Visible, lines.RArm2.Visible, lines.LLeg2.Visible, lines.RLeg2.Visible = false, false, false, false, false
-                                    if visT then
-                                        lines.Spine.From, lines.Spine.To, lines.Spine.Color, lines.Spine.Visible = Vector2.new(pHead.X, pHead.Y), tPos, clr, true
-                                        local function setR6(line, partName)
-                                            local part = c:FindFirstChild(partName)
-                                            if part then
-                                                local pos, vis = Cam:WorldToViewportPoint(part.Position)
-                                                if vis then line.From, line.To, line.Color, line.Visible = tPos, Vector2.new(pos.X, pos.Y), clr, true else line.Visible = false end
-                                            else line.Visible = false end
-                                        end
-                                        setR6(lines.LArm1, "Left Arm") setR6(lines.RArm1, "Right Arm")
-                                        setR6(lines.LLeg1, "Left Leg") setR6(lines.RLeg1, "Right Leg")
-                                    else
-                                        for _, l in pairs(lines) do l.Visible = false end
-                                    end
-                                end
-                            elseif hum.RigType == Enum.HumanoidRigType.R15 then
-                                local uTorso, lTorso = c:FindFirstChild("UpperTorso"), c:FindFirstChild("LowerTorso")
-                                local lUA, lLA = c:FindFirstChild("LeftUpperArm"), c:FindFirstChild("LeftLowerArm")
-                                local rUA, rLA = c:FindFirstChild("RightUpperArm"), c:FindFirstChild("RightLowerArm")
-                                local lUL, lLL = c:FindFirstChild("LeftUpperLeg"), c:FindFirstChild("LeftLowerLeg")
-                                local rUL, rLL = c:FindFirstChild("RightUpperLeg"), c:FindFirstChild("RightLowerLeg") or c:FindFirstChild("RightFoot")
-
-                                if uTorso and lTorso then
-                                    local pUpper, vU = Cam:WorldToViewportPoint(uTorso.Position)
-                                    local pLower, vL = Cam:WorldToViewportPoint(lTorso.Position)
-                                    local uPos, lPos = Vector2.new(pUpper.X, pUpper.Y), Vector2.new(pLower.X, pLower.Y)
-                                    if vU or vL then
-                                        lines.Spine.From, lines.Spine.To, lines.Spine.Color, lines.Spine.Visible = Vector2.new(pHead.X, pHead.Y), uPos, clr, true
-                                        lines.Chest.From, lines.Chest.To, lines.Chest.Color, lines.Chest.Visible = uPos, lPos, clr, true
-
-                                        local function setR15(l1, l2, pA, pB, fromPos)
-                                            if pA and pB then
-                                                local pos1, vis1 = Cam:WorldToViewportPoint(pA.Position)
-                                                local pos2, vis2 = Cam:WorldToViewportPoint(pB.Position)
-                                                if vis1 then l1.From, l1.To, l1.Color, l1.Visible = fromPos, Vector2.new(pos1.X, pos1.Y), clr, true else l1.Visible = false end
-                                                if vis1 and vis2 then l2.From, l2.To, l2.Color, l2.Visible = Vector2.new(pos1.X, pos1.Y), Vector2.new(pos2.X, pos2.Y), clr, true else l2.Visible = false end
-                                            else l1.Visible, l2.Visible = false, false end
-                                        end
-                                        setR15(lines.LArm1, lines.LArm2, lUA, lLA, uPos)
-                                        setR15(lines.RArm1, lines.RArm2, rUA, rLA, uPos)
-                                        setR15(lines.LLeg1, lines.LLeg2, lUL, lLL, lPos)
-                                        setR15(lines.RLeg1, lines.RLeg2, rUL, rLL, lPos)
-                                    else
-                                        for _, l in pairs(lines) do l.Visible = false end
-                                    end
-                                end
+-- 4. ESP Skeleton / โครงกระดูก
+Core:RegisterModule({Name="ESP Skeleton / โครงกระดูก", Category="Visual", OnEnable=function()
+    getgenv().KSkel = true local dList = {}
+    local function C(p)
+        if p == LP then return end
+        local ln = {Spine=Drawing.new("Line"),Chest=Drawing.new("Line"),LA1=Drawing.new("Line"),LA2=Drawing.new("Line"),RA1=Drawing.new("Line"),RA2=Drawing.new("Line"),LL1=Drawing.new("Line"),LL2=Drawing.new("Line"),RL1=Drawing.new("Line"),RL2=Drawing.new("Line")}
+        for _,l in pairs(ln) do table.insert(dList,l) l.Visible,l.Thickness,l.Transparency,l.Outline,l.OutlineColor=false,1.2,.8,true,Color3.new() end
+        local cn; cn = RS.RenderStepped:Connect(function()
+            if not getgenv().KSkel then for _,l in pairs(ln) do l.Visible=false end cn:Disconnect() return end
+            local c,hum,hrp = p.Character, p.Character and p.Character:FindFirstChildOfClass("Humanoid"), p.Character and p.Character:FindFirstChild("HumanoidRootPart")
+            if c and hum and hum.Health>0 and hrp then
+                local head = c:FindFirstChild("Head")
+                if head then
+                    local pH,vH = Cam:WorldToViewportPoint(head.Position)
+                    local clr = (p.Team and p.Team ~= LP.Team) and p.TeamColor.Color or Color3.new(1,1,1)
+                    if vH then
+                        if hum.RigType == Enum.HumanoidRigType.R6 then
+                            local torso = c:FindFirstChild("Torso")
+                            if torso then
+                                local pT,vT = Cam:WorldToViewportPoint(torso.Position) local tP = Vector2.new(pT.X,pT.Y)
+                                ln.Chest.Visible,ln.LA2.Visible,ln.RA2.Visible,ln.LL2.Visible,ln.RL2.Visible=false,false,false,false,false
+                                if vT then
+                                    ln.Spine.From,ln.Spine.To,ln.Spine.Color,ln.Spine.Visible=Vector2.new(pH.X,pH.Y),tP,clr,true
+                                    local function s6(l,n) local pt = c:FindFirstChild(n) if pt then local ps,vs=Cam:WorldToViewportPoint(pt.Position) if vs then l.From,l.To,l.Color,l.Visible=tP,Vector2.new(ps.X,ps.Y),clr,true else l.Visible=false end else l.Visible=false end end
+                                    s6(ln.LA1,"Left Arm") s6(ln.RA1,"Right Arm") s6(ln.LL1,"Left Leg") s6(ln.RL1,"Right Leg")
+                                else for _,l in pairs(ln) do l.Visible=false end end
                             end
-                        else
-                            for _, l in pairs(lines) do l.Visible = false end
+                        elseif hum.RigType == Enum.HumanoidRigType.R15 then
+                            local uT,lT = c:FindFirstChild("UpperTorso"),c:FindFirstChild("LowerTorso")
+                            if uT and lT then
+                                local pU,vU = Cam:WorldToViewportPoint(uT.Position) local pL,vL = Cam:WorldToViewportPoint(lT.Position)
+                                local uP,lP = Vector2.new(pU.X,pU.Y), Vector2.new(pL.X,pL.Y)
+                                if vU or vL then
+                                    ln.Spine.From,ln.Spine.To,ln.Spine.Color,ln.Spine.Visible=Vector2.new(pH.X,pH.Y),uP,clr,true
+                                    ln.Chest.From,ln.Chest.To,ln.Chest.Color,ln.Chest.Visible=uP,lP,clr,true
+                                    local function s15(l1,l2,pA,pB,fP)
+                                        if pA and pB then
+                                            local s1,v1 = Cam:WorldToViewportPoint(pA.Position) local s2,v2 = Cam:WorldToViewportPoint(pB.Position)
+                                            if v1 then l1.From,l1.To,l1.Color,l1.Visible=fP,Vector2.new(s1.X,s1.Y),clr,true else l1.Visible=false end
+                                            if v1 and v2 then l2.From,l2.To,l2.Color,l2.Visible=Vector2.new(s1.X,s1.Y),Vector2.new(s2.X,s2.Y),clr,true else l2.Visible=false end
+                                        else l1.Visible,l2.Visible=false,false end
+                                    end
+                                    s15(ln.LA1,ln.LA2,c:FindFirstChild("LeftUpperArm"),c:FindFirstChild("LeftLowerArm"),uP)
+                                    s15(ln.RA1,ln.RA2,c:FindFirstChild("RightUpperArm"),c:FindFirstChild("RightLowerArm"),uP)
+                                    s15(ln.LL1,ln.LL2,c:FindFirstChild("LeftUpperLeg"),c:FindFirstChild("LeftLowerLeg"),lP)
+                                    s15(ln.RL1,ln.RL2,c:FindFirstChild("RightUpperLeg"),c:FindFirstChild("RightLowerLeg") or c:FindFirstChild("RightFoot"),lP)
+                                else for _,l in pairs(ln) do l.Visible=false end end
+                            end
                         end
-                    else
-                        for _, l in pairs(lines) do l.Visible = false end
-                    end
-                else
-                    for _, l in pairs(lines) do l.Visible = false end
-                    if not p.Parent then conn:Disconnect() end
-                end
-            end)
-        end
-
-        for _, p in pairs(P:GetPlayers()) do CreateSkeleton(p) end
-        local addConn = P.PlayerAdded:Connect(CreateSkeleton)
-
-        getgenv().KrizSkeletonCleanup = function()
-            if addConn then addConn:Disconnect() end
-            for _, obj in ipairs(dList) do pcall(function() obj:Remove() end) end
-        end
-    end,
-    OnDisable = function()
-        getgenv().KrizSkeletonActive = false
-        if getgenv().KrizSkeletonCleanup then pcall(getgenv().KrizSkeletonCleanup) end
+                    else for _,l in pairs(ln) do l.Visible=false end end
+                else for _,l in pairs(ln) do l.Visible=false end end
+            else for _,l in pairs(ln) do l.Visible=false end if not p.Parent then cn:Disconnect() end end
+        end)
     end
-})
+    for _,p in pairs(P:GetPlayers()) do C(p) end local a = P.PlayerAdded:Connect(C)
+    getgenv().KSkelC = function() a:Disconnect() for _,o in ipairs(dList) do pcall(function() o:Remove() end) end end
+end, OnDisable=function() getgenv().KSkel=false if getgenv().KSkelC then pcall(getgenv().KSkelC) end end})
 
---------------------------------------------------
--- MODULE: ESP TRACER / เส้นจากด้านล่าง (หมวด Settings)
---------------------------------------------------
-Core:RegisterModule({
-    Name = "ESP Tracer / เส้นจากด้านล่าง",
-    Category = "Settings",
-    OnEnable = function()
-        getgenv().KrizTracerActive = true
-        local dList = {}
-
-        local function CreateTracer(p)
-            if p == lp then return end
-            local line = Drawing.new("Line")
-            table.insert(dList, line)
-            line.Visible, line.Thickness, line.Transparency, line.Outline, line.OutlineColor = false, 1.2, 0.8, true, Color3.new(0, 0, 0)
-
-            local conn
-            conn = RS.RenderStepped:Connect(function()
-                if not getgenv().KrizTracerActive then
-                    line.Visible = false
-                    if conn then conn:Disconnect() end
-                    return
-                end
-
-                local c, hum, hrp = p.Character, p.Character and p.Character:FindFirstChildOfClass("Humanoid"), p.Character and p.Character:FindFirstChild("HumanoidRootPart")
-                if c and hum and hum.Health > 0 and hrp then
-                    local pos, vis = Cam:WorldToViewportPoint(hrp.Position)
-                    if vis then
-                        line.From = Vector2.new(Cam.ViewportSize.X / 2, Cam.ViewportSize.Y)
-                        line.To = Vector2.new(pos.X, pos.Y)
-                        line.Color = GetCol(p)
-                        line.Visible = true
-                    else
-                        line.Visible = false
-                    end
-                else
-                    line.Visible = false
-                    if not p.Parent then conn:Disconnect() end
-                end
-            end)
-        end
-
-        for _, p in pairs(P:GetPlayers()) do CreateTracer(p) end
-        local addConn = P.PlayerAdded:Connect(CreateTracer)
-
-        getgenv().KrizTracerCleanup = function()
-            if addConn then addConn:Disconnect() end
-            for _, obj in ipairs(dList) do pcall(function() obj:Remove() end) end
-        end
-    end,
-    OnDisable = function()
-        getgenv().KrizTracerActive = false
-        if getgenv().KrizTracerCleanup then pcall(getgenv().KrizTracerCleanup) end
+-- 5. ESP Tracer / เส้นล่าง
+Core:RegisterModule({Name="ESP Tracer / เส้นล่าง", Category="Visual", OnEnable=function()
+    getgenv().KTB = true local dList = {}
+    local function C(p)
+        if p == LP then return end
+        local l = Drawing.new("Line") table.insert(dList,l) l.Visible,l.Thickness,l.Transparency,l.Outline,l.OutlineColor=false,1.2,.8,true,Color3.new()
+        local cn; cn = RS.RenderStepped:Connect(function()
+            if not getgenv().KTB then l.Visible=false cn:Disconnect() return end
+            local c,hum,hrp = p.Character, p.Character and p.Character:FindFirstChildOfClass("Humanoid"), p.Character and p.Character:FindFirstChild("HumanoidRootPart")
+            if c and hum and hum.Health>0 and hrp then
+                local pos,vis = Cam:WorldToViewportPoint(hrp.Position)
+                local clr = (p.Team and p.Team ~= LP.Team) and p.TeamColor.Color or Color3.new(1,1,1)
+                if vis then l.From,l.To,l.Color,l.Visible = Vector2.new(Cam.ViewportSize.X/2,Cam.ViewportSize.Y),Vector2.new(pos.X,pos.Y),clr,true else l.Visible=false end
+            else l.Visible=false if not p.Parent then cn:Disconnect() end end
+        end)
     end
-})
+    for _,p in pairs(P:GetPlayers()) do C(p) end local a = P.PlayerAdded:Connect(C)
+    getgenv().KTBC = function() a:Disconnect() for _,o in ipairs(dList) do pcall(function() o:Remove() end) end end
+end, OnDisable=function() getgenv().KTB=false if getgenv().KTBC then pcall(getgenv().KTBC) end end})
+
+-- 6. Proximity Line / เส้นบอกระยะประชิด
+Core:RegisterModule({Name="Proximity Line / เส้นบอกระยะประชิด", Category="Visual", OnEnable=function()
+    getgenv().KProx = true local dList = {}
+    local function C(p)
+        if p == LP then return end
+        local l, t = Drawing.new("Line"), Drawing.new("Text")
+        l.Visible,l.Thickness,l.Transparency,l.Outline,l.OutlineColor=false,1.5,.9,true,Color3.new()
+        t.Visible,t.Size,t.Center,t.Outline,t.OutlineColor=false,13,true,true,Color3.new()
+        table.insert(dList,l) table.insert(dList,t)
+        local cn; cn = RS.RenderStepped:Connect(function()
+            if not getgenv().KProx then l.Visible,t.Visible=false,false cn:Disconnect() return end
+            local mH, tH, tHu = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart"), p.Character and p.Character:FindFirstChild("HumanoidRootPart"), p.Character and p.Character:FindFirstChildOfClass("Humanoid")
+            if mH and tH and tHu and tHu.Health>0 then
+                local dist = (tH.Position-mH.Position).Magnitude
+                if dist <= 50 then
+                    local s1,v1 = Cam:WorldToViewportPoint(mH.Position) local s2,v2 = Cam:WorldToViewportPoint(tH.Position)
+                    local clr = (p.Team and p.Team ~= LP.Team) and p.TeamColor.Color or Color3.new(1,1,1)
+                    if v1 or v2 then
+                        local p1,p2 = Vector2.new(s1.X,s1.Y), Vector2.new(s2.X,s2.Y)
+                        l.From,l.To,l.Color,l.Visible = p1,p2,clr,true
+                        t.Position,t.Text,t.Color,t.Visible = Vector2.new((p1.X+p2.X)/2,(p1.Y+p2.Y)/2), math.floor(dist*.28).."m", clr, true
+                    else l.Visible,t.Visible=false,false end
+                else l.Visible,t.Visible=false,false end
+            else l.Visible,t.Visible=false,false if not p.Parent then cn:Disconnect() end end
+        end)
+    end
+    for _,p in pairs(P:GetPlayers()) do C(p) end local a = P.PlayerAdded:Connect(C)
+    getgenv().KProxC = function() a:Disconnect() for _,o in ipairs(dList) do pcall(function() o:Remove() end) end end
+end, OnDisable=function() getgenv().KProx=false if getgenv().KProxC then pcall(getgenv().KProxC) end end})
+--ESP 2--
+
+if not _G.KrizHubCore then return end
+local Core, P, RS, LP = _G.KrizHubCore, game:GetService("Players"), game:GetService("RunService"), game:GetService("Players").LocalPlayer
+local C = function(p, r) local c = Instance.new("UICorner", p) c.CornerRadius = r or UDim.new(0,3) return c end
+local S = function(p, col) local s = Instance.new("UIStroke", p) s.Color, s.Thickness = col or Color3.fromRGB(230,50,50), 1 return s end
+local GI = function(p)
+    local it = {}
+    local function AT(v)
+        if v:IsA("Tool") then
+            local img = (v.TextureId and v.TextureId ~= "") and v.TextureId or (v:FindFirstChildOfClass("Decal") and v:FindFirstChildOfClass("Decal").Texture or "")
+            table.insert(it, {Name = v.Name, Image = img})
+        end
+    end
+    if p.Character then for _, v in ipairs(p.Character:GetChildren()) do AT(v) end end
+    local b = p:FindFirstChild("Backpack")
+    if b then for _, v in ipairs(b:GetChildren()) do AT(v) end end
+    return it
+end
+
+-- ESP Inventory / ไอเทมผู้เล่น (หมวดหมู่ใหม่)
+Core:RegisterModule({Name="ESP Inventory / ไอเทมผู้เล่น", Category="Visual", OnEnable=function()
+    getgenv().KInv = true local guis = {}
+    local function Cr(p)
+        if p == LP or guis[p] then return end
+        local bg = Instance.new("BillboardGui") bg.Name,bg.Size,bg.StudsOffset,bg.AlwaysOnTop = "KInv_"..p.Name,UDim2.new(0,150,0,26),Vector3.new(0,-3.2,0),true
+        local h = Instance.new("Frame",bg) h.Size,h.BackgroundTransparency = UDim2.new(1,0,1,0),1
+        local l = Instance.new("UIListLayout",h) l.FillDirection,l.HorizontalAlignment,l.VerticalAlignment,l.Padding = Enum.FillDirection.Horizontal,Enum.HorizontalAlignment.Center,Enum.VerticalAlignment.Center,UDim.new(0,2)
+        bg.Parent = game:GetService("CoreGui") guis[p] = {Gui=bg, Holder=h, CacheKey=""}
+    end
+    local function Rm(p) if guis[p] then pcall(function() guis[p].Gui:Destroy() end) guis[p]=nil end end
+    for _,p in pairs(P:GetPlayers()) do Cr(p) end
+    local a,r = P.PlayerAdded:Connect(Cr), P.PlayerRemoving:Connect(Rm)
+    local u = RS.RenderStepped:Connect(function()
+        if not getgenv().KInv then return end
+        for p,d in pairs(guis) do
+            local hrp,hum = p.Character and p.Character:FindFirstChild("HumanoidRootPart"), p.Character and p.Character:FindFirstChildOfClass("Humanoid")
+            if hrp and hum and hum.Health>0 then
+                d.Gui.Adornee,d.Gui.Enabled = hrp,true
+                local its, cKey = GI(p), ""
+                for _,it in ipairs(its) do cKey = cKey..it.Name.."_" end
+                if d.CacheKey ~= cKey then
+                    d.CacheKey = cKey
+                    for _,ch in ipairs(d.Holder:GetChildren()) do if not ch:IsA("UIListLayout") then ch:Destroy() end end
+                    for _,it in ipairs(its) do
+                        local s = Instance.new("Frame",d.Holder) s.Size,s.BackgroundColor3,s.BackgroundTransparency = UDim2.new(0,22,0,22),Color3.new(),0.5
+                        C(s) S(s)
+                        if it.Image ~= "" then
+                            local img = Instance.new("ImageLabel",s) img.Size,img.Position,img.BackgroundTransparency,img.Image = UDim2.new(1,-2,1,-2),UDim2.new(0,1,0,1),1,it.Image
+                        else
+                            local txt = Instance.new("TextLabel",s) txt.Size,txt.Position,txt.BackgroundTransparency,txt.Text,txt.TextColor3,txt.TextSize,txt.Font,txt.TextScaled = UDim2.new(1,-2,1,-2),UDim2.new(0,1,0,1),1,string.sub(it.Name,1,3),Color3.new(1,1,1),8,Enum.Font.GothamBold,true
+                        end
+                    end
+                end
+            else d.Gui.Enabled = false end
+        end
+    end)
+    getgenv().KInvC = function() a:Disconnect() r:Disconnect() u:Disconnect() for p,_ in pairs(guis) do Rm(p) end end
+end, OnDisable=function() getgenv().KInv=false if getgenv().KInvC then pcall(getgenv().KInvC) end end})
 
 
---------------------------------------------------
--- MODULE: PROXIMITY DISTANCE ESP / เส้นบอกระยะประชิด (หมวด Settings)
---------------------------------------------------
-local P, RS, Cam, LP = game:GetService("Players"), game:GetService("RunService"), workspace.CurrentCamera, game:GetService("Players").LocalPlayer
 
-local function GetTargetColor(p)
-    local c, b = p.Character, p:FindFirstChild("Backpack")
-    -- เช็กอาวุธร้ายแรงก่อน
-    if c and (c:FindFirstChild("Knife") or (b and b:FindFirstChild("Knife"))) then return Color3.fromRGB(255, 50, 50) end
-    if c and (c:FindFirstChild("Gun") or (b and b:FindFirstChild("Gun"))) then return Color3.fromRGB(50, 150, 255) end
+if not _G.KrizHubCore then return end
+local Core, RS, Cam, LP = _G.KrizHubCore, game:GetService("RunService"), workspace.CurrentCamera, game:GetService("Players").LocalPlayer
+
+Core:RegisterModule({Name="ESP Item / สิ่งของที่เก็บได้", Category="Visual", OnEnable=function()
+    getgenv().KItem = true local items = {}
+    local Names = {"M9", "Glock", "Desert Eagle", "Revolver", "USP", "Five-seven", "P226", "Remington 870", "Shotgun", "Double Barrel", "SPAS-12", "Benelli", "AK-47", "M4A1", "Scar-H", "FAL", "AUG", "P90", "MP5", "UMP45", "Vector", "Thompson", "Sniper", "AWM", "Barrett", "Scout", "Intervention", "Remington 700", "RPG", "Rocket Launcher", "Minigun", "Grenade", "C4", "Dynamite", "Flashbang", "Smoke", "Knife", "Sword", "Katana", "Machete", "Combat Knife", "Bat", "Crowbar", "Hammer", "Pipe", "Axe", "Keycard", "Key", "Gun", "Armor", "Medkit", "Bandage"}
     
-    -- เช็กสีตามทีม (ถ้าต่างทีมใช้สีแดง/สีทีม, ถ้าทีมเดียวกันใช้สีเขียว)
-    if p.Team and LP.Team then
-        return (p.Team ~= LP.Team) and (p.TeamColor and p.TeamColor.Color or Color3.fromRGB(255, 60, 60)) or Color3.fromRGB(50, 255, 100)
+    local function Check(n)
+        for _, t in ipairs(Names) do if string.find(string.lower(n), string.lower(t)) then return true end end
+        return false
     end
-    return Color3.fromRGB(255, 80, 80) -- สีเริ่มต้นสำหรับศัตรูในเกมไม่มีทีม
-end
 
-Core:RegisterModule({
-    Name = "Proximity Line / เส้นบอกระยะประชิด",
-    Category = "Settings",
-    OnEnable = function()
-        getgenv().KrizProximityActive = true
-        local drawObjects = {}
-        local maxDistanceStuds = 50 -- ระยะตรวจจับ (ประมาณรถยนต์จอดต่อกัน 2-3 คัน)
+    local function Clr(d) pcall(function() d.H:Destroy() d.T:Remove() end) end
 
-        local function CreateProximityESP(p)
-            if p == LP then return end
-
-            local line = Drawing.new("Line")
-            line.Visible, line.Thickness, line.Transparency, line.Outline, line.OutlineColor = false, 1.5, 0.9, true, Color3.new(0, 0, 0)
-
-            local text = Drawing.new("Text")
-            text.Visible, text.Size, text.Center, text.Outline, text.OutlineColor = false, 13, true, true, Color3.new(0, 0, 0)
-
-            table.insert(drawObjects, line)
-            table.insert(drawObjects, text)
-
-            local conn
-            conn = RS.RenderStepped:Connect(function()
-                if not getgenv().KrizProximityActive then
-                    line.Visible, text.Visible = false, false
-                    if conn then conn:Disconnect() end
-                    return
-                end
-
-                local myChar = LP.Character
-                local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
-                local targetChar = p.Character
-                local targetHum = targetChar and targetChar:FindFirstChildOfClass("Humanoid")
-                local targetRoot = targetChar and targetChar:FindFirstChild("HumanoidRootPart")
-
-                if myRoot and targetRoot and targetHum and targetHum.Health > 0 then
-                    -- คำนวณระยะทางระหว่างเรากับเป้าหมาย (Studs)
-                    local distStuds = (targetRoot.Position - myRoot.Position).Magnitude
-
-                    -- ตรวจสอบว่าอยู่ในรัศมีระยะประชิด (ไม่เกิน 2-3 คันรถ) หรือไม่
-                    if distStuds <= maxDistanceStuds then
-                        local myScreenPos, myVis = Cam:WorldToViewportPoint(myRoot.Position)
-                        local targetScreenPos, targetVis = Cam:WorldToViewportPoint(targetRoot.Position)
-
-                        if myVis or targetVis then
-                            local startVec = Vector2.new(myScreenPos.X, myScreenPos.Y)
-                            local endVec = Vector2.new(targetScreenPos.X, targetScreenPos.Y)
-                            local color = GetTargetColor(p)
-
-                            -- ลากเส้นจากตัวเราไปหาศัตรู
-                            line.From = startVec
-                            line.To = endVec
-                            line.Color = color
-                            line.Visible = true
-
-                            -- วางข้อความระยะทางไว้กึ่งกลางเส้นพอดี
-                            local midPoint = Vector2.new((startVec.X + endVec.X) / 2, (startVec.Y + endVec.Y) / 2)
-                            local distMeters = math.floor(distStuds * 0.28) -- แปลง Studs เป็นเมตรโดยประมาณ
-                            
-                            text.Position = midPoint
-                            text.Text = tostring(distMeters) .. "m"
-                            text.Color = color
-                            text.Visible = true
-                        else
-                            line.Visible, text.Visible = false, false
-                        end
-                    else
-                        -- ถ้าระยะเกิน 2-3 คันรถ ให้ซ่อนเส้นและตัวเลข
-                        line.Visible, text.Visible = false, false
-                    end
-                else
-                    line.Visible, text.Visible = false, false
-                    if not p.Parent then conn:Disconnect() end
-                end
-            end)
+    local function Add(o)
+        if items[o] or not (o:IsA("Model") or o:IsA("BasePart")) or o:IsDescendantOf(game:GetService("Players")) or not Check(o.Name) then return end
+        local pt = o:IsA("BasePart") and o or o:FindFirstChildOfClass("BasePart") or o.PrimaryPart
+        if pt then
+            local h = Instance.new("Highlight", game:GetService("CoreGui"))
+            h.FillColor, h.OutlineColor, h.FillTransparency, h.Adornee = Color3.fromRGB(170,50,255), Color3.fromRGB(230,200,255), 0.5, o
+            local t = Drawing.new("Text")
+            t.Size, t.Center, t.Outline, t.OutlineColor, t.Color = 13, true, true, Color3.new(0,0,0), Color3.fromRGB(80,255,120)
+            items[o] = {Part=pt, H=h, T=t, Name=o.Name}
         end
-
-        -- ติดตั้ง ESP ให้ผู้เล่นทุกคนในเซิร์ฟเวอร์
-        for _, p in pairs(P:GetPlayers()) do CreateProximityESP(p) end
-        local addConn = P.PlayerAdded:Connect(CreateProximityESP)
-
-        getgenv().KrizProximityCleanup = function()
-            if addConn then addConn:Disconnect() end
-            for _, obj in ipairs(drawObjects) do pcall(function() obj:Remove() end) end
-        end
-    end,
-    OnDisable = function()
-        getgenv().KrizProximityActive = false
-        if getgenv().KrizProximityCleanup then pcall(getgenv().KrizProximityCleanup) end
     end
-})
 
+    local conn = workspace.DescendantAdded:Connect(function(o) if getgenv().KItem then task.defer(function() Add(o) end) end end)
+    task.spawn(function() for _, o in ipairs(workspace:GetDescendants()) do if not getgenv().KItem then break end Add(o) end end)
 
---------------------------------------------------
--- MODULE: ESP ARROW / ลูกศรบนหัว (ขนาดคงที่ ไม่ขยายตามระยะทาง)
---------------------------------------------------
-local P,RS,Cam,LP=game:GetService("Players"),game:GetService("RunService"),workspace.CurrentCamera,game:GetService("Players").LocalPlayer
-local function GetCol(p)
-    local c,b=p.Character,p:FindFirstChild("Backpack")
-    if c and(c:FindFirstChild("Knife")or(b and b:FindFirstChild("Knife")))then return Color3.fromRGB(255,50,50)end
-    if c and(c:FindFirstChild("Gun")or(b and b:FindFirstChild("Gun")))then return Color3.fromRGB(50,150,255)end
-    if p.Team and LP.Team then return(p.Team~=LP.Team)and(p.TeamColor and p.TeamColor.Color or Color3.fromRGB(255,60,60))or Color3.fromRGB(50,255,100)end
-    return Color3.fromRGB(255,80,80)
-end
-
-Core:RegisterModule({
-    Name = "ESP Arrow / ลูกศรบนหัว",
-    Category = "Settings",
-    OnEnable = function()
-        getgenv().KrizArrowActive=true local dList={}
-        local function CreateArrow(p)
-            if p==LP then return end
-            local arrow=Drawing.new("Text")
-            -- ล็อกขนาดพิกเซลบนจอให้คงที่ (Size = 13 เล็กกะทัดรัด ไม่ขยายใหญ่ตามระยะทาง)
-            arrow.Visible,arrow.Size,arrow.Center,arrow.Outline,arrow.OutlineColor,arrow.Text=false,13,true,true,Color3.new(0,0,0),"v"
-            table.insert(dList,arrow)
-            local conn
-            conn=RS.RenderStepped:Connect(function()
-                if not getgenv().KrizArrowActive then arrow.Visible=false if conn then conn:Disconnect() end return end
-                local c=p.Character local hum=c and c:FindFirstChildOfClass("Humanoid") local head=c and c:FindFirstChild("Head")
-                if c and hum and hum.Health>0 and head then
-                    local yOffset=2.2+(math.sin(tick()*8)*0.4)
-                    local pos,vis=Cam:WorldToViewportPoint(head.Position+Vector3.new(0,yOffset,0))
-                    if vis then
-                        arrow.Position=Vector2.new(pos.X,pos.Y)
-                        arrow.Color=GetCol(p)
-                        arrow.Visible=true
-                    else arrow.Visible=false end
-                else arrow.Visible=false if not p.Parent then conn:Disconnect() end end
-            end)
+    local u = RS.RenderStepped:Connect(function()
+        if not getgenv().KItem then return end
+        local mH = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+        if not mH then return end
+        local list = {}
+        for o, d in pairs(items) do
+            if o and o.Parent and o:IsDescendantOf(workspace) and d.Part and d.Part.Parent then
+                local dist = (d.Part.Position - mH.Position).Magnitude
+                if dist <= 300 then table.insert(list, {Dist = dist, Data = d}) else d.T.Visible = false end
+            else Clr(d) items[o] = nil end
         end
-        for _,p in pairs(P:GetPlayers())do CreateArrow(p)end
-        local addConn=P.PlayerAdded:Connect(CreateArrow)
-        getgenv().KrizArrowCleanup=function()
-            if addConn then addConn:Disconnect() end
-            for _,obj in ipairs(dList)do pcall(function() obj:Remove() end)end
+        table.sort(list, function(a, b) return a.Dist < b.Dist end)
+        for i, item in ipairs(list) do
+            local d = item.Data
+            if i <= 10 then
+                local pos, vis = Cam:WorldToViewportPoint(d.Part.Position)
+                d.T.Position, d.T.Text, d.T.Visible = Vector2.new(pos.X, pos.Y), "["..d.Name.."] "..math.floor(item.Dist*.28).."m", vis
+            else d.T.Visible = false end
         end
-    end,
-    OnDisable = function()
-        getgenv().KrizArrowActive=false
-        if getgenv().KrizArrowCleanup then pcall(getgenv().KrizArrowCleanup) end
-    end
-})
---553--
-
-
---------------------------------------------------
--- 🛠️ ฟังก์ชันระบบสีทีมส่วนกลาง (ใช้ร่วมกันทั้ง 3 โมดูล)
---------------------------------------------------
-local P,RS,Cam,LP=game:GetService("Players"),game:GetService("RunService"),workspace.CurrentCamera,game:GetService("Players").LocalPlayer
-local function GetCol(p)
-    local c,b=p.Character,p:FindFirstChild("Backpack")
-    if c and(c:FindFirstChild("Knife")or(b and b:FindFirstChild("Knife")))then return Color3.fromRGB(255,50,50)end
-    if c and(c:FindFirstChild("Gun")or(b and b:FindFirstChild("Gun")))then return Color3.fromRGB(50,150,255)end
-    if p.Team and LP.Team then return(p.Team~=LP.Team)and(p.TeamColor and p.TeamColor.Color or Color3.fromRGB(255,60,60))or Color3.fromRGB(50,255,100)end
-    return Color3.fromRGB(255,80,80)
-end
-
---------------------------------------------------
--- 1. MODULE: ESP BOX / กรอบสี่เหลี่ยม
---------------------------------------------------
-Core:RegisterModule({
-    Name = "ESP Box / กรอบสี่เหลี่ยม",
-    Category = "Settings",
-    OnEnable = function()
-        getgenv().KrizBoxActive=true local dList={}
-        local function CreateBox(p)
-            if p==LP then return end
-            local box=Drawing.new("Square")
-            box.Visible,box.Thickness,box.Filled,box.Transparency=false,1.2,false,0.8
-            table.insert(dList,box)
-            local conn
-            conn=RS.RenderStepped:Connect(function()
-                if not getgenv().KrizBoxActive then box.Visible=false if conn then conn:Disconnect() end return end
-                local c=p.Character local hum=c and c:FindFirstChildOfClass("Humanoid") local hrp=c and c:FindFirstChild("HumanoidRootPart")
-                if c and hum and hum.Health>0 and hrp then
-                    local pos,vis=Cam:WorldToViewportPoint(hrp.Position)
-                    if vis then
-                        local size=Vector2.new(2200/pos.Z, 3300/pos.Z)
-                        box.Size=size
-                        box.Position=Vector2.new(pos.X - size.X/2, pos.Y - size.Y/2)
-                        box.Color=GetCol(p)
-                        box.Visible=true
-                    else box.Visible=false end
-                else box.Visible=false if not p.Parent then conn:Disconnect() end end
-            end)
-        end
-        for _,p in pairs(P:GetPlayers())do CreateBox(p)end
-        local addConn=P.PlayerAdded:Connect(CreateBox)
-        getgenv().KrizBoxCleanup=function()
-            if addConn then addConn:Disconnect() end
-            for _,obj in ipairs(dList)do pcall(function() obj:Remove() end)end
-        end
-    end,
-    OnDisable = function()
-        getgenv().KrizBoxActive=false
-        if getgenv().KrizBoxCleanup then pcall(getgenv().KrizBoxCleanup) end
-    end
-})
-
---------------------------------------------------
--- 2. MODULE: ESP NAME / ชื่อบนหัว
---------------------------------------------------
-Core:RegisterModule({
-    Name = "ESP Name / ชื่อบนหัว",
-    Category = "Settings",
-    OnEnable = function()
-        getgenv().KrizNameActive=true local dList={}
-        local function CreateName(p)
-            if p==LP then return end
-            local txt=Drawing.new("Text")
-            txt.Visible,txt.Size,txt.Center,txt.Outline,txt.OutlineColor,txt.Text=false,12,true,true,Color3.new(0,0,0),p.Name
-            table.insert(dList,txt)
-            local conn
-            conn=RS.RenderStepped:Connect(function()
-                if not getgenv().KrizNameActive then txt.Visible=false if conn then conn:Disconnect() end return end
-                local c=p.Character local hum=c and c:FindFirstChildOfClass("Humanoid") local head=c and c:FindFirstChild("Head")
-                if c and hum and hum.Health>0 and head then
-                    local pos,vis=Cam:WorldToViewportPoint(head.Position+Vector3.new(0,1.5,0))
-                    if vis then
-                        txt.Position=Vector2.new(pos.X,pos.Y)
-                        txt.Color=GetCol(p)
-                        txt.Visible=true
-                    else txt.Visible=false end
-                else txt.Visible=false if not p.Parent then conn:Disconnect() end end
-            end)
-        end
-        for _,p in pairs(P:GetPlayers())do CreateName(p)end
-        local addConn=P.PlayerAdded:Connect(CreateName)
-        getgenv().KrizNameCleanup=function()
-            if addConn then addConn:Disconnect() end
-            for _,obj in ipairs(dList)do pcall(function() obj:Remove() end)end
-        end
-    end,
-    OnDisable = function()
-        getgenv().KrizNameActive=false
-        if getgenv().KrizNameCleanup then pcall(getgenv().KrizNameCleanup) end
-    end
-})
-
---------------------------------------------------
--- 3. MODULE: ESP HEALTH / หลอดเลือดบนหัว
---------------------------------------------------
-Core:RegisterModule({
-    Name = "ESP Health / หลอดเลือดบนหัว",
-    Category = "Settings",
-    OnEnable = function()
-        getgenv().KrizHpActive=true local dList={}
-        local function CreateHp(p)
-            if p==LP then return end
-            local bar=Drawing.new("Line")
-            bar.Visible,bar.Thickness=false,3
-            table.insert(dList,bar)
-            local conn
-            conn=RS.RenderStepped:Connect(function()
-                if not getgenv().KrizHpActive then bar.Visible=false if conn then conn:Disconnect() end return end
-                local c=p.Character local hum=c and c:FindFirstChildOfClass("Humanoid") local head=c and c:FindFirstChild("Head")
-                if c and hum and hum.Health>0 and head then
-                    local pos,vis=Cam:WorldToViewportPoint(head.Position+Vector3.new(0,2.5,0))
-                    if vis then
-                        local hpRatio=math.clamp(hum.Health/hum.MaxHealth,0,1)
-                        local w=24
-                        bar.From=Vector2.new(pos.X - w/2, pos.Y)
-                        bar.To=Vector2.new(pos.X - w/2 + (w * hpRatio), pos.Y)
-                        bar.Color=Color3.fromHSV(hpRatio * 0.3, 1, 1) -- เปลี่ยนสีตามเลือด (เขียว -> แดง)
-                        bar.Visible=true
-                    else bar.Visible=false end
-                else bar.Visible=false if not p.Parent then conn:Disconnect() end end
-            end)
-        end
-        for _,p in pairs(P:GetPlayers())do CreateHp(p)end
-        valAddConn=P.PlayerAdded:Connect(CreateHp)
-        getgenv().KrizHpCleanup=function()
-            if valAddConn then valAddConn:Disconnect() end
-            for _,obj in ipairs(dList)do pcall(function() obj:Remove() end)end
-        end
-    end,
-    OnDisable = function()
-        getgenv().KrizHpActive=false
-        if getgenv().KrizHpCleanup then pcall(getgenv().KrizHpCleanup) end
-    end
-})
-
-
---------------------------------------------------
--- MODULE: ITEM ESP / ตรวจจับไอเทมเก็บได้อัตโนมัติ (สีม่วง - หมวด Settings)
---------------------------------------------------
-local P,RS,Cam,LP=game:GetService("Players"),game:GetService("RunService"),workspace.CurrentCamera,game:GetService("Players").LocalPlayer
-
-Core:RegisterModule({
-    Name = "ESP Item / สิ่งของที่เก็บได้",
-    Category = "Settings",
-    OnEnable = function()
-        getgenv().KrizItemActive=true
-        local activeItems={}
-
-        local function IsCollectible(obj)
-            if not obj or not obj:IsA("PVInstance") or obj:IsDescendantOf(LP.Character) then return false end
-            if obj:FindFirstChildOfClass("ProximityPrompt") or obj:IsA("ProximityPrompt") then return true end
-            if obj:FindFirstChildOfClass("ClickDetector") or obj:IsA("ClickDetector") then return true end
-            if obj:IsA("Tool") or (obj:IsA("BasePart") and obj.CanTouch and not obj.Anchored and obj.Size.Magnitude < 10) then return true end
-            return false
-        end
-
-        local function ClearItem(data)
-            if data.Highlight then pcall(function() data.Highlight:Destroy() end) end
-            if data.Text then pcall(function() data.Text:Remove() end) end
-        end
-
-        local function ScanWorkspace()
-            if not getgenv().KrizItemActive then return end
-            local myChar=LP.Character local myRoot=myChar and myChar:FindFirstChild("HumanoidRootPart")
-            if not myRoot then return end
-
-            for _, obj in ipairs(workspace:GetDescendants()) do
-                if not getgenv().KrizItemActive then break end
-                if IsCollectible(obj) and not activeItems[obj] then
-                    local targetPart = obj:IsA("BasePart") and obj or obj:FindFirstChildOfClass("BasePart") or obj.PrimaryPart
-                    if targetPart then
-                        -- เปลี่ยนสี Highlight เป็นสีม่วง (Purple)
-                        local hl = Instance.new("Highlight")
-                        hl.Name = "KrizItemHighlight"
-                        hl.FillColor = Color3.fromRGB(170, 50, 255)
-                        hl.OutlineColor = Color3.fromRGB(230, 200, 255)
-                        hl.FillTransparency = 0.5
-                        hl.OutlineTransparency = 0
-                        hl.Adornee = obj
-                        pcall(function() hl.Parent = game:GetService("CoreGui") end)
-
-                        -- เปลี่ยนสี Text เป็นสีม่วงสว่าง
-                        local txt = Drawing.new("Text")
-                        txt.Visible, txt.Size, txt.Center, txt.Outline, txt.OutlineColor, txt.Color = false, 13, true, true, Color3.new(0,0,0), Color3.fromRGB(200, 100, 255)
-
-                        activeItems[obj] = { Target = targetPart, Highlight = hl, Text = txt, Name = obj.Name }
-                    end
-                end
-            end
-        end
-
-        local renderConn
-        renderConn = RS.RenderStepped:Connect(function()
-            if not getgenv().KrizItemActive then
-                if renderConn then renderConn:Disconnect() end
-                return
-            end
-
-            local myChar=LP.Character local myRoot=myChar and myChar:FindFirstChild("HumanoidRootPart")
-
-            for obj, data in pairs(activeItems) do
-                if obj and obj.Parent and data.Target and data.Target.Parent then
-                    if myRoot then
-                        local dist = (data.Target.Position - myRoot.Position).Magnitude
-                        if dist <= 300 then
-                            local pos, vis = Cam:WorldToViewportPoint(data.Target.Position)
-                            if vis then
-                                local meters = math.floor(dist * 0.28)
-                                data.Text.Position = Vector2.new(pos.X, pos.Y)
-                                data.Text.Text = "[" .. data.Name .. "] " .. tostring(meters) .. "m"
-                                data.Text.Visible = true
-                            else data.Text.Visible = false end
-                        else data.Text.Visible = false end
-                    end
-                else
-                    ClearItem(data)
-                    activeItems[obj] = nil
-                end
-            end
-        end)
-
-        task.spawn(function()
-            while getgenv().KrizItemActive do
-                ScanWorkspace()
-                task.wait(2)
-            end
-        end)
-
-        getgenv().KrizItemCleanup = function()
-            if renderConn then pcall(function() renderConn:Disconnect() end) end
-            for obj, data in pairs(activeItems) do ClearItem(data) end
-            activeItems = {}
-        end
-    end,
-    OnDisable = function()
-        getgenv().KrizItemActive = false
-        if getgenv().KrizItemCleanup then pcall(getgenv().KrizItemCleanup) end
-    end
-})
+    end)
+    
+    getgenv().KItemC = function() conn:Disconnect() u:Disconnect() for _,d in pairs(items) do Clr(d) end items = {} end
+end, OnDisable=function()
+    getgenv().KItem = false
+    if getgenv().KItemC then pcall(getgenv().KItemC) end
+end})
