@@ -2491,6 +2491,374 @@ Core:RegisterModule({
         if getgenv().KrizExecutionerCleanup then pcall(getgenv().KrizExecutionerCleanup) end
     end
 })
+--552--
+
+
+Core:RegisterModule({
+    Name = "Player List / รายชื่อผู้เล่น", Category = "General",
+    OnEnable = function()
+        getgenv().KrizPlayerListActive = true
+        local P, SG, LP, UIS = game:GetService("Players"), game:GetService("StarterGui"), game:GetService("Players").LocalPlayer, game:GetService("UserInputService")
+        local function notify(t) task.spawn(function() pcall(function() SG:SetCore("SendNotification", {Title="KRIZ HUB", Text=t, Duration=3}) end) end) end
+
+        local listGui, scroll, searchBox
+        local function loadPlayers()
+            if not scroll or not searchBox then return end
+            for _, ch in ipairs(scroll:GetChildren()) do if not ch:IsA("UIListLayout") then ch:Destroy() end end
+            local flt = string.lower(searchBox.Text) if flt == "name" then flt = "" end
+            for _, p in ipairs(P:GetPlayers()) do
+                if p ~= LP and (flt == "" or string.find(string.lower(p.Name), flt) or string.find(string.lower(p.DisplayName), flt)) then
+                    local btn = Instance.new("TextButton", scroll)
+                    btn.Size, btn.BackgroundColor3, btn.BackgroundTransparency, btn.Text, btn.TextColor3, btn.TextSize, btn.Font = UDim2.new(1, 0, 0, 22), Color3.fromRGB(30,30,30), 0.3, p.DisplayName, Color3.fromRGB(200,200,200), 9, Enum.Font.Gotham
+                    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
+                    local sPos, isDrag = Vector2.zero, false
+                    btn.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.UserInputType.MouseButton1 then sPos, isDrag = Vector2.new(i.Position.X, i.Position.Y), false end end)
+                    btn.InputChanged:Connect(function(i) if (i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.MouseMovement) and (Vector2.new(i.Position.X, i.Position.Y) - sPos).Magnitude > 8 then isDrag = true end end)
+                    btn.MouseButton1Click:Connect(function()
+                        if not isDrag then
+                            if p.Character and p.Character:FindFirstChild("HumanoidRootPart") and LP.Character and LP.Character:FindFirstChild("HumanoidRootPart") then
+                                LP.Character.HumanoidRootPart.CFrame = p.Character.HumanoidRootPart.CFrame + Vector3.new(0, 3.5, 0) notify("TP TO: " .. p.Name)
+                            else notify("ไม่พบเป้าหมาย!") end
+                        end
+                    end)
+                end
+            end
+            local ly = scroll:FindFirstChildOfClass("UIListLayout") if ly then scroll.CanvasSize = UDim2.new(0, 0, 0, ly.AbsoluteContentSize.Y + 6) end
+        end
+
+        local function buildUI()
+            if listGui then pcall(function() listGui:Destroy() end) listGui = nil end
+            if not getgenv().KrizPlayerListActive then return end
+            listGui = Instance.new("ScreenGui") listGui.Name, listGui.ResetOnSpawn, listGui.DisplayOrder, listGui.IgnoreGuiInset, listGui.Parent = "KrizPlayerListMini", false, 999999, true, LP:WaitForChild("PlayerGui")
+            local frm = Instance.new("Frame", listGui) frm.Size, frm.Position, frm.AnchorPoint, frm.BackgroundColor3, frm.BackgroundTransparency = UDim2.new(0, 160, 0, 185), UDim2.new(0.5, 0, 0.5, 0), Vector2.new(0.5, 0.5), Color3.fromRGB(0,0,0), 0.5
+            Instance.new("UICorner", frm).CornerRadius = UDim.new(0, 8) Instance.new("UIStroke", frm).Color = Color3.fromRGB(230,50,50)
+            local ttl = Instance.new("TextLabel", frm) ttl.Size, ttl.BackgroundTransparency, ttl.Text, ttl.TextColor3, ttl.TextSize, ttl.Font = UDim2.new(1, 0, 0, 22), 1, "KRIZ HUB - PLAYERS", Color3.fromRGB(255,255,255), 9, Enum.Font.GothamBold
+            local inpH = Instance.new("Frame", frm) inpH.Size, inpH.Position, inpH.BackgroundTransparency = UDim2.new(1, -12, 0, 24), UDim2.new(0, 6, 0, 24), 1
+            searchBox = Instance.new("TextBox", inpH) searchBox.Size, searchBox.BackgroundColor3, searchBox.BackgroundTransparency, searchBox.Font, searchBox.Text, searchBox.TextColor3, searchBox.TextSize = UDim2.new(0.68, -3, 1, 0), Color3.fromRGB(55,55,55), 0.2, Enum.Font.Gotham, "name", Color3.fromRGB(200,200,200), 9
+            Instance.new("UICorner", searchBox).CornerRadius = UDim.new(0, 4)
+            searchBox.Focused:Connect(function() if searchBox.Text == "name" then searchBox.Text = "" searchBox.TextColor3 = Color3.fromRGB(255,255,255) end end)
+            searchBox.FocusLost:Connect(function() if searchBox.Text == "" or searchBox.Text == " " then searchBox.Text = "name" searchBox.TextColor3 = Color3.fromRGB(200,200,200) end end)
+            local tpBtn = Instance.new("TextButton", inpH) tpBtn.Size, tpBtn.Position, tpBtn.BackgroundColor3, tpBtn.BackgroundTransparency, tpBtn.Font, tpBtn.Text, tpBtn.TextColor3, tpBtn.TextSize = UDim2.new(0.32, -3, 1, 0), UDim2.new(0.68, 3, 0, 0), Color3.fromRGB(70,70,70), 0.2, Enum.Font.GothamBold, "TP", Color3.fromRGB(0,255,255), 9
+            Instance.new("UICorner", tpBtn).CornerRadius = UDim.new(0, 4)
+            scroll = Instance.new("ScrollingFrame", frm) scroll.Size, scroll.Position, scroll.BackgroundTransparency, scroll.BorderSizePixel, scroll.ScrollBarThickness = UDim2.new(1, -8, 1, -56), UDim2.new(0, 4, 0, 52), 1, 0, 2
+            Instance.new("UIListLayout", scroll).Padding = UDim.new(0, 4)
+            loadPlayers() searchBox:GetPropertyChangedSignal("Text"):Connect(loadPlayers)
+            tpBtn.MouseButton1Click:Connect(function()
+                local txt = searchBox.Text if txt == "" or txt == "name" then return notify("พิมพ์ชื่อก่อน!") end
+                local tgt for _, p in ipairs(P:GetPlayers()) do if p ~= LP and (string.find(string.lower(p.Name), string.lower(txt)) or string.find(string.lower(p.DisplayName), string.lower(txt))) then tgt = p break end end
+                if tgt and tgt.Character and tgt.Character:FindFirstChild("HumanoidRootPart") and LP.Character and LP.Character:FindFirstChild("HumanoidRootPart") then LP.Character.HumanoidRootPart.CFrame = tgt.Character.HumanoidRootPart.CFrame + Vector3.new(0, 3.5, 0) notify("TP: " .. tgt.Name) else notify("ไม่พบเป้าหมาย!") end
+                searchBox.Text, searchBox.TextColor3 = "name", Color3.fromRGB(200,200,200)
+            end)
+            local drag, dStart, gStart, activeI
+            frm.InputBegan:Connect(function(i) if (i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.MouseButton1) and not activeI then drag, activeI, dStart, gStart = true, i, i.Position, frm.Position end end)
+            UIS.InputChanged:Connect(function(i) if drag and i == activeI then local d = i.Position - dStart frm.Position = UDim2.new(gStart.X.Scale, gStart.X.Offset + d.X, gStart.Y.Scale, gStart.Y.Offset + d.Y) end end)
+            UIS.InputEnded:Connect(function(i) if i == activeI then drag, activeI = false, nil end end)
+        end
+
+        buildUI()
+        getgenv().KrizRespawnGuard = LP.CharacterAdded:Connect(function() task.wait(0.2) if getgenv().KrizPlayerListActive then loadPlayers() end end)
+        getgenv().KrizPlayerEvents = {P.PlayerAdded:Connect(loadPlayers), P.PlayerRemoving:Connect(loadPlayers)}
+        getgenv().KrizPlayerListCleanup = function()
+            if getgenv().KrizRespawnGuard then pcall(function() getgenv().KrizRespawnGuard:Disconnect() end) end
+            if getgenv().KrizPlayerEvents then for _, c in ipairs(getgenv().KrizPlayerEvents) do pcall(function() c:Disconnect() end) end end
+            if listGui then pcall(function() listGui:Destroy() end) listGui = nil end
+        end
+    end,
+    OnDisable = function() getgenv().KrizPlayerListActive = false if getgenv().KrizPlayerListCleanup then pcall(getgenv().KrizPlayerListCleanup) end end
+})
+
+
+
+Core:RegisterModule({
+    Name = "Head Back Sit / เกาะหัว ขี่หลัง", Category = "General",
+    OnEnable = function()
+        getgenv().KrizSitActive = true
+        local P, RS, LP, mode = game:GetService("Players"), game:GetService("RunService"), game:GetService("Players").LocalPlayer, "HEAD"
+        local rFrame = LP.PlayerGui:FindFirstChild("KrizHub_Core_Mask") and LP.PlayerGui.KrizHub_Core_Mask.MainMenu:FindFirstChild("GeneralList") and LP.PlayerGui.KrizHub_Core_Mask.MainMenu.GeneralList:FindFirstChild("Function_Head Back Sit / เกาะหัว ขี่หลัง")
+        local modeBtn
+
+        if rFrame then
+            local nLbl = rFrame:FindFirstChild("Name") if nLbl then nLbl.Size, nLbl.ClipsDescendants = UDim2.new(1, -95, 1, 0), true end
+            modeBtn = Instance.new("TextButton", rFrame)
+            modeBtn.Size, modeBtn.Position, modeBtn.BackgroundColor3, modeBtn.BackgroundTransparency, modeBtn.Font, modeBtn.Text, modeBtn.TextColor3, modeBtn.TextSize, modeBtn.ZIndex = UDim2.new(0, 36, 0, 20), UDim2.new(1, -88, 0.5, -10), Color3.fromRGB(70,70,70), 0.15, Enum.Font.GothamBold, "HEAD", Color3.fromRGB(255,200,0), 8, 10003
+            Instance.new("UICorner", modeBtn).CornerRadius = UDim.new(1, 0)
+            modeBtn.MouseButton1Click:Connect(function()
+                mode = (mode == "HEAD") and "BACK" or "HEAD"
+                modeBtn.Text, modeBtn.TextColor3 = mode, (mode == "HEAD") and Color3.fromRGB(255,200,0) or Color3.fromRGB(0,255,255)
+            end)
+        end
+
+        local conn
+        conn = RS.Heartbeat:Connect(function()
+            if not getgenv().KrizSitActive then return conn:Disconnect() end
+            local c, h, hum = LP.Character, LP.Character and LP.Character:FindFirstChild("HumanoidRootPart"), LP.Character and LP.Character:FindFirstChildOfClass("Humanoid")
+            if not h or not hum then return end
+            local nP, mD = nil, math.huge
+            for _, p in ipairs(P:GetPlayers()) do
+                if p ~= LP and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                    local d = (h.Position - p.Character.HumanoidRootPart.Position).Magnitude
+                    if d < mD then mD, nP = d, p end
+                end
+            end
+            if nP and nP.Character and nP.Character:FindFirstChild("HumanoidRootPart") then
+                h.CFrame = nP.Character.HumanoidRootPart.CFrame * CFrame.new((mode == "HEAD") and Vector3.new(0, 3.5, 0) or Vector3.new(0, 1.2, 1.2))
+                hum.Sit = true if hum:GetState() ~= Enum.HumanoidStateType.Seated then hum:ChangeState(Enum.HumanoidStateType.Seated) end
+            end
+        end)
+
+        getgenv().KrizSitCleanup = function()
+            if conn then pcall(function() conn:Disconnect() end) end
+            if modeBtn then pcall(function() modeBtn:Destroy() end) end
+            if LP.Character and LP.Character:FindFirstChildOfClass("Humanoid") then LP.Character:FindFirstChildOfClass("Humanoid").Sit = false end
+            if rFrame and rFrame:FindFirstChild("Name") then rFrame.Name.Size = UDim2.new(1, -60, 1, 0) end
+        end
+    end,
+    OnDisable = function() getgenv().KrizSitActive = false if getgenv().KrizSitCleanup then pcall(getgenv().KrizSitCleanup) end end
+})
+
+
+
+Core:RegisterModule({
+    Name = "Spectate / ส่องผู้เล่น", Category = "General",
+    OnEnable = function()
+        getgenv().KrizSpecActive = true
+        local P, SG, LP, UIS, Cam = game:GetService("Players"), game:GetService("StarterGui"), game:GetService("Players").LocalPlayer, game:GetService("UserInputService"), workspace.CurrentCamera
+        local function notify(t) task.spawn(function() pcall(function() SG:SetCore("SendNotification", {Title="KRIZ HUB", Text=t, Duration=3}) end) end) end
+
+        local specGui, scroll, curTarget
+        local function resetCam()
+            curTarget = nil
+            if LP.Character and LP.Character:FindFirstChildOfClass("Humanoid") then Cam.CameraSubject = LP.Character:FindFirstChildOfClass("Humanoid") end
+        end
+
+        local function loadPlayers()
+            if not scroll then return end
+            for _, ch in ipairs(scroll:GetChildren()) do if not ch:IsA("UIListLayout") then ch:Destroy() end end
+            for _, p in ipairs(P:GetPlayers()) do
+                -- 📌 คัดกรองเฉพาะผู้เล่นที่มีตัวละครและ Humanoid อยู่ในเกมจริงเท่านั้น
+                if p ~= LP and p.Character and p.Character:FindFirstChildOfClass("Humanoid") and p.Character:FindFirstChild("HumanoidRootPart") then
+                    local isCur = (curTarget == p)
+                    local btn = Instance.new("TextButton", scroll)
+                    btn.Size, btn.BackgroundColor3, btn.BackgroundTransparency, btn.Text, btn.TextColor3, btn.TextSize, btn.Font = UDim2.new(1, 0, 0, 22), isCur and Color3.fromRGB(0,180,80) or Color3.fromRGB(30,30,30), 0.3, p.DisplayName, isCur and Color3.fromRGB(255,255,255) or Color3.fromRGB(200,200,200), 9, Enum.Font.Gotham
+                    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
+                    local sPos, isDrag = Vector2.zero, false
+                    btn.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.UserInputType.MouseButton1 then sPos, isDrag = Vector2.new(i.Position.X, i.Position.Y), false end end)
+                    btn.InputChanged:Connect(function(i) if (i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.MouseMovement) and (Vector2.new(i.Position.X, i.Position.Y) - sPos).Magnitude > 8 then isDrag = true end end)
+                    btn.MouseButton1Click:Connect(function()
+                        if not isDrag then
+                            if curTarget == p then resetCam() notify("กลับมาส่องตัวเอง")
+                            else
+                                if p.Character and p.Character:FindFirstChildOfClass("Humanoid") then
+                                    curTarget = p Cam.CameraSubject = p.Character:FindFirstChildOfClass("Humanoid") notify("ส่อง: " .. p.Name)
+                                end
+                            end
+                            loadPlayers()
+                        end
+                    end)
+                end
+            end
+            local ly = scroll:FindFirstChildOfClass("UIListLayout") if ly then scroll.CanvasSize = UDim2.new(0, 0, 0, ly.AbsoluteContentSize.Y + 6) end
+        end
+
+        local function buildUI()
+            if specGui then pcall(function() specGui:Destroy() end) specGui = nil end
+            if not getgenv().KrizSpecActive then return end
+            specGui = Instance.new("ScreenGui") specGui.Name, specGui.ResetOnSpawn, specGui.DisplayOrder, specGui.IgnoreGuiInset, specGui.Parent = "KrizSpecMini", false, 999999, true, LP:WaitForChild("PlayerGui")
+            local frm = Instance.new("Frame", specGui) frm.Size, frm.Position, frm.AnchorPoint, frm.BackgroundColor3, frm.BackgroundTransparency = UDim2.new(0, 160, 0, 160), UDim2.new(0.5, 0, 0.5, 0), Vector2.new(0.5, 0.5), Color3.fromRGB(0,0,0), 0.5
+            Instance.new("UICorner", frm).CornerRadius = UDim.new(0, 8) Instance.new("UIStroke", frm).Color = Color3.fromRGB(230,50,50)
+            local ttl = Instance.new("TextLabel", frm) ttl.Size, ttl.BackgroundTransparency, ttl.Text, ttl.TextColor3, ttl.TextSize, ttl.Font = UDim2.new(1, 0, 0, 22), 1, "KRIZ HUB - SPECTATE", Color3.fromRGB(255,255,255), 9, Enum.Font.GothamBold
+            scroll = Instance.new("ScrollingFrame", frm) scroll.Size, scroll.Position, scroll.BackgroundTransparency, scroll.BorderSizePixel, scroll.ScrollBarThickness = UDim2.new(1, -8, 1, -28), UDim2.new(0, 4, 0, 24), 1, 0, 2
+            Instance.new("UIListLayout", scroll).Padding = UDim.new(0, 4)
+            loadPlayers()
+            local drag, dStart, gStart, activeI
+            frm.InputBegan:Connect(function(i) if (i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.MouseButton1) and not activeI then drag, activeI, dStart, gStart = true, i, i.Position, frm.Position end end)
+            UIS.InputChanged:Connect(function(i) if drag and i == activeI then local d = i.Position - dStart frm.Position = UDim2.new(gStart.X.Scale, gStart.X.Offset + d.X, gStart.Y.Scale, gStart.Y.Offset + d.Y) end end)
+            UIS.InputEnded:Connect(function(i) if i == activeI then drag, activeI = false, nil end end)
+        end
+
+        buildUI()
+        getgenv().KrizSpecGuard = LP.CharacterAdded:Connect(function()
+            task.wait(0.2)
+            if getgenv().KrizSpecActive then
+                if curTarget and curTarget.Character and curTarget.Character:FindFirstChildOfClass("Humanoid") then
+                    Cam.CameraSubject = curTarget.Character:FindFirstChildOfClass("Humanoid")
+                else resetCam() end
+                loadPlayers()
+            end
+        end)
+        getgenv().KrizSpecEvents = {P.PlayerAdded:Connect(loadPlayers), P.PlayerRemoving:Connect(function(p) if curTarget == p then resetCam() end loadPlayers() end)}
+        
+        getgenv().KrizSpecCleanup = function()
+            resetCam()
+            if getgenv().KrizSpecGuard then pcall(function() getgenv().KrizSpecGuard:Disconnect() end) end
+            if getgenv().KrizSpecEvents then for _, c in ipairs(getgenv().KrizSpecEvents) do pcall(function() c:Disconnect() end) end end
+            if specGui then pcall(function() specGui:Destroy() end) specGui = nil end
+        end
+    end,
+    OnDisable = function() getgenv().KrizSpecActive = false if getgenv().KrizSpecCleanup then pcall(getgenv().KrizSpecCleanup) end end
+})
+--553--
+
+
+Core:RegisterModule({
+    Name = "Infinite Zoom / ซูมไม่จำกัด", Category = "General",
+    OnEnable = function()
+        getgenv().KrizZoomActive = true
+        local LP = game:GetService("Players").LocalPlayer
+        task.spawn(function()
+            while getgenv().KrizZoomActive do
+                pcall(function() LP.CameraMaxZoomDistance = 1e5 end)
+                task.wait(1)
+            end
+        end)
+    end,
+    OnDisable = function()
+        getgenv().KrizZoomActive = false
+        pcall(function() game:GetService("Players").LocalPlayer.CameraMaxZoomDistance = 128 end)
+    end
+})
+
+
+
+Core:RegisterModule({
+    Name = "Waypoints / บันทึกจุดวาร์ป", Category = "General",
+    OnEnable = function()
+        getgenv().KrizWpActive = true
+        local P, SG, LP, UIS = game:GetService("Players"), game:GetService("StarterGui"), game:GetService("Players").LocalPlayer, game:GetService("UserInputService")
+        getgenv().KrizWaypoints = getgenv().KrizWaypoints or {}
+        local function notify(t) task.spawn(function() pcall(function() SG:SetCore("SendNotification", {Title="KRIZ HUB", Text=t, Duration=3}) end) end) end
+
+        local wpGui, scroll, searchBox
+
+        local function loadWps()
+            if not scroll then return end
+            for _, ch in ipairs(scroll:GetChildren()) do if not ch:IsA("UIListLayout") then ch:Destroy() end end
+            for idx, wp in ipairs(getgenv().KrizWaypoints) do
+                local holder = Instance.new("Frame", scroll)
+                holder.Size, holder.BackgroundColor3, holder.BackgroundTransparency = UDim2.new(1, 0, 0, 22), Color3.fromRGB(30,30,30), 0.3
+                Instance.new("UICorner", holder).CornerRadius = UDim.new(0, 4)
+
+                local btn = Instance.new("TextButton", holder)
+                btn.Size, btn.Position, btn.BackgroundTransparency, btn.Text, btn.TextColor3, btn.TextSize, btn.Font, btn.TextXAlignment = UDim2.new(1, -26, 1, 0), UDim2.new(0, 4, 0, 0), 1, wp.Name, Color3.fromRGB(200,200,200), 9, Enum.Font.Gotham, Enum.TextXAlignment.Left
+
+                local delBtn = Instance.new("TextButton", holder)
+                delBtn.Size, delBtn.Position, delBtn.BackgroundColor3, delBtn.BackgroundTransparency, delBtn.Text, delBtn.TextColor3, delBtn.TextSize, delBtn.Font = UDim2.new(0, 18, 0, 18), UDim2.new(1, -20, 0.5, -9), Color3.fromRGB(150,40,40), 0.2, "X", Color3.fromRGB(255,100,100), 9, Enum.Font.GothamBold
+                Instance.new("UICorner", delBtn).CornerRadius = UDim.new(0, 3)
+
+                btn.MouseButton1Click:Connect(function()
+                    if LP.Character and LP.Character:FindFirstChild("HumanoidRootPart") then
+                        LP.Character.HumanoidRootPart.CFrame = wp.CFrame
+                        notify("TP TO: " .. wp.Name)
+                    end
+                end)
+
+                delBtn.MouseButton1Click:Connect(function()
+                    table.remove(getgenv().KrizWaypoints, idx)
+                    loadWps()
+                end)
+            end
+            local ly = scroll:FindFirstChildOfClass("UIListLayout") if ly then scroll.CanvasSize = UDim2.new(0, 0, 0, ly.AbsoluteContentSize.Y + 6) end
+        end
+
+        local function buildUI()
+            if wpGui then pcall(function() wpGui:Destroy() end) wpGui = nil end
+            if not getgenv().KrizWpActive then return end
+            wpGui = Instance.new("ScreenGui") wpGui.Name, wpGui.ResetOnSpawn, wpGui.DisplayOrder, wpGui.IgnoreGuiInset, wpGui.Parent = "KrizWpMini", false, 999999, true, LP:WaitForChild("PlayerGui")
+            local frm = Instance.new("Frame", wpGui) frm.Size, frm.Position, frm.AnchorPoint, frm.BackgroundColor3, frm.BackgroundTransparency = UDim2.new(0, 160, 0, 185), UDim2.new(0.5, 0, 0.5, 0), Vector2.new(0.5, 0.5), Color3.fromRGB(0,0,0), 0.5
+            Instance.new("UICorner", frm).CornerRadius = UDim.new(0, 8) Instance.new("UIStroke", frm).Color = Color3.fromRGB(230,50,50)
+            local ttl = Instance.new("TextLabel", frm) ttl.Size, ttl.BackgroundTransparency, ttl.Text, ttl.TextColor3, ttl.TextSize, ttl.Font = UDim2.new(1, 0, 0, 22), 1, "KRIZ HUB - WAYPOINTS", Color3.fromRGB(255,255,255), 9, Enum.Font.GothamBold
+
+            local inpH = Instance.new("Frame", frm) inpH.Size, inpH.Position, inpH.BackgroundTransparency = UDim2.new(1, -12, 0, 24), UDim2.new(0, 6, 0, 24), 1
+            searchBox = Instance.new("TextBox", inpH) searchBox.Size, searchBox.BackgroundColor3, searchBox.BackgroundTransparency, searchBox.Font, searchBox.Text, searchBox.TextColor3, searchBox.TextSize = UDim2.new(0.68, -3, 1, 0), Color3.fromRGB(55,55,55), 0.2, Enum.Font.Gotham, "Point Name", Color3.fromRGB(200,200,200), 8
+            Instance.new("UICorner", searchBox).CornerRadius = UDim.new(0, 4)
+            searchBox.Focused:Connect(function() if searchBox.Text == "Point Name" then searchBox.Text = "" searchBox.TextColor3 = Color3.fromRGB(255,255,255) end end)
+            searchBox.FocusLost:Connect(function() if searchBox.Text == "" or searchBox.Text == " " then searchBox.Text = "Point Name" searchBox.TextColor3 = Color3.fromRGB(200,200,200) end end)
+
+            local addBtn = Instance.new("TextButton", inpH) addBtn.Size, addBtn.Position, addBtn.BackgroundColor3, addBtn.BackgroundTransparency, addBtn.Font, addBtn.Text, addBtn.TextColor3, addBtn.TextSize = UDim2.new(0.32, -3, 1, 0), UDim2.new(0.68, 3, 0, 0), Color3.fromRGB(70,70,70), 0.2, Enum.Font.GothamBold, "SAVE", Color3.fromRGB(0,255,100), 9
+            Instance.new("UICorner", addBtn).CornerRadius = UDim.new(0, 4)
+
+            scroll = Instance.new("ScrollingFrame", frm) scroll.Size, scroll.Position, scroll.BackgroundTransparency, scroll.BorderSizePixel, scroll.ScrollBarThickness = UDim2.new(1, -8, 1, -56), UDim2.new(0, 4, 0, 52), 1, 0, 2
+            Instance.new("UIListLayout", scroll).Padding = UDim.new(0, 4)
+
+            loadWps()
+
+            addBtn.MouseButton1Click:Connect(function()
+                if LP.Character and LP.Character:FindFirstChild("HumanoidRootPart") then
+                    local name = (searchBox.Text == "" or searchBox.Text == "Point Name") and ("Pos #" .. (#getgenv().KrizWaypoints + 1)) or searchBox.Text
+                    table.insert(getgenv().KrizWaypoints, {Name = name, CFrame = LP.Character.HumanoidRootPart.CFrame})
+                    notify("เซฟจุด: " .. name)
+                    searchBox.Text, searchBox.TextColor3 = "Point Name", Color3.fromRGB(200,200,200)
+                    loadWps()
+                end
+            end)
+
+            local drag, dStart, gStart, activeI
+            frm.InputBegan:Connect(function(i) if (i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.MouseButton1) and not activeI then drag, activeI, dStart, gStart = true, i, i.Position, frm.Position end end)
+            UIS.InputChanged:Connect(function(i) if drag and i == activeI then local d = i.Position - dStart frm.Position = UDim2.new(gStart.X.Scale, gStart.X.Offset + d.X, gStart.Y.Scale, gStart.Y.Offset + d.Y) end end)
+            UIS.InputEnded:Connect(function(i) if i == activeI then drag, activeI = false, nil end end)
+        end
+
+        buildUI()
+        getgenv().KrizWpGuard = LP.CharacterAdded:Connect(function() task.wait(0.2) if getgenv().KrizWpActive then loadWps() end end)
+        getgenv().KrizWpCleanup = function()
+            if getgenv().KrizWpGuard then pcall(function() getgenv().KrizWpGuard:Disconnect() end) end
+            if wpGui then pcall(function() wpGui:Destroy() end) wpGui = nil end
+        end
+    end,
+    OnDisable = function() getgenv().KrizWpActive = false if getgenv().KrizWpCleanup then pcall(getgenv().KrizWpCleanup) end end
+})
+
+
+
+Core:RegisterModule({
+    Name = "Shift Lock Force / หันตามทิศทางเดิน", Category = "Settings",
+    OnEnable = function()
+        getgenv().KrizShiftLockActive = true
+        local LP, RS = game:GetService("Players").LocalPlayer, game:GetService("RunService")
+        
+        getgenv().KrizShiftCleanup = function()
+            if getgenv().KrizShiftConn then pcall(function() getgenv().KrizShiftConn:Disconnect() end) getgenv().KrizShiftConn = nil end
+            if getgenv().KrizShiftGuard then pcall(function() getgenv().KrizShiftGuard:Disconnect() end) getgenv().KrizShiftGuard = nil end
+            -- 📌 แก้จุดที่ 2: บังคับคืนค่า AutoRotate ให้ Humanoid ปัจจุบันแน่นอนตอนปิดสวิตช์
+            pcall(function()
+                if LP.Character and LP.Character:FindFirstChildOfClass("Humanoid") then
+                    LP.Character:FindFirstChildOfClass("Humanoid").AutoRotate = true
+                end
+            end)
+        end
+
+        local function setup()
+            if getgenv().KrizShiftConn then pcall(function() getgenv().KrizShiftConn:Disconnect() end) end
+            getgenv().KrizShiftConn = RS.RenderStepped:Connect(function(dt)
+                if not getgenv().KrizShiftLockActive then return end
+                local c = LP.Character
+                local h = c and c:FindFirstChild("HumanoidRootPart")
+                local hum = c and c:FindFirstChildOfClass("Humanoid")
+                if h and hum and hum.Health > 0 then
+                    hum.AutoRotate = false
+                    if hum.MoveDirection.Magnitude > 0.05 then
+                        local targetCF = CFrame.lookAt(h.Position, h.Position + Vector3.new(hum.MoveDirection.X, 0, hum.MoveDirection.Z))
+                        h.CFrame = h.CFrame:Lerp(targetCF, math.clamp(dt * 20, 0.15, 0.4))
+                    end
+                end
+            end)
+        end
+
+        setup()
+
+        -- 📌 แก้จุดที่ 1: ดักจับ CharacterAdded แบบเช็ค Humanoid ให้พร้อมใช้งานจริง ป้องกันสวิตช์หลุดตอนตาย
+        getgenv().KrizShiftGuard = LP.CharacterAdded:Connect(function(char)
+            char:WaitForChild("HumanoidRootPart", 5)
+            char:WaitForChild("Humanoid", 5)
+            task.wait(0.1)
+            if getgenv().KrizShiftLockActive then setup() end
+        end)
+    end,
+    OnDisable = function()
+        getgenv().KrizShiftLockActive = false
+        if getgenv().KrizShiftCleanup then pcall(getgenv().KrizShiftCleanup) end
+    end
+})
 --ESP 1--
 
 if not _G.KrizHubCore then return end
@@ -2792,3 +3160,59 @@ end, OnDisable=function()
     getgenv().KItem = false
     if getgenv().KItemC then pcall(getgenv().KItemC) end
 end})
+
+
+
+if not _G.KrizHubCore then return warn("[KRIZ HUB] รัน Core UI ก่อน!") end
+if _G.KrizHub_ESP_CleanUp then pcall(_G.KrizHub_ESP_CleanUp) end
+
+local P, R, LP, ESP, Conns = game:GetService("Players"), game:GetService("RunService"), game:GetService("Players").LocalPlayer, false, {}
+
+local function getCol(p)
+    if p.Team and LP.Team and p.Team == LP.Team then return Color3.fromRGB(0, 255, 0) end
+    local c, b = p.Character, p:FindFirstChildOfClass("Backpack")
+    local function check(kws)
+        for _, cnt in ipairs({c, b}) do
+            if cnt then for _, i in ipairs(cnt:GetChildren()) do
+                if i:IsA("Tool") then for _, k in ipairs(kws) do if string.find(string.lower(i.Name), k) then return true end end end
+            end end
+        end
+    end
+    if check({"knife","blade","sword","dagger","murderer"}) then return Color3.fromRGB(255, 0, 0) end
+    if check({"gun","pistol","rifle","revolver","sheriff","cop","police"}) then return Color3.fromRGB(0, 100, 255) end
+    local tm, rl = p.Team and string.lower(p.Team.Name) or "", (p:FindFirstChild("Role") or (c and c:FindFirstChild("Role"))) and string.lower(tostring((p:FindFirstChild("Role") or c.Role).Value)) or ""
+    if string.find(tm, "police") or string.find(tm, "cop") or string.find(rl, "sheriff") then return Color3.fromRGB(0, 100, 255) end
+    if string.find(tm, "thief") or string.find(tm, "robber") or string.find(tm, "criminal") or string.find(rl, "murderer") then return Color3.fromRGB(255, 0, 0) end
+    return p.Team and p.TeamColor.Color or Color3.fromRGB(255, 255, 255)
+end
+
+local function clear()
+    for _, p in ipairs(P:GetPlayers()) do
+        if p.Character and p.Character:FindFirstChild("KrizESP") then p.Character.KrizESP:Destroy() end
+    end
+end
+
+local function upd()
+    if not ESP then return end
+    for _, p in ipairs(P:GetPlayers()) do
+        if p ~= LP and p.Character then
+            local col = getCol(p)
+            local hl = p.Character:FindFirstChild("KrizESP") or Instance.new("Highlight")
+            hl.Name, hl.Adornee, hl.FillColor, hl.OutlineColor, hl.FillTransparency, hl.OutlineTransparency, hl.Parent = "KrizESP", p.Character, col, col, 0.5, 0, p.Character
+        end
+    end
+end
+
+local t = 0
+table.insert(Conns, R.Heartbeat:Connect(function() if ESP and (tick()-t) > 0.2 then t = tick() upd() end end))
+
+_G.KrizHub_ESP_CleanUp = function() ESP = false clear() for _, c in ipairs(Conns) do if c.Connected then c:Disconnect() end end Conns = {} end
+
+_G.KrizHubCore:RegisterModule({
+    Name = "ESP Highlight / ไฮไลท์", Category = "Visual",
+    OnEnable = function() ESP = true upd() end,
+    OnDisable = function() ESP = false clear() end
+})
+
+table.insert(_G.KrizHubCore.Connections, {Connected = true, Disconnect = function(self) self.Connected = false pcall(_G.KrizHub_ESP_CleanUp) end})
+print("[KRIZ HUB] ESP Loaded!")
