@@ -81,16 +81,24 @@ print("[KRIZ HUB] Core UI loaded.")
 
 
 -- ==========================================
--- KRIZ HUB: MAIN LOADER SCRIPT
+-- KRIZ HUB: SIMPLE 5-LINK LOADER SCRIPT
 -- ==========================================
-local ModuleURL = "https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/refs/heads/main/KRIZ_HUB_200"
 
-local success, err = pcall(function()
-    loadstring(game:HttpGet(ModuleURL))()
-end)
+-- ลิงก์ที่ 1 (General)
+pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/USER/REPO/main/Module_General.lua"))() end)
 
-if success then
-    print("[KRIZ HUB] Execution Success!")
-else
-    warn("[KRIZ HUB] Error loading script: " .. tostring(err))
-end
+-- ลิงก์ที่ 2 (Attack)
+pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/USER/REPO/main/Module_Attack.lua"))() end)
+
+-- ลิงก์ที่ 3 (Defense)
+pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/USER/REPO/main/Module_Defense.lua"))() end)
+
+-- ลิงก์ที่ 4 (Visual)
+pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/USER/REPO/main/Module_Visual.lua"))() end)
+
+-- ลิงก์ที่ 5 (Settings)
+pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/USER/REPO/main/Module_Settings.lua"))() end)
+
+print("[KRIZ HUB] Loaded all 5 links successfully!")
+
+
