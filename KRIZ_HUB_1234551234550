@@ -1,4 +1,4 @@
---221--
+--1--
 
 
 
@@ -157,7 +157,7 @@ Core:RegisterModule({
 		if getgenv().KrizHitboxCleanup then pcall(getgenv().KrizHitboxCleanup) end
 	end
 })
---331--
+--2--
 
 
 
@@ -291,8 +291,7 @@ Core:RegisterModule({
 		if getgenv().KrizAntiFlingCleanup then pcall(getgenv().KrizAntiFlingCleanup) end
 	end
 })
-
---332--
+--3--
 
 
 Core:RegisterModule({
@@ -447,8 +446,7 @@ Core:RegisterModule({
 		if getgenv().KrizSpeedCleanup then pcall(getgenv().KrizSpeedCleanup) end
 	end
 })
-
---333--
+--4--
 
 
 
@@ -613,7 +611,7 @@ Core:RegisterModule({
 	end
 })
 
---441--
+--5--
 
 
 
@@ -713,204 +711,7 @@ Core:RegisterModule({
 		if getgenv().KrizFlingCleanup then pcall(getgenv().KrizFlingCleanup) end
 	end
 })
-
---442--
-
-
-
---------------------------------------------------
--- MODULE: SPECIAL ANIMATION / โมเดลพิเศษ (🥵)
---------------------------------------------------
-
-Core:RegisterModule({
-
-    Name = "Special Animation / โมเดลพิเศษ 🥵",
-
-    OnEnable = function()
-        getgenv().KrizSpecialAnimActive = true
-
-        local Players = game:GetService("Players")
-        local RunService = game:GetService("RunService")
-        local StarterGui = game:GetService("StarterGui")
-        local ME = Players.LocalPlayer
-
-        local function notify(text)
-            task.spawn(function()
-                pcall(function()
-                    StarterGui:SetCore("SendNotification", {
-                        Title = "KRIZ HUB",
-                        Text = text,
-                        Duration = 3,
-                    })
-                end)
-            end)
-        end
-
-        _G.SIGNAL_ID = "rbxassetid://129423030"
-        _G.ActivexxxModels = _G.ActivexxxModels or {}
-        _G.SelfActivexxx = _G.SelfActivexxx or false
-        _G.LastDetected = _G.LastDetected or {}
-        _G.RemoteLastPulse = _G.RemoteLastPulse or {}
-
-        local specialColor = Color3.fromRGB(211, 130, 175)
-        local partsData = {
-            P1 = {OffsetPos = Vector3.new(0.45, -1.2, 0.55), Scale = Vector3.new(2, 2, 2)},
-            P2 = {OffsetPos = Vector3.new(-0.45, -1.2, 0.55), Scale = Vector3.new(2, 2, 2)},
-            P3 = {OffsetPos = Vector3.new(0.15, -1.15, -0.4), Scale = Vector3.new(0.6, 0.9, 0.9)},
-            P4 = {OffsetPos = Vector3.new(-0.15, -1.15, -0.4), Scale = Vector3.new(0.6, 0.9, 0.9)},
-            P5 = {OffsetPos = Vector3.new(0, -1.2, -0.4), Scale = Vector3.new(0.1, 0.8, 0.9)},
-            P6 = {OffsetPos = Vector3.new(0.4, 0.1, -0.65), Scale = Vector3.new(1.5, 1.5, 1.6)},
-            P7 = {OffsetPos = Vector3.new(-0.4, 0.1, -0.65), Scale = Vector3.new(1.5, 1.5, 1.6)},
-            P8 = {OffsetPos = Vector3.new(0.7, -0.1, -1.3), Scale = Vector3.new(0.4, 0.4, 0.5)},
-            P9 = {OffsetPos = Vector3.new(-0.7, -0.1, -1.3), Scale = Vector3.new(0.4, 0.4, 0.5)}
-        }
-
-        local function CleanxxxBody(charName)
-            local data = _G.ActivexxxModels[charName]
-            local pChar = Players:FindFirstChild(charName) and Players[charName].Character
-            if data then
-                if data.model then data.model:Destroy() end
-                if data.storage and pChar then
-                    for _, item in pairs(data.storage:GetChildren()) do item.Parent = pChar end
-                    data.storage:Destroy()
-                end
-            end
-            if pChar then
-                for _, n in pairs({"Left Leg", "Right Leg"}) do
-                    local limb = pChar:FindFirstChild(n)
-                    if limb then
-                        local m = limb:FindFirstChildOfClass("SpecialMesh")
-                        if m then m:Destroy() end
-                        limb.Material = Enum.Material.Plastic
-                    end
-                end
-            end
-            _G.ActivexxxModels[charName] = nil
-        end
-
-        local function BuildxxxBody(targetChar)
-            if not targetChar or _G.ActivexxxModels[targetChar.Name] then return end
-            local torso = targetChar:FindFirstChild("Torso") or targetChar:FindFirstChild("HumanoidRootPart")
-            if not torso then return end
-            for _, n in pairs({"Left Leg", "Right Leg"}) do
-                local l = targetChar:FindFirstChild(n)
-                if l then
-                    local m = Instance.new("SpecialMesh", l); m.Scale = Vector3.new(1.8, 1, 2)
-                    l.Material = Enum.Material.SmoothPlastic
-                end
-            end
-            local st = Instance.new("Folder", workspace.CurrentCamera); st.Name = "xxx_Storage_" .. targetChar.Name
-            for _, i in pairs(targetChar:GetChildren()) do if i:IsA("Shirt") or i:IsA("Pants") or i:IsA("ShirtGraphic") then i.Parent = st end end
-            local mod = Instance.new("Model", targetChar); local welds = {}
-            local skin = (targetChar:FindFirstChildOfClass("BodyColors") and targetChar:FindFirstChildOfClass("BodyColors").HeadColor3) or Color3.fromRGB(163, 110, 84)
-            for name, d in pairs(partsData) do
-                local p = Instance.new("Part", mod); p.Shape, p.Size, p.CanCollide, p.Massless = Enum.PartType.Ball, d.Scale, false, true
-                p.Color = (name=="P5" or name=="P8" or name=="P9") and specialColor or skin
-                p.Material = Enum.Material.SmoothPlastic
-                local w = Instance.new("Weld", p); w.Part0, w.Part1 = torso, p; w.C0 = CFrame.new(d.OffsetPos)
-                welds[name] = {weld = w, origC0 = w.C0}
-            end
-            _G.ActivexxxModels[targetChar.Name] = {model = mod, storage = st, welds = welds, sY = 0, sV = 0}
-        end
-
-        local lastPulse = tick()
-        local function sendPulse()
-            local hum = ME.Character and ME.Character:FindFirstChild("Humanoid")
-            if hum then
-                local anim = Instance.new("Animation"); anim.AnimationId = _G.SIGNAL_ID
-                local t = hum:LoadAnimation(anim); t.Priority = Enum.AnimationPriority.Action; t:Play()
-                task.wait(0.2); t:Stop()
-            end
-        end
-
-        -- เปิดใช้งานตัวละครของผู้เล่นเองทันทีเมื่อกดเปิดโมดูลในเมนู
-        _G.SelfActivexxx = true
-        lastPulse = tick()
-        sendPulse()
-        if ME.Character then BuildxxxBody(ME.Character) end
-
-        local renderConn = RunService.RenderStepped:Connect(function()
-            if not getgenv().KrizSpecialAnimActive then return end
-            for name, data in pairs(_G.ActivexxxModels) do
-                local char = Players:FindFirstChild(name) and Players[name].Character
-                local torso = char and (char:FindFirstChild("Torso") or char:FindFirstChild("HumanoidRootPart"))
-                local hum = char and char:FindFirstChild("Humanoid")
-                if torso and hum and data.welds then
-                    local t, speed = tick(), hum.MoveDirection.Magnitude
-                    local walkB, walkS = math.sin(t * 12) * 0.04 * speed, math.cos(t * 7) * 0.05 * speed
-                    local targetS = -torso.Velocity.Y * 0.015
-                    data.sV = (data.sV + (targetS - data.sY) * 0.1) * 0.75
-                    data.sY = data.sY + data.sV
-                    for pName, wD in pairs(data.welds) do
-                        local m = (pName == "P8" or pName == "P9") and 1.5 or 1
-                        wD.weld.C0 = wD.origC0 * CFrame.new(walkS * m, walkB + data.sY, 0) * CFrame.Angles(math.rad(data.sY * 10), 0, 0)
-                    end
-                end
-            end
-        end)
-
-        local heartbeatConn = RunService.Heartbeat:Connect(function()
-            if not getgenv().KrizSpecialAnimActive then return end
-            if _G.SelfActivexxx and (tick() - lastPulse) > 60 then
-                lastPulse = tick(); sendPulse()
-            end
-
-            for _, p in pairs(Players:GetPlayers()) do
-                if p ~= ME then
-                    local hum = p.Character and p.Character:FindFirstChild("Humanoid")
-                    if hum then
-                        local isPlaying = false
-                        for _, t in pairs(hum:GetPlayingAnimationTracks()) do
-                            if t.Animation.AnimationId == _G.SIGNAL_ID then isPlaying = true; break end
-                        end
-                        
-                        if isPlaying and not _G.LastDetected[p.Name] then
-                            local now = tick()
-                            local diff = now - (_G.RemoteLastPulse[p.Name] or 0)
-                            _G.RemoteLastPulse[p.Name] = now
-                            
-                            if diff >= 58 and diff <= 62 then
-                                BuildxxxBody(p.Character)
-                            else
-                                if _G.ActivexxxModels[p.Name] then CleanxxxBody(p.Name) else BuildxxxBody(p.Character) end
-                            end
-                        end
-                        _G.LastDetected[p.Name] = isPlaying
-                    end
-                end
-            end
-        end)
-
-        notify("SPECIAL ANIM: ON")
-
-        -- ฟังก์ชันทำความสะอาดเมื่อปิดโมดูลผ่าน UI หลัก
-        getgenv().KrizSpecialAnimCleanup = function()
-            _G.SelfActivexxx = false
-            if renderConn then renderConn:Disconnect() end
-            if heartbeatConn then heartbeatConn:Disconnect() end
-            
-            -- ล้างโมเดลของทุกคนที่ถูกสร้างขึ้น
-            for name, _ in pairs(_G.ActivexxxModels) do
-                CleanxxxBody(name)
-            end
-            _G.ActivexxxModels = {}
-            _G.LastDetected = {}
-            _G.RemoteLastPulse = {}
-            
-            if ME.Name then CleanxxxBody(ME.Name) end
-            notify("SPECIAL ANIM: OFF")
-        end
-    end,
-
-    OnDisable = function()
-        getgenv().KrizSpecialAnimActive = false
-        if getgenv().KrizSpecialAnimCleanup then
-            pcall(getgenv().KrizSpecialAnimCleanup)
-        end
-    end
-
-})
---443--
+--6--
 
 
 Core:RegisterModule({
@@ -1093,7 +894,7 @@ Core:RegisterModule({
 		if getgenv().KrizInvisCleanup then pcall(getgenv().KrizInvisCleanup) end
 	end
 })
---445--
+--7--
 
 
 
@@ -1352,9 +1153,7 @@ Core:RegisterModule({
 		if getgenv().KrizExecutionerCleanup then pcall(getgenv().KrizExecutionerCleanup) end
 	end
 })
-
-
---552--
+--8--
 
 
 Core:RegisterModule({
@@ -1543,8 +1342,7 @@ Core:RegisterModule({
 	end,
 	OnDisable=function() getgenv().KrizSpecActive=false if getgenv().KrizSpecCleanup then pcall(getgenv().KrizSpecCleanup) end end
 })
-
---553--
+--9--
 
 
 Core:RegisterModule({
@@ -1660,7 +1458,6 @@ Core:RegisterModule({
 	end,
 	OnDisable=function() getgenv().KrizShiftLockActive=false if getgenv().KrizShiftCleanup then pcall(getgenv().KrizShiftCleanup) end end
 })
-
 --ESP 1--
 
 
@@ -1839,8 +1636,6 @@ Core:RegisterModule({Name="Proximity Line / เส้นบอกระยะป
 	for _,p in pairs(P:GetPlayers()) do C(p) end local a=P.PlayerAdded:Connect(C)
 	getgenv().KProxC=function() a:Disconnect() for _,o in ipairs(dList) do pcall(function() o:Remove() end) end end
 end,OnDisable=function() getgenv().KProx=false if getgenv().KProxC then pcall(getgenv().KProxC) end end})
-
-
 --ESP 2--
 
 
@@ -1965,3 +1760,4 @@ Core:RegisterModule({
 	OnDisable=function() ESP=false clear() end
 })
 table.insert(Core.Connections,{Connected=true,Disconnect=function(self) self.Connected=false pcall(_G.KrizHub_ESP_CleanUp) end})
+
