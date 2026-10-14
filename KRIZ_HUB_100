@@ -83,7 +83,7 @@ print("[KRIZ HUB] Core UI loaded.")
 -- ==========================================
 -- KRIZ HUB: MAIN LOADER SCRIPT
 -- ==========================================
-local ModuleURL = "https://raw.githubusercontent.com/ชื่อผู้ใช้ของคุณ/ชื่อคลังของคุณ/main/KrizHub_Module.lua"
+local ModuleURL = "https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/refs/heads/main/KRIZ_HUB_200"
 
 local success, err = pcall(function()
     loadstring(game:HttpGet(ModuleURL))()
