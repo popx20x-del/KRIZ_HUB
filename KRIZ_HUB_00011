@@ -1,0 +1,303 @@
+--ESP 1--
+
+
+if not _G.KrizHubCore then return end
+local Core,P,RS,Cam,LP=_G.KrizHubCore,game:GetService("Players"),game:GetService("RunService"),workspace.CurrentCamera,game:GetService("Players").LocalPlayer
+Core:RegisterModule({Name="ESP / มองทะลุ",Category="Visual",OnEnable=function()
+	getgenv().KEsp=true local d={}
+	local function M(p)
+		if p==LP then return end
+		local o={T=Drawing.new("Line"),B=Drawing.new("Line"),L=Drawing.new("Line"),R=Drawing.new("Line"),H=Drawing.new("Line"),N=Drawing.new("Text"),D=Drawing.new("Text")}
+		for _,v in pairs(o) do table.insert(d,v) v.Visible,v.Center,v.Outline,v.OutlineColor,v.Transparency,v.Size=false,true,true,Color3.new(),1,13 end
+		local cn; cn=RS.RenderStepped:Connect(function()
+			if not getgenv().KEsp then for _,v in pairs(o) do v.Visible=false end cn:Disconnect() return end
+			local c,hum,hrp=p.Character,p.Character and p.Character:FindFirstChildOfClass("Humanoid"),p.Character and p.Character:FindFirstChild("HumanoidRootPart")
+			if hrp and hum and hum.Health>0 then
+				local pos,vis=Cam:WorldToViewportPoint(hrp.Position)
+				if vis then
+					local dist=(hrp.Position-Cam.CFrame.Position).Magnitude
+					local h=math.abs(Cam:WorldToViewportPoint(c.Head.Position+Vector3.new(0,.5,0)).Y-Cam:WorldToViewportPoint(hrp.Position-Vector3.new(0,3,0)).Y)
+					local w,t,tr=h/1.5,math.clamp(1.2*(40/dist),.5,1.2),math.clamp(70/dist,.4,.9)
+					local clr=(p.Team and p.Team~=LP.Team) and p.TeamColor.Color or Color3.new(1,1,1)
+					o.T.From,o.T.To,o.B.From,o.B.To=Vector2.new(pos.X-w/2,pos.Y-h/2),Vector2.new(pos.X+w/2,pos.Y-h/2),Vector2.new(pos.X-w/2,pos.Y+h/2),Vector2.new(pos.X+w/2,pos.Y+h/2)
+					o.L.From,o.L.To,o.R.From,o.R.To=Vector2.new(pos.X-w/2,pos.Y-h/2),Vector2.new(pos.X-w/2,pos.Y+h/2),Vector2.new(pos.X+w/2,pos.Y-h/2),Vector2.new(pos.X+w/2,pos.Y+h/2)
+					for _,l in pairs({o.T,o.B,o.L,o.R}) do l.Thickness,l.Transparency,l.Color,l.Visible=t,tr,clr,true end
+					local bX=pos.X-w/2-5
+					o.H.From,o.H.To,o.H.Thickness,o.H.Color,o.H.Transparency,o.H.Visible=Vector2.new(bX,pos.Y+h/2),Vector2.new(bX,pos.Y+h/2-(h*(hum.Health/hum.MaxHealth))),math.clamp(3*(40/dist),1.5,2.5),Color3.fromHSV(hum.Health/hum.MaxHealth*.3,1,1),tr,true
+					o.N.Position,o.N.Text,o.N.Color,o.N.Visible=Vector2.new(pos.X,pos.Y-h/2-16),p.Name,clr,true
+					o.D.Position,o.D.Text,o.D.Color,o.D.Visible=Vector2.new(pos.X,pos.Y+h/2+2),math.floor(dist).."m",Color3.new(1,1,1),true
+				else for _,v in pairs(o) do v.Visible=false end end
+			else for _,v in pairs(o) do v.Visible=false end if not p.Parent then cn:Disconnect() end end
+		end)
+	end
+	for _,p in pairs(P:GetPlayers()) do M(p) end local a=P.PlayerAdded:Connect(M)
+	getgenv().KCE=function() a:Disconnect() for _,v in ipairs(d) do pcall(function() v:Remove() end) end end
+end,OnDisable=function() getgenv().KEsp=false if getgenv().KCE then pcall(getgenv().KCE) end end})
+
+Core:RegisterModule({Name="ESP Tracer / เส้นบน",Category="Visual",OnEnable=function()
+	getgenv().KTT=true local tr,pc={},{}
+	local function S(p)
+		if p==LP then return end
+		local l=Drawing.new("Line") l.Visible,l.Thickness,l.Transparency=false,1.5,.8 tr[p]=l
+		pc[p]=p.CharacterAdded:Connect(function() tr[p]=l end)
+	end
+	for _,p in pairs(P:GetPlayers()) do S(p) end
+	local a,r=P.PlayerAdded:Connect(S),P.PlayerRemoving:Connect(function(p) if tr[p] then tr[p]:Remove() tr[p]=nil end end)
+	local u=RS.RenderStepped:Connect(function()
+		if not getgenv().KTT then return end local orig=Vector2.new(Cam.ViewportSize.X/2,0)
+		for p,l in pairs(tr) do
+			local hrp,hum=p.Character and p.Character:FindFirstChild("HumanoidRootPart"),p.Character and p.Character:FindFirstChildOfClass("Humanoid")
+			if hrp and hum and hum.Health>0 then
+				local pos,vis=Cam:WorldToViewportPoint(hrp.Position)
+				local clr=(p.Team and p.Team~=LP.Team) and p.TeamColor.Color or Color3.new(1,1,1)
+				if vis then l.From,l.To,l.Color,l.Visible=orig,Vector2.new(pos.X,pos.Y),clr,true else l.Visible=false end
+			else l.Visible=false end
+		end
+	end)
+	getgenv().KTTC=function() u:Disconnect() a:Disconnect() r:Disconnect() for _,l in pairs(tr) do l:Remove() end end
+end,OnDisable=function() getgenv().KTT=false if getgenv().KTTC then pcall(getgenv().KTTC) end end})
+
+Core:RegisterModule({Name="ESP NPC Highlight / ไฮไลท์ NPC",Category="Visual",OnEnable=function()
+	getgenv().KNPC=true local hl,tag={},{}
+	local function SN(m)
+		if not m:IsA("Model") or P:GetPlayerFromCharacter(m) or hl[m] then return end
+		local hum,head=m:FindFirstChildOfClass("Humanoid"),m:FindFirstChild("Head")
+		if not hum or not head then return end
+		local h=Instance.new("Highlight") h.Adornee,h.FillColor,h.OutlineColor,h.FillTransparency,h.Parent=m,Color3.fromRGB(0,255,0),Color3.fromRGB(0,255,0),.5,m hl[m]=h
+		local b=Instance.new("BillboardGui") b.Adornee,b.Size,b.StudsOffset,b.AlwaysOnTop=head,UDim2.new(0,150,0,30),Vector3.new(0,2.5,0),true
+		local t=Instance.new("TextLabel",b) t.Size,t.BackgroundTransparency,t.Text,t.TextColor3,t.TextSize,t.Font=UDim2.new(1,0,1,0),1,"NPC : "..(m.Name~="" and m.Name or "Unknown"),Color3.fromRGB(0,255,0),13,Enum.Font.GothamBold b.Parent=m tag[m]=b
+	end
+	for _,o in ipairs(workspace:GetDescendants()) do if o:IsA("Model") then SN(o) end end
+	local a=workspace.DescendantAdded:Connect(function(o) if o:IsA("Model") and getgenv().KNPC then task.delay(.2,function() SN(o) end) end end)
+	getgenv().KNPCC=function() a:Disconnect() for m,_ in pairs(hl) do if hl[m] then hl[m]:Destroy() end if tag[m] then tag[m]:Destroy() end end hl,tag={},{} end
+end,OnDisable=function() getgenv().KNPC=false if getgenv().KNPCC then pcall(getgenv().KNPCC) end end})
+
+Core:RegisterModule({Name="ESP Skeleton / โครงกระดูก",Category="Visual",OnEnable=function()
+	getgenv().KSkel=true local dList={}
+	local function C(p)
+		if p==LP then return end
+		local ln={Spine=Drawing.new("Line"),Chest=Drawing.new("Line"),LA1=Drawing.new("Line"),LA2=Drawing.new("Line"),RA1=Drawing.new("Line"),RA2=Drawing.new("Line"),LL1=Drawing.new("Line"),LL2=Drawing.new("Line"),RL1=Drawing.new("Line"),RL2=Drawing.new("Line")}
+		for _,l in pairs(ln) do table.insert(dList,l) l.Visible,l.Thickness,l.Transparency,l.Outline,l.OutlineColor=false,1.2,.8,true,Color3.new() end
+		local cn; cn=RS.RenderStepped:Connect(function()
+			if not getgenv().KSkel then for _,l in pairs(ln) do l.Visible=false end cn:Disconnect() return end
+			local c,hum,hrp=p.Character,p.Character and p.Character:FindFirstChildOfClass("Humanoid"),p.Character and p.Character:FindFirstChild("HumanoidRootPart")
+			if c and hum and hum.Health>0 and hrp then
+				local head=c:FindFirstChild("Head")
+				if head then
+					local pH,vH=Cam:WorldToViewportPoint(head.Position)
+					local clr=(p.Team and p.Team~=LP.Team) and p.TeamColor.Color or Color3.new(1,1,1)
+					if vH then
+						if hum.RigType==Enum.HumanoidRigType.R6 then
+							local torso=c:FindFirstChild("Torso")
+							if torso then
+								local pT,vT=Cam:WorldToViewportPoint(torso.Position) local tP=Vector2.new(pT.X,pT.Y)
+								ln.Chest.Visible,ln.LA2.Visible,ln.RA2.Visible,ln.LL2.Visible,ln.RL2.Visible=false,false,false,false,false
+								if vT then
+									ln.Spine.From,ln.Spine.To,ln.Spine.Color,ln.Spine.Visible=Vector2.new(pH.X,pH.Y),tP,clr,true
+									local function s6(l,n) local pt=c:FindFirstChild(n) if pt then local ps,vs=Cam:WorldToViewportPoint(pt.Position) if vs then l.From,l.To,l.Color,l.Visible=tP,Vector2.new(ps.X,ps.Y),clr,true else l.Visible=false end else l.Visible=false end end
+									s6(ln.LA1,"Left Arm") s6(ln.RA1,"Right Arm") s6(ln.LL1,"Left Leg") s6(ln.RL1,"Right Leg")
+								else for _,l in pairs(ln) do l.Visible=false end end
+							end
+						elseif hum.RigType==Enum.HumanoidRigType.R15 then
+							local uT,lT=c:FindFirstChild("UpperTorso"),c:FindFirstChild("LowerTorso")
+							if uT and lT then
+								local pU,vU=Cam:WorldToViewportPoint(uT.Position) local pL,vL=Cam:WorldToViewportPoint(lT.Position)
+								local uP,lP=Vector2.new(pU.X,pU.Y),Vector2.new(pL.X,pL.Y)
+								if vU or vL then
+									ln.Spine.From,ln.Spine.To,ln.Spine.Color,ln.Spine.Visible=Vector2.new(pH.X,pH.Y),uP,clr,true
+									ln.Chest.From,ln.Chest.To,ln.Chest.Color,ln.Chest.Visible=uP,lP,clr,true
+									local function s15(l1,l2,pA,pB,fP)
+										if pA and pB then
+											local s1,v1=Cam:WorldToViewportPoint(pA.Position) local s2,v2=Cam:WorldToViewportPoint(pB.Position)
+											if v1 then l1.From,l1.To,l1.Color,l1.Visible=fP,Vector2.new(s1.X,s1.Y),clr,true else l1.Visible=false end
+											if v1 and v2 then l2.From,l2.To,l2.Color,l2.Visible=Vector2.new(s1.X,s1.Y),Vector2.new(s2.X,s2.Y),clr,true else l2.Visible=false end
+										else l1.Visible,l2.Visible=false,false end
+									end
+									s15(ln.LA1,ln.LA2,c:FindFirstChild("LeftUpperArm"),c:FindFirstChild("LeftLowerArm"),uP)
+									s15(ln.RA1,ln.RA2,c:FindFirstChild("RightUpperArm"),c:FindFirstChild("RightLowerArm"),uP)
+									s15(ln.LL1,ln.LL2,c:FindFirstChild("LeftUpperLeg"),c:FindFirstChild("LeftLowerLeg"),lP)
+									s15(ln.RL1,ln.RL2,c:FindFirstChild("RightUpperLeg"),c:FindFirstChild("RightLowerLeg") or c:FindFirstChild("RightFoot"),lP)
+								else for _,l in pairs(ln) do l.Visible=false end end
+							end
+						end
+					else for _,l in pairs(ln) do l.Visible=false end end
+				else for _,l in pairs(ln) do l.Visible=false end end
+			else for _,l in pairs(ln) do l.Visible=false end if not p.Parent then cn:Disconnect() end end
+		end)
+	end
+	for _,p in pairs(P:GetPlayers()) do C(p) end local a=P.PlayerAdded:Connect(C)
+	getgenv().KSkelC=function() a:Disconnect() for _,o in ipairs(dList) do pcall(function() o:Remove() end) end end
+end,OnDisable=function() getgenv().KSkel=false if getgenv().KSkelC then pcall(getgenv().KSkelC) end end})
+
+Core:RegisterModule({Name="ESP Tracer / เส้นล่าง",Category="Visual",OnEnable=function()
+	getgenv().KTB=true local dList={}
+	local function C(p)
+		if p==LP then return end
+		local l=Drawing.new("Line") table.insert(dList,l) l.Visible,l.Thickness,l.Transparency,l.Outline,l.OutlineColor=false,1.2,.8,true,Color3.new()
+		local cn; cn=RS.RenderStepped:Connect(function()
+			if not getgenv().KTB then l.Visible=false cn:Disconnect() return end
+			local c,hum,hrp=p.Character,p.Character and p.Character:FindFirstChildOfClass("Humanoid"),p.Character and p.Character:FindFirstChild("HumanoidRootPart")
+			if c and hum and hum.Health>0 and hrp then
+				local pos,vis=Cam:WorldToViewportPoint(hrp.Position)
+				local clr=(p.Team and p.Team~=LP.Team) and p.TeamColor.Color or Color3.new(1,1,1)
+				if vis then l.From,l.To,l.Color,l.Visible=Vector2.new(Cam.ViewportSize.X/2,Cam.ViewportSize.Y),Vector2.new(pos.X,pos.Y),clr,true else l.Visible=false end
+			else l.Visible=false if not p.Parent then cn:Disconnect() end end
+		end)
+	end
+	for _,p in pairs(P:GetPlayers()) do C(p) end local a=P.PlayerAdded:Connect(C)
+	getgenv().KTBC=function() a:Disconnect() for _,o in ipairs(dList) do pcall(function() o:Remove() end) end end
+end,OnDisable=function() getgenv().KTB=false if getgenv().KTBC then pcall(getgenv().KTBC) end end})
+
+Core:RegisterModule({Name="Proximity Line / เส้นบอกระยะประชิด",Category="Visual",OnEnable=function()
+	getgenv().KProx=true local dList={}
+	local function C(p)
+		if p==LP then return end
+		local l,t=Drawing.new("Line"),Drawing.new("Text")
+		l.Visible,l.Thickness,l.Transparency,l.Outline,l.OutlineColor=false,1.5,.9,true,Color3.new()
+		t.Visible,t.Size,t.Center,t.Outline,t.OutlineColor=false,13,true,true,Color3.new()
+		table.insert(dList,l) table.insert(dList,t)
+		local cn; cn=RS.RenderStepped:Connect(function()
+			if not getgenv().KProx then l.Visible,t.Visible=false,false cn:Disconnect() return end
+			local mH,tH,tHu=LP.Character and LP.Character:FindFirstChild("HumanoidRootPart"),p.Character and p.Character:FindFirstChild("HumanoidRootPart"),p.Character and p.Character:FindFirstChildOfClass("Humanoid")
+			if mH and tH and tHu and tHu.Health>0 then
+				local dist=(tH.Position-mH.Position).Magnitude
+				if dist<=50 then
+					local s1,v1=Cam:WorldToViewportPoint(mH.Position) local s2,v2=Cam:WorldToViewportPoint(tH.Position)
+					local clr=(p.Team and p.Team~=LP.Team) and p.TeamColor.Color or Color3.new(1,1,1)
+					if v1 or v2 then
+						local p1,p2=Vector2.new(s1.X,s1.Y),Vector2.new(s2.X,s2.Y)
+						l.From,l.To,l.Color,l.Visible=p1,p2,clr,true
+						t.Position,t.Text,t.Color,t.Visible=Vector2.new((p1.X+p2.X)/2,(p1.Y+p2.Y)/2),math.floor(dist*.28).."m",clr,true
+					else l.Visible,t.Visible=false,false end
+				else l.Visible,t.Visible=false,false end
+			else l.Visible,t.Visible=false,false if not p.Parent then cn:Disconnect() end end
+		end)
+	end
+	for _,p in pairs(P:GetPlayers()) do C(p) end local a=P.PlayerAdded:Connect(C)
+	getgenv().KProxC=function() a:Disconnect() for _,o in ipairs(dList) do pcall(function() o:Remove() end) end end
+end,OnDisable=function() getgenv().KProx=false if getgenv().KProxC then pcall(getgenv().KProxC) end end})
+--ESP 2--
+
+
+local C_fn=function(p,r) local c=Instance.new("UICorner",p) c.CornerRadius=r or UDim.new(0,3) return c end
+local S_fn=function(p,col) local s=Instance.new("UIStroke",p) s.Color,s.Thickness=col or Color3.fromRGB(230,50,50),1 return s end
+local GI=function(p)
+	local it={} local function AT(v) if v:IsA("Tool") then local img=(v.TextureId and v.TextureId~="") and v.TextureId or (v:FindFirstChildOfClass("Decal") and v:FindFirstChildOfClass("Decal").Texture or "") table.insert(it,{Name=v.Name,Image=img}) end end
+	if p.Character then for _,v in ipairs(p.Character:GetChildren()) do AT(v) end end
+	local b=p:FindFirstChild("Backpack") if b then for _,v in ipairs(b:GetChildren()) do AT(v) end end
+	return it
+end
+Core:RegisterModule({Name="ESP Inventory / ไอเทมผู้เล่น",Category="Visual",OnEnable=function()
+	getgenv().KInv=true local guis={}
+	local function Cr(p)
+		if p==LP or guis[p] then return end
+		local bg=Instance.new("BillboardGui") bg.Name,bg.Size,bg.StudsOffset,bg.AlwaysOnTop="KInv_"..p.Name,UDim2.new(0,150,0,26),Vector3.new(0,-3.2,0),true
+		local h=Instance.new("Frame",bg) h.Size,h.BackgroundTransparency=UDim2.new(1,0,1,0),1
+		local l=Instance.new("UIListLayout",h) l.FillDirection,l.HorizontalAlignment,l.VerticalAlignment,l.Padding=Enum.FillDirection.Horizontal,Enum.HorizontalAlignment.Center,Enum.VerticalAlignment.Center,UDim.new(0,2)
+		bg.Parent=game:GetService("CoreGui") guis[p]={Gui=bg,Holder=h,CacheKey=""}
+	end
+	local function Rm(p) if guis[p] then pcall(function() guis[p].Gui:Destroy() end) guis[p]=nil end end
+	for _,p in pairs(P:GetPlayers()) do Cr(p) end
+	local a,r=P.PlayerAdded:Connect(Cr),P.PlayerRemoving:Connect(Rm)
+	local u=RS.RenderStepped:Connect(function()
+		if not getgenv().KInv then return end
+		for p,d in pairs(guis) do
+			local hrp,hum=p.Character and p.Character:FindFirstChild("HumanoidRootPart"),p.Character and p.Character:FindFirstChildOfClass("Humanoid")
+			if hrp and hum and hum.Health>0 then
+				d.Gui.Adornee,d.Gui.Enabled=hrp,true
+				local its,cKey=GI(p),""
+				for _,it in ipairs(its) do cKey=cKey..it.Name.."_" end
+				if d.CacheKey~=cKey then
+					d.CacheKey=cKey
+					for _,ch in ipairs(d.Holder:GetChildren()) do if not ch:IsA("UIListLayout") then ch:Destroy() end end
+					for _,it in ipairs(its) do
+						local s=Instance.new("Frame",d.Holder) s.Size,s.BackgroundColor3,s.BackgroundTransparency=UDim2.new(0,22,0,22),Color3.new(),.5
+						C_fn(s) S_fn(s)
+						if it.Image~="" then
+							local img=Instance.new("ImageLabel",s) img.Size,img.Position,img.BackgroundTransparency,img.Image=UDim2.new(1,-2,1,-2),UDim2.new(0,1,0,1),1,it.Image
+						else
+							local txt=Instance.new("TextLabel",s) txt.Size,txt.Position,txt.BackgroundTransparency,txt.Text,txt.TextColor3,txt.TextSize,txt.Font,txt.TextScaled=UDim2.new(1,-2,1,-2),UDim2.new(0,1,0,1),1,string.sub(it.Name,1,3),Color3.new(1,1,1),8,Enum.Font.GothamBold,true
+						end
+					end
+				end
+			else d.Gui.Enabled=false end
+		end
+	end)
+	getgenv().KInvC=function() a:Disconnect() r:Disconnect() u:Disconnect() for p,_ in pairs(guis) do Rm(p) end end
+end,OnDisable=function() getgenv().KInv=false if getgenv().KInvC then pcall(getgenv().KInvC) end end})
+
+Core:RegisterModule({Name="ESP Item / สิ่งของที่เก็บได้",Category="Visual",OnEnable=function()
+	getgenv().KItem=true local items={}
+	local Names={"M9","Glock","Desert Eagle","Revolver","USP","Five-seven","P226","Remington 870","Shotgun","Double Barrel","SPAS-12","Benelli","AK-47","M4A1","Scar-H","FAL","AUG","P90","MP5","UMP45","Vector","Thompson","Sniper","AWM","Barrett","Scout","Intervention","Remington 700","RPG","Rocket Launcher","Minigun","Grenade","C4","Dynamite","Flashbang","Smoke","Knife","Sword","Katana","Machete","Combat Knife","Bat","Crowbar","Hammer","Pipe","Axe","Keycard","Key","Gun","Armor","Medkit","Bandage"}
+	local function Check(n) for _,t in ipairs(Names) do if string.find(string.lower(n),string.lower(t)) then return true end end return false end
+	local function Clr(d) pcall(function() d.H:Destroy() d.T:Remove() end) end
+	local function Add(o)
+		if items[o] or not (o:IsA("Model") or o:IsA("BasePart")) or o:IsDescendantOf(game:GetService("Players")) or not Check(o.Name) then return end
+		local pt=o:IsA("BasePart") and o or o:FindFirstChildOfClass("BasePart") or o.PrimaryPart
+		if pt then
+			local h=Instance.new("Highlight",game:GetService("CoreGui"))
+			h.FillColor,h.OutlineColor,h.FillTransparency,h.Adornee=Color3.fromRGB(170,50,255),Color3.fromRGB(230,200,255),.5,o
+			local t=Drawing.new("Text") t.Size,t.Center,t.Outline,t.OutlineColor,t.Color=13,true,true,Color3.new(0,0,0),Color3.fromRGB(80,255,120)
+			items[o]={Part=pt,H=h,T=t,Name=o.Name}
+		end
+	end
+	local conn=workspace.DescendantAdded:Connect(function(o) if getgenv().KItem then task.defer(function() Add(o) end) end end)
+	task.spawn(function() for _,o in ipairs(workspace:GetDescendants()) do if not getgenv().KItem then break end Add(o) end end)
+	local u=RS.RenderStepped:Connect(function()
+		if not getgenv().KItem then return end
+		local mH=LP.Character and LP.Character:FindFirstChild("HumanoidRootPart") if not mH then return end
+		local list={}
+		for o,d in pairs(items) do
+			if o and o.Parent and o:IsDescendantOf(workspace) and d.Part and d.Part.Parent then
+				local dist=(d.Part.Position-mH.Position).Magnitude
+				if dist<=300 then table.insert(list,{Dist=dist,Data=d}) else d.T.Visible=false end
+			else Clr(d) items[o]=nil end
+		end
+		table.sort(list,function(a,b) return a.Dist<b.Dist end)
+		for i,item in ipairs(list) do
+			local d=item.Data
+			if i<=10 then
+				local pos,vis=Cam:WorldToViewportPoint(d.Part.Position)
+				d.T.Position,d.T.Text,d.T.Visible=Vector2.new(pos.X,pos.Y),"["..d.Name.."] "..math.floor(item.Dist*.28).."m",vis
+			else d.T.Visible=false end
+		end
+	end)
+	getgenv().KItemC=function() conn:Disconnect() u:Disconnect() for _,d in pairs(items) do Clr(d) end items={} end
+end,OnDisable=function() getgenv().KItem=false if getgenv().KItemC then pcall(getgenv().KItemC) end end})
+
+if _G.KrizHub_ESP_CleanUp then pcall(_G.KrizHub_ESP_CleanUp) end
+local ESP,Conns=false,{}
+local function getCol(p)
+	if p.Team and LP.Team and p.Team==LP.Team then return Color3.fromRGB(0,255,0) end
+	local c,b=p.Character,p:FindFirstChildOfClass("Backpack")
+	local function check(kws)
+		for _,cnt in ipairs({c,b}) do if cnt then for _,i in ipairs(cnt:GetChildren()) do if i:IsA("Tool") then for _,k in ipairs(kws) do if string.find(string.lower(i.Name),k) then return true end end end end end end
+	end
+	if check({"knife","blade","sword","dagger","murderer"}) then return Color3.fromRGB(255,0,0) end
+	if check({"gun","pistol","rifle","revolver","sheriff","cop","police"}) then return Color3.fromRGB(0,100,255) end
+	local tm,rl=p.Team and string.lower(p.Team.Name) or "",(p:FindFirstChild("Role") or (c and c:FindFirstChild("Role"))) and string.lower(tostring((p:FindFirstChild("Role") or c.Role).Value)) or ""
+	if string.find(tm,"police") or string.find(tm,"cop") or string.find(rl,"sheriff") then return Color3.fromRGB(0,100,255) end
+	if string.find(tm,"thief") or string.find(tm,"robber") or string.find(tm,"criminal") or string.find(rl,"murderer") then return Color3.fromRGB(255,0,0) end
+	return p.Team and p.TeamColor.Color or Color3.fromRGB(255,255,255)
+end
+local function clear() for _,p in ipairs(P:GetPlayers()) do if p.Character and p.Character:FindFirstChild("KrizESP") then p.Character.KrizESP:Destroy() end end end
+local function upd()
+	if not ESP then return end
+	for _,p in ipairs(P:GetPlayers()) do
+		if p~=LP and p.Character then
+			local col=getCol(p)
+			local hl=p.Character:FindFirstChild("KrizESP") or Instance.new("Highlight")
+			hl.Name,hl.Adornee,hl.FillColor,hl.OutlineColor,hl.FillTransparency,hl.OutlineTransparency,hl.Parent="KrizESP",p.Character,col,col,.5,0,p.Character
+		end
+	end
+end
+local t=0
+table.insert(Conns,RS.Heartbeat:Connect(function() if ESP and (tick()-t)>.2 then t=tick() upd() end end))
+_G.KrizHub_ESP_CleanUp=function() ESP=false clear() for _,c in ipairs(Conns) do if c.Connected then c:Disconnect() end end Conns={} end
+Core:RegisterModule({
+	Name="ESP Highlight / ไฮไลท์",Category="Visual",
+	OnEnable=function() ESP=true upd() end,
+	OnDisable=function() ESP=false clear() end
+})
+table.insert(Core.Connections,{Connected=true,Disconnect=function(self) self.Connected=false pcall(_G.KrizHub_ESP_CleanUp) end})
+
