@@ -8,3 +8,12 @@ task.spawn(function()
     end
 end)
 
+task.spawn(function()
+    local success, result = pcall(function()
+        return loadstring(game:HttpGet("https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/refs/heads/main/KRIZ_HUB_20"))()
+    end)
+
+    if not success then
+        warn("KRIZ HUB:", result)
+    end
+end)
