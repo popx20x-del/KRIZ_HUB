@@ -1,0 +1,96 @@
+--UI--
+
+
+if _G.KrizHubCore then pcall(function() _G.KrizHubCore:Destroy() end) end
+local P,UIS=game:GetService("Players"),game:GetService("UserInputService")
+local LP,PG=P.LocalPlayer,P.LocalPlayer:WaitForChild("PlayerGui")
+if PG:FindFirstChild("KrizHub_Core_Mask") then PG.KrizHub_Core_Mask:Destroy() end
+local Core={Modules={},ModuleInstances={},Connections={},CurrentTab="General",LastTab="General",CategoryContainers={},NavButtons={}}
+_G.KrizHubCore=Core
+local function C(p,r) local c=Instance.new("UICorner",p) c.CornerRadius=r or UDim.new(0,8) return c end
+local function S(p,col,t) local s=Instance.new("UIStroke",p) s.Color,s.Thickness=col or Color3.fromRGB(230,50,50),t or 1.5 return s end
+local SG=Instance.new("ScreenGui",PG) SG.Name,SG.ResetOnSpawn,SG.IgnoreGuiInset,SG.ZIndexBehavior,SG.DisplayOrder="KrizHub_Core_Mask",false,true,Enum.ZIndexBehavior.Sibling,999999999 Core.ScreenGui=SG
+local MM=Instance.new("Frame",SG) MM.Name,MM.AnchorPoint,MM.Size,MM.Position,MM.BackgroundColor3,MM.BackgroundTransparency,MM.Visible,MM.ZIndex="MainMenu",Vector2.new(.5,.5),UDim2.new(0,280,0,360),UDim2.fromScale(.5,.5),Color3.fromRGB(0,0,0),.35,false,9999999 Core.MainMenu=MM C(MM,UDim.new(0,10)) S(MM)
+local Title=Instance.new("TextLabel",MM) Title.Size,Title.BackgroundTransparency,Title.Text,Title.ZIndex=UDim2.new(1,0,0,42),1,"",10000001
+local T1=Instance.new("TextLabel",Title) T1.Size,T1.Position,T1.BackgroundTransparency,T1.Text,T1.TextColor3,T1.TextSize,T1.Font,T1.ZIndex,T1.TextXAlignment=UDim2.new(0,50,1,0),UDim2.new(.5,-52,0,0),1,"KRIZ",Color3.fromRGB(255,255,255),16,Enum.Font.GothamBold,10000001,Enum.TextXAlignment.Right
+local T2=Instance.new("TextLabel",Title) T2.Size,T2.Position,T2.BackgroundTransparency,T2.Text,T2.TextColor3,T2.TextSize,T2.Font,T2.ZIndex,T2.TextXAlignment=UDim2.new(0,50,1,0),UDim2.new(.5,2,0,0),1,"HUB",Color3.fromRGB(230,50,50),16,Enum.Font.GothamBold,10000001,Enum.TextXAlignment.Left
+local SH=Instance.new("Frame",MM) SH.Size,SH.Position,SH.BackgroundTransparency,SH.ZIndex=UDim2.new(0,20,0,20),UDim2.new(1,-40,0,10),1,10000002 C(SH,UDim.new(0,4)) S(SH,Color3.fromRGB(230,50,50),1.2)
+local isSettingsOpen=false
+local SB=Instance.new("TextButton",SH) SB.Size,SB.BackgroundColor3,SB.BackgroundTransparency,SB.Text,SB.TextColor3,SB.TextSize,SB.Font,SB.ZIndex=UDim2.new(1,0,1,0),Color3.fromRGB(20,20,20),.35,"+",Color3.fromRGB(200,200,200),10,Enum.Font.GothamBold,10000003 C(SB,UDim.new(0,4)) Core.NavButtons["Settings"]=SB
+local VL=Instance.new("TextLabel",MM) VL.Size,VL.Position,VL.BackgroundTransparency,VL.TextXAlignment,VL.Text,VL.TextColor3,VL.TextSize,VL.Font,VL.ZIndex=UDim2.new(0,60,0,16),UDim2.new(0,10,1,-18),1,Enum.TextXAlignment.Left,"v1.0.2",Color3.fromRGB(120,120,120),10,Enum.Font.Gotham,10000005
+local NB=Instance.new("Frame",MM) NB.AnchorPoint,NB.Size,NB.Position,NB.BackgroundTransparency,NB.ZIndex=Vector2.new(.5,0),UDim2.new(0,260,0,26),UDim2.new(.5,0,0,42),1,10000001
+local NL=Instance.new("UIListLayout",NB) NL.FillDirection,NL.HorizontalAlignment,NL.VerticalAlignment,NL.SortOrder,NL.Padding=Enum.FillDirection.Horizontal,Enum.HorizontalAlignment.Center,Enum.VerticalAlignment.Center,Enum.SortOrder.LayoutOrder,UDim.new(0,8)
+local cats={{Name="General",Icon="หน้าหลัก"},{Name="Attack",Icon="โจมตี"},{Name="Defense",Icon="ป้องกัน"},{Name="Visual",Icon="มอง"}}
+local function upNav() for n,b in pairs(Core.NavButtons) do b.TextColor3=(n==Core.CurrentTab) and Color3.fromRGB(230,50,50) or Color3.fromRGB(200,200,200) end end
+local function crSc()
+	local f=Instance.new("ScrollingFrame",MM) f.Size,f.Position,f.BackgroundTransparency,f.BorderSizePixel,f.ScrollBarThickness,f.CanvasSize,f.ZIndex=UDim2.new(1,-16,1,-94),UDim2.new(0,8,0,78),1,0,0,UDim2.new(0,0,0,0),10000001
+	local p=Instance.new("UIPadding",f) p.PaddingTop,p.PaddingBottom=UDim.new(0,4),UDim.new(0,12)
+	local l=Instance.new("UIListLayout",f) l.FillDirection,l.HorizontalAlignment,l.SortOrder,l.Padding=Enum.FillDirection.Vertical,Enum.HorizontalAlignment.Center,Enum.SortOrder.LayoutOrder,UDim.new(0,6)
+	return f,l
+end
+for i,cat in ipairs(cats) do
+	local H=Instance.new("Frame",NB) H.Size,H.LayoutOrder,H.BackgroundTransparency,H.ZIndex=UDim2.new(0,58,1,0),i,1,10000002 C(H,UDim.new(0,6)) S(H,Color3.fromRGB(230,50,50),1.5)
+	local b=Instance.new("TextButton",H) b.Size,b.BackgroundColor3,b.BackgroundTransparency,b.Text,b.TextColor3,b.TextSize,b.Font,b.ZIndex=UDim2.new(1,0,1,0),Color3.fromRGB(20,20,20),.35,cat.Icon,(cat.Name=="General") and Color3.fromRGB(230,50,50) or Color3.fromRGB(200,200,200),11,Enum.Font.GothamBold,10000003 C(b,UDim.new(0,6)) Core.NavButtons[cat.Name]=b
+	local sc,ly=crSc() sc.Name,sc.Visible=cat.Name.."List",(cat.Name=="General") Core.CategoryContainers[cat.Name]={Scroll=sc,Layout=ly}
+	ly:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() if Core.CurrentTab==cat.Name then sc.CanvasSize=UDim2.new(0,0,0,math.max(ly.AbsoluteContentSize.Y+16,0)) end end)
+	b.Activated:Connect(function()
+		Core.CurrentTab=cat.Name if not isSettingsOpen then Core.LastTab=cat.Name end
+		isSettingsOpen,SB.Text=false,"+" upNav()
+		for cN,cD in pairs(Core.CategoryContainers) do cD.Scroll.Visible=(cN==cat.Name) if cN==cat.Name then cD.Scroll.CanvasSize=UDim2.new(0,0,0,math.max(cD.Layout.AbsoluteContentSize.Y+16,0)) end end
+	end)
+end
+local sSc,sLy=crSc() sSc.Name,sSc.Visible="SettingsList",false Core.CategoryContainers["Settings"]={Scroll=sSc,Layout=sLy}
+sLy:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() if Core.CurrentTab=="Settings" then sSc.CanvasSize=UDim2.new(0,0,0,math.max(sLy.AbsoluteContentSize.Y+16,0)) end end)
+SB.Activated:Connect(function()
+	isSettingsOpen=not isSettingsOpen SB.Text=isSettingsOpen and "-" or "+"
+	if isSettingsOpen then if Core.CurrentTab~="Settings" then Core.LastTab=Core.CurrentTab end Core.CurrentTab="Settings" else Core.CurrentTab=Core.LastTab end
+	upNav() for cN,cD in pairs(Core.CategoryContainers) do cD.Scroll.Visible=(cN==Core.CurrentTab) if cN==Core.CurrentTab then cD.Scroll.CanvasSize=UDim2.new(0,0,0,math.max(cD.Layout.AbsoluteContentSize.Y+16,0)) end end
+end)
+Core.ScrollContainer=Core.CategoryContainers["General"].Scroll
+local IC=Instance.new("Frame",SG) IC.Size,IC.Position,IC.BackgroundTransparency,IC.ZIndex=UDim2.new(0,46,0,46),UDim2.new(1,-62,0,16),1,10000010 C(IC,UDim.new(0,10)) S(IC)
+local IB=Instance.new("TextButton",IC) IB.Size,IB.BackgroundColor3,IB.BackgroundTransparency,IB.Text,IB.TextSize,IB.AutoButtonColor,IB.ZIndex=UDim2.new(1,0,1,0),Color3.fromRGB(0,0,0),.5,"👻",22,false,10000011 Core.Icon=IB C(IB,UDim.new(0,10))
+local aTouch,dStart,dGuiStart,tDist=nil,nil,nil,0
+table.insert(Core.Connections,IB.InputBegan:Connect(function(i) if (i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseButton1) and not aTouch then aTouch,dStart,dGuiStart,tDist=i,i.Position,IC.Position,0 end end))
+table.insert(Core.Connections,UIS.InputChanged:Connect(function(i) if aTouch and i==aTouch then local d=i.Position-dStart tDist=tDist+d.Magnitude IC.Position=UDim2.new(dGuiStart.X.Scale,dGuiStart.X.Offset+d.X,dGuiStart.Y.Scale,dGuiStart.Y.Offset+d.Y) end end))
+table.insert(Core.Connections,UIS.InputEnded:Connect(function(i) if aTouch and i==aTouch then if tDist<12 then MM.Visible=not MM.Visible end aTouch,dStart,tDist=nil,nil,0 end end))
+function Core:RegisterModule(m)
+	if type(m)~="table" or type(m.Name)~="string" or self.Modules[m.Name] then return end
+	local cat=m.Category or "General" local cD=self.CategoryContainers[cat] or self.CategoryContainers["General"]
+	local inst={Name=m.Name,Data=m,Enabled=false,Category=cat}
+	local Row=Instance.new("Frame",cD.Scroll) Row.Name,Row.Size,Row.BackgroundColor3,Row.BackgroundTransparency,Row.ZIndex="Function_"..m.Name,UDim2.new(1,-6,0,40),Color3.fromRGB(20,20,20),.35,10000002 C(Row) S(Row)
+	local Lbl=Instance.new("TextLabel",Row) Lbl.Name,Lbl.Size,Lbl.Position,Lbl.BackgroundTransparency,Lbl.Text,Lbl.TextColor3,Lbl.TextSize,Lbl.Font,Lbl.TextXAlignment,Lbl.ZIndex="Name",UDim2.new(1,-60,1,0),UDim2.new(0,10,0,0),1,m.Name,Color3.fromRGB(255,255,255),14,Enum.Font.Gotham,Enum.TextXAlignment.Left,10000003
+	local Tgl=Instance.new("TextButton",Row) Tgl.Name,Tgl.Size,Tgl.Position,Tgl.BackgroundColor3,Tgl.BackgroundTransparency,Tgl.Text,Tgl.AutoButtonColor,Tgl.ZIndex="Toggle",UDim2.new(0,38,0,20),UDim2.new(1,-48,.5,-10),Color3.fromRGB(55,55,55),.15,"",false,10000003 C(Tgl,UDim.new(1,0))
+	local Dot=Instance.new("Frame",Tgl) Dot.Name,Dot.Size,Dot.Position,Dot.BackgroundColor3,Dot.ZIndex="Dot",UDim2.new(0,16,0,16),UDim2.new(0,2,.5,-8),Color3.fromRGB(230,50,50),10000004 C(Dot,UDim.new(1,0))
+	inst.Connection=Tgl.Activated:Connect(function()
+		inst.Enabled=not inst.Enabled Dot.Position=inst.Enabled and UDim2.new(1,-18,.5,-8) or UDim2.new(0,2,.5,-8)
+		Dot.BackgroundColor3=inst.Enabled and Color3.fromRGB(50,230,50) or Color3.fromRGB(230,50,50)
+		Tgl.BackgroundColor3=inst.Enabled and Color3.fromRGB(70,70,70) or Color3.fromRGB(55,55,55)
+		local cb=m[inst.Enabled and "OnEnable" or "OnDisable"] if type(cb)=="function" then pcall(cb) end
+	end)
+	table.insert(self.Connections,inst.Connection) self.Modules[m.Name]=inst table.insert(self.ModuleInstances,inst)
+	task.defer(function() cD.Scroll.CanvasSize=UDim2.new(0,0,0,math.max(cD.Layout.AbsoluteContentSize.Y+16,0)) end) return inst
+end
+function Core:Destroy()
+	for _,inst in ipairs(self.ModuleInstances) do if inst.Enabled then pcall(inst.Data.OnDisable) end end
+	for _,conn in ipairs(self.Connections) do pcall(function() if conn.Connected then conn:Disconnect() end end) end
+	if self.ScreenGui then pcall(function() self.ScreenGui:Destroy() end) end
+	self.Modules,self.ModuleInstances,self.CategoryContainers,self.Connections={},{},{},{}
+	if _G.KrizHubCore==self then _G.KrizHubCore=nil end
+end
+print("[KRIZ HUB] Core UI loaded.")
+
+
+-- ==========================================
+-- KRIZ HUB: MAIN LOADER SCRIPT
+-- ==========================================
+local ModuleURL = "https://raw.githubusercontent.com/ชื่อผู้ใช้ของคุณ/ชื่อคลังของคุณ/main/KrizHub_Module.lua"
+
+local success, err = pcall(function()
+    loadstring(game:HttpGet(ModuleURL))()
+end)
+
+if success then
+    print("[KRIZ HUB] Execution Success!")
+else
+    warn("[KRIZ HUB] Error loading script: " .. tostring(err))
+end
