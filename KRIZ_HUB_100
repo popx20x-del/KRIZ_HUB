@@ -85,7 +85,7 @@ print("[KRIZ HUB] Core UI loaded.")
 -- ==========================================
 
 -- ลิงก์ที่ 1 (General)
-pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/USER/REPO/main/Module_General.lua"))() end)
+pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/refs/heads/main/KRIZ_HUB_200"))() end)
 
 -- ลิงก์ที่ 2 (Attack)
 pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/USER/REPO/main/Module_Attack.lua"))() end)
