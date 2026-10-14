@@ -1,0 +1,147 @@
+--UI--
+
+if _G.KrizHubCore then pcall(function() _G.KrizHubCore:Destroy() end) end
+local P, UIS = game:GetService("Players"), game:GetService("UserInputService")
+local LP, PlayerGui = P.LocalPlayer, P.LocalPlayer:WaitForChild("PlayerGui")
+if PlayerGui:FindFirstChild("KrizHub_Core_Mask") then PlayerGui.KrizHub_Core_Mask:Destroy() end
+
+local Core = {Modules={}, ModuleInstances={}, Connections={}, CurrentTab="General", LastTab="General", CategoryContainers={}, NavButtons={}}
+_G.KrizHubCore = Core
+
+local function C(p, r) local c = Instance.new("UICorner", p) c.CornerRadius = r or UDim.new(0,8) return c end
+local function S(p, col, t) local s = Instance.new("UIStroke", p) s.Color, s.Thickness = col or Color3.fromRGB(230,50,50), t or 1.5 return s end
+
+local ScreenGui = Instance.new("ScreenGui", PlayerGui)
+ScreenGui.Name, ScreenGui.ResetOnSpawn, ScreenGui.IgnoreGuiInset, ScreenGui.ZIndexBehavior, ScreenGui.DisplayOrder = "KrizHub_Core_Mask", false, true, Enum.ZIndexBehavior.Sibling, 999999999
+Core.ScreenGui = ScreenGui
+
+local MainMenu = Instance.new("Frame", ScreenGui)
+MainMenu.Name, MainMenu.AnchorPoint, MainMenu.Size, MainMenu.Position, MainMenu.BackgroundColor3, MainMenu.BackgroundTransparency, MainMenu.Visible, MainMenu.ZIndex = "MainMenu", Vector2.new(0.5,0.5), UDim2.new(0,280,0,360), UDim2.fromScale(0.5,0.5), Color3.fromRGB(0,0,0), 0.35, false, 9999999
+Core.MainMenu = MainMenu C(MainMenu, UDim.new(0,10)) S(MainMenu)
+
+local Title = Instance.new("TextLabel", MainMenu) Title.Size, Title.BackgroundTransparency, Title.Text, Title.ZIndex = UDim2.new(1,0,0,42), 1, "", 10000001
+local T1 = Instance.new("TextLabel", Title) T1.Size, T1.Position, T1.BackgroundTransparency, T1.Text, T1.TextColor3, T1.TextSize, T1.Font, T1.ZIndex, T1.TextXAlignment = UDim2.new(0,50,1,0), UDim2.new(0.5,-52,0,0), 1, "KRIZ", Color3.fromRGB(255,255,255), 16, Enum.Font.GothamBold, 10000001, Enum.TextXAlignment.Right
+local T2 = Instance.new("TextLabel", Title) T2.Size, T2.Position, T2.BackgroundTransparency, T2.Text, T2.TextColor3, T2.TextSize, T2.Font, T2.ZIndex, T2.TextXAlignment = UDim2.new(0,50,1,0), UDim2.new(0.5,2,0,0), 1, "HUB", Color3.fromRGB(230,50,50), 16, Enum.Font.GothamBold, 10000001, Enum.TextXAlignment.Left
+
+-- ⚙️ Qarqarsi buttoon Settings qindaa'ee qarqara buttoonota waliin akka sirriitti akka wal qixxaatu taasifameera
+local SettingsHolder = Instance.new("Frame", MainMenu) SettingsHolder.Size, SettingsHolder.Position, SettingsHolder.BackgroundTransparency, SettingsHolder.ZIndex = UDim2.new(0,20,0,20), UDim2.new(1,-40,0,10), 1, 10000002 C(SettingsHolder, UDim.new(0,4)) S(SettingsHolder, Color3.fromRGB(230,50,50), 1.2)
+local isSettingsOpen = false
+local SettingsBtn = Instance.new("TextButton", SettingsHolder) SettingsBtn.Size, SettingsBtn.BackgroundColor3, SettingsBtn.BackgroundTransparency, SettingsBtn.Text, SettingsBtn.TextColor3, SettingsBtn.TextSize, SettingsBtn.Font, SettingsBtn.ZIndex = UDim2.new(1,0,1,0), Color3.fromRGB(20,20,20), 0.35, "+", Color3.fromRGB(200,200,200), 10, Enum.Font.GothamBold, 10000003 C(SettingsBtn, UDim.new(0,4))
+Core.NavButtons["Settings"] = SettingsBtn
+
+local VerLabel = Instance.new("TextLabel", MainMenu) VerLabel.Size, VerLabel.Position, VerLabel.BackgroundTransparency, VerLabel.TextXAlignment, VerLabel.Text, VerLabel.TextColor3, VerLabel.TextSize, VerLabel.Font, VerLabel.ZIndex = UDim2.new(0,60,0,16), UDim2.new(0,10,1,-18), 1, Enum.TextXAlignment.Left, "v1.0.2", Color3.fromRGB(120,120,120), 10, Enum.Font.Gotham, 10000005
+
+local NavBar = Instance.new("Frame", MainMenu) NavBar.AnchorPoint, NavBar.Size, NavBar.Position, NavBar.BackgroundTransparency, NavBar.ZIndex = Vector2.new(0.5,0), UDim2.new(0,260,0,26), UDim2.new(0.5,0,0,42), 1, 10000001
+local NavLayout = Instance.new("UIListLayout", NavBar) NavLayout.FillDirection, NavLayout.HorizontalAlignment, NavLayout.VerticalAlignment, NavLayout.SortOrder, NavLayout.Padding = Enum.FillDirection.Horizontal, Enum.HorizontalAlignment.Center, Enum.VerticalAlignment.Center, Enum.SortOrder.LayoutOrder, UDim.new(0,8)
+
+local categories = {{Name="General",Icon="หน้าหลัก"},{Name="Attack",Icon="โจมตี"},{Name="Defense",Icon="ป้องกัน"},{Name="Visual",Icon="มอง"}}
+
+local function updateNavColors()
+    for name, btn in pairs(Core.NavButtons) do
+        btn.TextColor3 = (name == Core.CurrentTab) and Color3.fromRGB(230,50,50) or Color3.fromRGB(200,200,200)
+    end
+end
+
+local function createScroll()
+    local f = Instance.new("ScrollingFrame", MainMenu) f.Size, f.Position, f.BackgroundTransparency, f.BorderSizePixel, f.ScrollBarThickness, f.CanvasSize, f.ZIndex = UDim2.new(1,-16,1,-94), UDim2.new(0,8,0,78), 1, 0, 0, UDim2.new(0,0,0,0), 10000001
+    local pad = Instance.new("UIPadding", f) pad.PaddingTop, pad.PaddingBottom = UDim.new(0,4), UDim.new(0,12)
+    local list = Instance.new("UIListLayout", f) list.FillDirection, list.HorizontalAlignment, list.SortOrder, list.Padding = Enum.FillDirection.Vertical, Enum.HorizontalAlignment.Center, Enum.SortOrder.LayoutOrder, UDim.new(0,6)
+    return f, list
+end
+
+for i, cat in ipairs(categories) do
+    local Holder = Instance.new("Frame", NavBar) Holder.Size, Holder.LayoutOrder, Holder.BackgroundTransparency, Holder.ZIndex = UDim2.new(0,58,1,0), i, 1, 10000002 C(Holder, UDim.new(0,6)) S(Holder, Color3.fromRGB(230,50,50), 1.5)
+    local btn = Instance.new("TextButton", Holder) btn.Size, btn.BackgroundColor3, btn.BackgroundTransparency, btn.Text, btn.TextColor3, btn.TextSize, btn.Font, btn.ZIndex = UDim2.new(1,0,1,0), Color3.fromRGB(20,20,20), 0.35, cat.Icon, (cat.Name=="General") and Color3.fromRGB(230,50,50) or Color3.fromRGB(200,200,200), 11, Enum.Font.GothamBold, 10000003 C(btn, UDim.new(0,6))
+    Core.NavButtons[cat.Name] = btn
+
+    local scroll, layout = createScroll() scroll.Name, scroll.Visible = cat.Name.."List", (cat.Name=="General")
+    Core.CategoryContainers[cat.Name] = {Scroll=scroll, Layout=layout}
+
+    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        if Core.CurrentTab == cat.Name then scroll.CanvasSize = UDim2.new(0,0,0,math.max(layout.AbsoluteContentSize.Y+16,0)) end
+    end)
+
+    btn.Activated:Connect(function()
+        Core.CurrentTab = cat.Name
+        if not isSettingsOpen then
+            Core.LastTab = cat.Name
+        end
+        isSettingsOpen, SettingsBtn.Text = false, "+"
+        updateNavColors()
+        for cName, cData in pairs(Core.CategoryContainers) do
+            cData.Scroll.Visible = (cName == cat.Name)
+            if cName == cat.Name then cData.Scroll.CanvasSize = UDim2.new(0,0,0,math.max(cData.Layout.AbsoluteContentSize.Y+16,0)) end
+        end
+    end)
+end
+
+local settingsScroll, settingsLayout = createScroll() settingsScroll.Name, settingsScroll.Visible = "SettingsList", false
+Core.CategoryContainers["Settings"] = {Scroll=settingsScroll, Layout=settingsLayout}
+settingsLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    if Core.CurrentTab == "Settings" then settingsScroll.CanvasSize = UDim2.new(0,0,0,math.max(settingsLayout.AbsoluteContentSize.Y+16,0)) end
+end)
+
+SettingsBtn.Activated:Connect(function()
+    isSettingsOpen = not isSettingsOpen
+    SettingsBtn.Text = isSettingsOpen and "-" or "+"
+    
+    if isSettingsOpen then
+        if Core.CurrentTab ~= "Settings" then
+            Core.LastTab = Core.CurrentTab
+        end
+        Core.CurrentTab = "Settings"
+    else
+        Core.CurrentTab = Core.LastTab
+    end
+
+    updateNavColors()
+    for cName, cData in pairs(Core.CategoryContainers) do
+        cData.Scroll.Visible = (cName == Core.CurrentTab)
+        if cName == Core.CurrentTab then cData.Scroll.CanvasSize = UDim2.new(0,0,0,math.max(cData.Layout.AbsoluteContentSize.Y+16,0)) end
+    end
+end)
+
+Core.ScrollContainer = Core.CategoryContainers["General"].Scroll
+
+local IconContainer = Instance.new("Frame", ScreenGui) IconContainer.Size, IconContainer.Position, IconContainer.BackgroundTransparency, IconContainer.ZIndex = UDim2.new(0,46,0,46), UDim2.new(1,-62,0,16), 1, 10000010 C(IconContainer, UDim.new(0,10)) S(IconContainer)
+local IconBtn = Instance.new("TextButton", IconContainer) IconBtn.Size, IconBtn.BackgroundColor3, IconBtn.BackgroundTransparency, IconBtn.Text, IconBtn.TextSize, IconBtn.AutoButtonColor, IconBtn.ZIndex = UDim2.new(1,0,1,0), Color3.fromRGB(0,0,0), 0.5, "👻", 22, false, 10000011 Core.Icon = IconBtn C(IconBtn, UDim.new(0,10))
+
+local activeTouch, dragStart, dragGuiStart, totalDist = nil, nil, nil, 0
+table.insert(Core.Connections, IconBtn.InputBegan:Connect(function(i) if (i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.UserInputType.MouseButton1) and not activeTouch then activeTouch, dragStart, dragGuiStart, totalDist = i, i.Position, IconContainer.Position, 0 end end))
+table.insert(Core.Connections, UIS.InputChanged:Connect(function(i) if activeTouch and i == activeTouch then local d = i.Position - dragStart totalDist = totalDist + d.Magnitude IconContainer.Position = UDim2.new(dragGuiStart.X.Scale, dragGuiStart.X.Offset + d.X, dragGuiStart.Y.Scale, dragGuiStart.Y.Offset + d.Y) end end))
+table.insert(Core.Connections, UIS.InputEnded:Connect(function(i) if activeTouch and i == activeTouch then if totalDist < 12 then MainMenu.Visible = not MainMenu.Visible end activeTouch, dragStart, totalDist = nil, nil, 0 end end))
+
+function Core:RegisterModule(m)
+    if type(m) ~= "table" or type(m.Name) ~= "string" or self.Modules[m.Name] then return end
+    local cat = m.Category or "General"
+    local cData = self.CategoryContainers[cat] or self.CategoryContainers["General"]
+    local inst = {Name=m.Name, Data=m, Enabled=false, Category=cat}
+
+    local Row = Instance.new("Frame", cData.Scroll) Row.Name, Row.Size, Row.BackgroundColor3, Row.BackgroundTransparency, Row.ZIndex = "Function_"..m.Name, UDim2.new(1,-6,0,40), Color3.fromRGB(20,20,20), 0.35, 10000002 C(Row) S(Row)
+    local Lbl = Instance.new("TextLabel", Row) Lbl.Name, Lbl.Size, Lbl.Position, Lbl.BackgroundTransparency, Lbl.Text, Lbl.TextColor3, Lbl.TextSize, Lbl.Font, Lbl.TextXAlignment, Lbl.ZIndex = "Name", UDim2.new(1,-60,1,0), UDim2.new(0,10,0,0), 1, m.Name, Color3.fromRGB(255,255,255), 14, Enum.Font.Gotham, Enum.TextXAlignment.Left, 10000003
+    local Tgl = Instance.new("TextButton", Row) Tgl.Name, Tgl.Size, Tgl.Position, Tgl.BackgroundColor3, Tgl.BackgroundTransparency, Tgl.Text, Tgl.AutoButtonColor, Tgl.ZIndex = "Toggle", UDim2.new(0,38,0,20), UDim2.new(1,-48,0.5,-10), Color3.fromRGB(55,55,55), 0.15, "", false, 10000003 C(Tgl, UDim.new(1,0))
+    local Dot = Instance.new("Frame", Tgl) Dot.Name, Dot.Size, Dot.Position, Dot.BackgroundColor3, Dot.ZIndex = "Dot", UDim2.new(0,16,0,16), UDim2.new(0,2,0.5,-8), Color3.fromRGB(230,50,50), 10000004 C(Dot, UDim.new(1,0))
+
+    inst.Connection = Tgl.Activated:Connect(function()
+        inst.Enabled = not inst.Enabled
+        Dot.Position = inst.Enabled and UDim2.new(1,-18,0.5,-8) or UDim2.new(0,2,0.5,-8)
+        Dot.BackgroundColor3 = inst.Enabled and Color3.fromRGB(50,230,50) or Color3.fromRGB(230,50,50)
+        Tgl.BackgroundColor3 = inst.Enabled and Color3.fromRGB(70,70,70) or Color3.fromRGB(55,55,55)
+        local cb = m[inst.Enabled and "OnEnable" or "OnDisable"]
+        if type(cb) == "function" then pcall(cb) end
+    end)
+    table.insert(self.Connections, inst.Connection)
+    self.Modules[m.Name] = inst table.insert(self.ModuleInstances, inst)
+    task.defer(function() cData.Scroll.CanvasSize = UDim2.new(0,0,0,math.max(cData.Layout.AbsoluteContentSize.Y+16,0)) end)
+    return inst
+end
+
+function Core:Destroy()
+    for _, inst in ipairs(self.ModuleInstances) do if inst.Enabled then pcall(inst.Data.OnDisable) end end
+    for _, conn in ipairs(self.Connections) do pcall(function() if conn.Connected then conn:Disconnect() end end) end
+    if self.ScreenGui then pcall(function() self.ScreenGui:Destroy() end) end
+    self.Modules, self.ModuleInstances, self.CategoryContainers, self.Connections = {}, {}, {}, {}
+    if _G.KrizHubCore == self then _G.KrizHubCore = nil end
+end
+
+print("[KRIZ HUB] Core UI loaded.")
