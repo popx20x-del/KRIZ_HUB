@@ -1,21 +1,16 @@
--- รายชื่อโมดูลย่อยทั้ง 5 ตัว
-local modules = {
-    "https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/refs/heads/main/KRIZ_HUB_1234551234550",
-    "https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/refs/heads/main/KRIZ_HUB_2",
-    "https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/refs/heads/main/KRIZ_HUB_3",
-    "https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/refs/heads/main/KRIZ_HUB_4",
-    "https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/refs/heads/main/KRIZ_HUB_5"
-}
+-- โหลด UI ก่อน (บังคับให้ตัวนี้จบก่อน ค่อยไปต่อ)
+local ui_success, ui_err = pcall(function()
+    return loadstring(game:HttpGet("https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/refs/heads/main/KRIZ_HUB_10"))()
+end)
 
--- วนลูปโหลดทีละตัวเพื่อความสะอาดและจัดการง่าย
-for i, url in ipairs(modules) do
-    local success, result = pcall(function()
-        return loadstring(game:HttpGet(url))()
-    end)
-    
-    if not success then
-        warn("KRIZ HUB: Failed to load part " .. i .. " -> " .. tostring(result))
-    else
-        print("KRIZ HUB: Successfully loaded part " .. i)
-    end
+if not ui_success then
+    warn("UI Error:", ui_err)
+    return
 end
+
+-- โหลดพาร์ทต่อๆ ไปเรียงลงมาตามลำดับ
+pcall(loadstring(game:HttpGet("https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/refs/heads/main/KRIZ_HUB_20")))
+pcall(loadstring(game:HttpGet("ลิงก์พาร์ท_3")))
+pcall(loadstring(game:HttpGet("ลิงก์พาร์ท_4")))
+pcall(loadstring(game:HttpGet("ลิงก์พาร์ท_5")))
+
