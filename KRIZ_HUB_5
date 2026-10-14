@@ -1,16 +1,8 @@
--- โหลด UI ก่อน (บังคับให้ตัวนี้จบก่อน ค่อยไปต่อ)
-local ui_success, ui_err = pcall(function()
-    return loadstring(game:HttpGet("https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/refs/heads/main/KRIZ_HUB_10"))()
-end)
+local s1, r1 = pcall(loadstring(game:HttpGet("loadstring(game:HttpGet("https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/main/KRIZ_HUB_10"))()")))
+if not s1 then warn("KRIZ HUB 1:", r1) end
 
-if not ui_success then
-    warn("UI Error:", ui_err)
-    return
-end
+local s2, r2 = pcall(loadstring(game:HttpGet("loadstring(game:HttpGet("https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/main/KRIZ_HUB_20"))()")))
+if not s2 then warn("KRIZ HUB 2:", r2) end
 
--- โหลดพาร์ทต่อๆ ไปเรียงลงมาตามลำดับ
-pcall(loadstring(game:HttpGet("https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/refs/heads/main/KRIZ_HUB_20")))
-pcall(loadstring(game:HttpGet("ลิงก์พาร์ท_3")))
-pcall(loadstring(game:HttpGet("ลิงก์พาร์ท_4")))
-pcall(loadstring(game:HttpGet("ลิงก์พาร์ท_5")))
-
+local s3, r3 = pcall(loadstring(game:HttpGet("ลิงก์_3")))
+if not s3 then warn("KRIZ HUB 3:", r3) end
