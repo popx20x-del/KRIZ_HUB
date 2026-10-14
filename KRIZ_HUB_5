@@ -1,0 +1,2 @@
+local success, result = pcall(loadstring(game:HttpGet("https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/refs/heads/main/KRIZ_HUB_1234551234550")))
+if not success then warn("KRIZ HUB:", result) end
