@@ -1,2 +1,2 @@
-local url = "https://raw.githubusercontent.com/USERNAME/REPOSITORY/main/script.lua"
+local url = "https://raw.githubusercontent.com/popx20x-del/KRIZ_HUB/refs/heads/main/KRIZ_HUB_1234551234550"
 loadstring(game:HttpGet(url))()
