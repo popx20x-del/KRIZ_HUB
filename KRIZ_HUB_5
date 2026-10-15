@@ -1,0 +1,2 @@
+local url = "https://raw.githubusercontent.com/USERNAME/REPOSITORY/main/script.lua"
+loadstring(game:HttpGet(url))()
