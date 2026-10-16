@@ -1540,11 +1540,341 @@ Core:RegisterModule({
 })
 
 
+--esp 1--
 
-if  not _G.KrizHubCore then return;end local v0,v1,v2,v3,v4=_G.KrizHubCore,game:GetService("Players"),game:GetService("RunService"),workspace.CurrentCamera,game:GetService("Players").LocalPlayer;v0:RegisterModule({Name="ESP / เธกเธญเธเธ—เธฐเธฅเธธ",Category="Visual",OnEnable=function() getgenv().KEsp=true;local v6={};local function v7(v45) if (v45==v4) then return;end local v46={T=Drawing.new("Line"),B=Drawing.new("Line"),L=Drawing.new("Line"),R=Drawing.new("Line"),H=Drawing.new("Line"),N=Drawing.new("Text"),D=Drawing.new("Text")};for v104,v105 in pairs(v46) do local v106=0 -0 ;while true do if (v106==(1047 -(67 + 980))) then table.insert(v6,v105);v105.Visible,v105.Center,v105.Outline,v105.OutlineColor,v105.Transparency,v105.Size=false,true,true,Color3.new(),1475 -(1329 + 145) ,984 -(140 + 831) ;break;end end end local v47;v47=v2.RenderStepped:Connect(function() if  not getgenv().KEsp then for v161,v162 in pairs(v46) do v162.Visible=false;end v47:Disconnect();return;end local v107,v108,v109=v45.Character,v45.Character and v45.Character:FindFirstChildOfClass("Humanoid") ,v45.Character and v45.Character:FindFirstChild("HumanoidRootPart") ;if (v109 and v108 and (v108.Health>0)) then local v128,v129=v3:WorldToViewportPoint(v109.Position);if v129 then local v185=(v109.Position-v3.CFrame.Position).Magnitude;local v186=math.abs(v3:WorldToViewportPoint(v107.Head.Position + Vector3.new(1850 -(1409 + 441) ,718.5 -(15 + 703) ,0 + 0 ) ).Y-v3:WorldToViewportPoint(v109.Position-Vector3.new(438 -(262 + 176) ,1724 -(345 + 1376) ,0) ).Y );local v187,v188,v189=v186/(689.5 -(198 + 490)) ,math.clamp((4.2 -3) * ((95 -55)/v185) ,1206.5 -(696 + 510) ,1.2 -0 ),math.clamp((1332 -(1091 + 171))/v185 ,0.4 + 0 ,0.9 -0 );local v190=(v45.Team and (v45.Team~=v4.Team) and v45.TeamColor.Color) or Color3.new(3 -2 ,375 -(123 + 251) ,4 -3 ) ;v46.T.From,v46.T.To,v46.B.From,v46.B.To=Vector2.new(v128.X-(v187/2) ,v128.Y-(v186/(700 -(208 + 490))) ),Vector2.new(v128.X + (v187/2) ,v128.Y-(v186/(1 + 1)) ),Vector2.new(v128.X-(v187/2) ,v128.Y + (v186/(1 + 1)) ),Vector2.new(v128.X + (v187/2) ,v128.Y + (v186/(838 -(660 + 176))) );v46.L.From,v46.L.To,v46.R.From,v46.R.To=Vector2.new(v128.X-(v187/(1 + 1)) ,v128.Y-(v186/(204 -(14 + 188))) ),Vector2.new(v128.X-(v187/(677 -(534 + 141))) ,v128.Y + (v186/2) ),Vector2.new(v128.X + (v187/(1 + 1)) ,v128.Y-(v186/2) ),Vector2.new(v128.X + (v187/2) ,v128.Y + (v186/(2 + 0)) );for v216,v217 in pairs({v46.T,v46.B,v46.L,v46.R}) do v217.Thickness,v217.Transparency,v217.Color,v217.Visible=v188,v189,v190,true;end local v199=(v128.X-(v187/(2 -0))) -(14 -9) ;v46.H.From,v46.H.To,v46.H.Thickness,v46.H.Color,v46.H.Transparency,v46.H.Visible=Vector2.new(v199,v128.Y + (v186/(2 + 0)) ),Vector2.new(v199,(v128.Y + (v186/(2 + 0))) -(v186 * (v108.Health/v108.MaxHealth)) ),math.clamp((399 -(115 + 281)) * ((93 -53)/v185) ,1.5,2.5 + 0 ),Color3.fromHSV((v108.Health/v108.MaxHealth) * (0.3 -0) ,3 -2 ,868 -(550 + 317) ),v189,true;v46.N.Position,v46.N.Text,v46.N.Color,v46.N.Visible=Vector2.new(v128.X,(v128.Y-(v186/(2 -0))) -(22 -6) ),v45.Name,v190,true;v46.D.Position,v46.D.Text,v46.D.Color,v46.D.Visible=Vector2.new(v128.X,v128.Y + (v186/(5 -3)) + (287 -(134 + 151)) ),math.floor(v185)   .. "m" ,Color3.new(1666 -(970 + 695) ,1 -0 ,1),true;else for v222,v223 in pairs(v46) do v223.Visible=false;end end else local v130=0;while true do if (v130==(1990 -(582 + 1408))) then for v240,v241 in pairs(v46) do v241.Visible=false;end if  not v45.Parent then v47:Disconnect();end break;end end end end);end for v48,v49 in pairs(v1:GetPlayers()) do v7(v49);end local v8=v1.PlayerAdded:Connect(v7);getgenv().KCE=function() local v50=0 -0 ;while true do if (v50==0) then v8:Disconnect();for v164,v165 in ipairs(v6) do pcall(function() v165:Remove();end);end break;end end end;end,OnDisable=function() getgenv().KEsp=false;if getgenv().KCE then pcall(getgenv().KCE);end end});v0:RegisterModule({Name="ESP Tracer / เน€เธชเนเธเธเธ",Category="Visual",OnEnable=function() getgenv().KTT=true;local v12,v13={},{};local function v14(v51) local v52=0 -0 ;local v53;while true do if (v52==1) then v53.Visible,v53.Thickness,v53.Transparency=false,3.5 -2 ,0.8;v12[v51]=v53;v52=1826 -(1195 + 629) ;end if (2==v52) then v13[v51]=v51.CharacterAdded:Connect(function() v12[v51]=v53;end);break;end if (v52==(0 -0)) then if (v51==v4) then return;end v53=Drawing.new("Line");v52=242 -(187 + 54) ;end end end for v54,v55 in pairs(v1:GetPlayers()) do v14(v55);end local v15,v16=v1.PlayerAdded:Connect(v14),v1.PlayerRemoving:Connect(function(v56) if v12[v56] then local v123=780 -(162 + 618) ;while true do if ((0 + 0)==v123) then v12[v56]:Remove();v12[v56]=nil;break;end end end end);local v17=v2.RenderStepped:Connect(function() local v57=0 + 0 ;local v58;while true do if (v57==1) then for v167,v168 in pairs(v12) do local v169,v170=v167.Character and v167.Character:FindFirstChild("HumanoidRootPart") ,v167.Character and v167.Character:FindFirstChildOfClass("Humanoid") ;if (v169 and v170 and (v170.Health>(0 -0))) then local v225=0;local v226;local v227;local v228;while true do if (v225==1) then if v227 then v168.From,v168.To,v168.Color,v168.Visible=v58,Vector2.new(v226.X,v226.Y),v228,true;else v168.Visible=false;end break;end if ((0 -0)==v225) then v226,v227=v3:WorldToViewportPoint(v169.Position);v228=(v167.Team and (v167.Team~=v4.Team) and v167.TeamColor.Color) or Color3.new(1 + 0 ,1637 -(1373 + 263) ,1) ;v225=1001 -(451 + 549) ;end end else v168.Visible=false;end end break;end if (v57==0) then if  not getgenv().KTT then return;end v58=Vector2.new(v3.ViewportSize.X/2 ,0 + 0 );v57=1;end end end);getgenv().KTTC=function() local v59=0;while true do if (v59==1) then v16:Disconnect();for v171,v172 in pairs(v12) do v172:Remove();end break;end if (v59==(0 -0)) then v17:Disconnect();v15:Disconnect();v59=1;end end end;end,OnDisable=function() getgenv().KTT=false;if getgenv().KTTC then pcall(getgenv().KTTC);end end});v0:RegisterModule({Name="ESP NPC Highlight / เนเธฎเนเธฅเธ—เน NPC",Category="Visual",OnEnable=function() getgenv().KNPC=true;local v21,v22={},{};local function v23(v60) local v61=0 -0 ;local v62;local v63;local v64;local v65;local v66;while true do if (v61==(1385 -(746 + 638))) then v64.Adornee,v64.FillColor,v64.OutlineColor,v64.FillTransparency,v64.Parent=v60,Color3.fromRGB(0 + 0 ,387 -132 ,0),Color3.fromRGB(341 -(218 + 123) ,1836 -(1535 + 46) ,0),0.5 + 0 ,v60;v21[v60]=v64;v65=Instance.new("BillboardGui");v65.Adornee,v65.Size,v65.StudsOffset,v65.AlwaysOnTop=v63,UDim2.new(0,22 + 128 ,560 -(306 + 254) ,2 + 28 ),Vector3.new(0,3.5 -1 ,0),true;v61=1469 -(899 + 568) ;end if ((2 + 0)==v61) then v66=Instance.new("TextLabel",v65);v66.Size,v66.BackgroundTransparency,v66.Text,v66.TextColor3,v66.TextSize,v66.Font=UDim2.new(2 -1 ,603 -(268 + 335) ,1,0),291 -(60 + 230) ,"NPC : "   .. (((v60.Name~="") and v60.Name) or "Unknown") ,Color3.fromRGB(572 -(426 + 146) ,255,0),2 + 11 ,Enum.Font.GothamBold;v65.Parent=v60;v22[v60]=v65;break;end if (v61==(1456 -(282 + 1174))) then if ( not v60:IsA("Model") or v1:GetPlayerFromCharacter(v60) or v21[v60]) then return;end v62,v63=v60:FindFirstChildOfClass("Humanoid"),v60:FindFirstChild("Head");if ( not v62 or  not v63) then return;end v64=Instance.new("Highlight");v61=1;end end end for v67,v68 in ipairs(workspace:GetDescendants()) do if v68:IsA("Model") then v23(v68);end end local v24=workspace.DescendantAdded:Connect(function(v69) if (v69:IsA("Model") and getgenv().KNPC) then task.delay(811.2 -(569 + 242) ,function() v23(v69);end);end end);getgenv().KNPCC=function() v24:Disconnect();for v110,v111 in pairs(v21) do local v112=0 -0 ;while true do if (v112==(0 + 0)) then if v21[v110] then v21[v110]:Destroy();end if v22[v110] then v22[v110]:Destroy();end break;end end end v21,v22={},{};end;end,OnDisable=function() local v26=0;while true do if (v26==0) then getgenv().KNPC=false;if getgenv().KNPCC then pcall(getgenv().KNPCC);end break;end end end});v0:RegisterModule({Name="ESP Skeleton / เนเธเธฃเธเธเธฃเธฐเธ”เธนเธ",Category="Visual",OnEnable=function() getgenv().KSkel=true;local v28={};local function v29(v70) local v71=0;local v72;local v73;while true do if (v71==(1025 -(706 + 318))) then for v173,v174 in pairs(v72) do local v175=1251 -(721 + 530) ;while true do if (v175==(1271 -(945 + 326))) then table.insert(v28,v174);v174.Visible,v174.Thickness,v174.Transparency,v174.Outline,v174.OutlineColor=false,2.2 -1 ,0.8 + 0 ,true,Color3.new();break;end end end v73=nil;v71=2;end if (v71==2) then v73=v2.RenderStepped:Connect(function() local v176=700 -(271 + 429) ;local v177;local v178;local v179;while true do if (v176==(0 + 0)) then if  not getgenv().KSkel then local v257=1500 -(1408 + 92) ;while true do if (v257==(1087 -(461 + 625))) then return;end if (v257==(1288 -(993 + 295))) then for v280,v281 in pairs(v72) do v281.Visible=false;end v73:Disconnect();v257=1;end end end v177,v178,v179=v70.Character,v70.Character and v70.Character:FindFirstChildOfClass("Humanoid") ,v70.Character and v70.Character:FindFirstChild("HumanoidRootPart") ;v176=1 + 0 ;end if (v176==(1172 -(418 + 753))) then if (v177 and v178 and (v178.Health>(0 + 0)) and v179) then local v258=v177:FindFirstChild("Head");if v258 then local v268=0;local v269;local v270;local v271;while true do if (v268==(1 + 0)) then if v270 then if (v178.RigType==Enum.HumanoidRigType.R6) then local v302=0;local v303;while true do if (v302==(0 + 0)) then v303=v177:FindFirstChild("Torso");if v303 then local v312=0;local v313;local v314;local v315;while true do if (v312==(1 + 0)) then v72.Chest.Visible,v72.LA2.Visible,v72.RA2.Visible,v72.LL2.Visible,v72.RL2.Visible=false,false,false,false,false;if v314 then local v345=0;local v346;while true do if (v345==3) then v346(v72.RL1,"Right Leg");break;end if (v345==(529 -(406 + 123))) then v72.Spine.From,v72.Spine.To,v72.Spine.Color,v72.Spine.Visible=Vector2.new(v269.X,v269.Y),v315,v271,true;v346=nil;v345=1;end if (v345==(1771 -(1749 + 20))) then v346(v72.RA1,"Right Arm");v346(v72.LL1,"Left Leg");v345=3;end if (v345==(1 + 0)) then function v346(v354,v355) local v356=1322 -(1249 + 73) ;local v357;while true do if (v356==(0 + 0)) then v357=v177:FindFirstChild(v355);if v357 then local v368=0;local v369;local v370;while true do if (v368==(1145 -(466 + 679))) then v369,v370=v3:WorldToViewportPoint(v357.Position);if v370 then v354.From,v354.To,v354.Color,v354.Visible=v315,Vector2.new(v369.X,v369.Y),v271,true;else v354.Visible=false;end break;end end else v354.Visible=false;end break;end end end v346(v72.LA1,"Left Arm");v345=2;end end else for v347,v348 in pairs(v72) do v348.Visible=false;end end break;end if (v312==(0 -0)) then v313,v314=v3:WorldToViewportPoint(v303.Position);v315=Vector2.new(v313.X,v313.Y);v312=1;end end end break;end end elseif (v178.RigType==Enum.HumanoidRigType.R15) then local v304,v305=v177:FindFirstChild("UpperTorso"),v177:FindFirstChild("LowerTorso");if (v304 and v305) then local v306,v307=v3:WorldToViewportPoint(v304.Position);local v308,v309=v3:WorldToViewportPoint(v305.Position);local v310,v311=Vector2.new(v306.X,v306.Y),Vector2.new(v308.X,v308.Y);if (v307 or v309) then v72.Spine.From,v72.Spine.To,v72.Spine.Color,v72.Spine.Visible=Vector2.new(v269.X,v269.Y),v310,v271,true;v72.Chest.From,v72.Chest.To,v72.Chest.Color,v72.Chest.Visible=v310,v311,v271,true;local function v324(v325,v326,v327,v328,v329) if (v327 and v328) then local v338=0 -0 ;local v339;local v340;local v341;local v342;while true do if (v338==(1901 -(106 + 1794))) then if v340 then v325.From,v325.To,v325.Color,v325.Visible=v329,Vector2.new(v339.X,v339.Y),v271,true;else v325.Visible=false;end if (v340 and v342) then v326.From,v326.To,v326.Color,v326.Visible=Vector2.new(v339.X,v339.Y),Vector2.new(v341.X,v341.Y),v271,true;else v326.Visible=false;end break;end if (v338==0) then v339,v340=v3:WorldToViewportPoint(v327.Position);v341,v342=v3:WorldToViewportPoint(v328.Position);v338=1 + 0 ;end end else v325.Visible,v326.Visible=false,false;end end v324(v72.LA1,v72.LA2,v177:FindFirstChild("LeftUpperArm"),v177:FindFirstChild("LeftLowerArm"),v310);v324(v72.RA1,v72.RA2,v177:FindFirstChild("RightUpperArm"),v177:FindFirstChild("RightLowerArm"),v310);v324(v72.LL1,v72.LL2,v177:FindFirstChild("LeftUpperLeg"),v177:FindFirstChild("LeftLowerLeg"),v311);v324(v72.RL1,v72.RL2,v177:FindFirstChild("RightUpperLeg"),v177:FindFirstChild("RightLowerLeg") or v177:FindFirstChild("RightFoot") ,v311);else for v330,v331 in pairs(v72) do v331.Visible=false;end end end end else for v299,v300 in pairs(v72) do v300.Visible=false;end end break;end if (v268==(0 + 0)) then v269,v270=v3:WorldToViewportPoint(v258.Position);v271=(v70.Team and (v70.Team~=v4.Team) and v70.TeamColor.Color) or Color3.new(2 -1 ,2 -1 ,1) ;v268=115 -(4 + 110) ;end end else for v277,v278 in pairs(v72) do v278.Visible=false;end end else local v259=0;while true do if (v259==(584 -(57 + 527))) then for v283,v284 in pairs(v72) do v284.Visible=false;end if  not v70.Parent then v73:Disconnect();end break;end end end break;end end end);break;end if (v71==0) then if (v70==v4) then return;end v72={Spine=Drawing.new("Line"),Chest=Drawing.new("Line"),LA1=Drawing.new("Line"),LA2=Drawing.new("Line"),RA1=Drawing.new("Line"),RA2=Drawing.new("Line"),LL1=Drawing.new("Line"),LL2=Drawing.new("Line"),RL1=Drawing.new("Line"),RL2=Drawing.new("Line")};v71=1428 -(41 + 1386) ;end end end for v74,v75 in pairs(v1:GetPlayers()) do v29(v75);end local v30=v1.PlayerAdded:Connect(v29);getgenv().KSkelC=function() local v76=103 -(17 + 86) ;while true do if (v76==(0 + 0)) then v30:Disconnect();for v180,v181 in ipairs(v28) do pcall(function() v181:Remove();end);end break;end end end;end,OnDisable=function() local v32=0;while true do if (v32==(0 -0)) then getgenv().KSkel=false;if getgenv().KSkelC then pcall(getgenv().KSkelC);end break;end end end});v0:RegisterModule({Name="ESP Tracer / เน€เธชเนเธเธฅเนเธฒเธ",Category="Visual",OnEnable=function() getgenv().KTB=true;local v34={};local function v35(v77) if (v77==v4) then return;end local v78=Drawing.new("Line");table.insert(v34,v78);v78.Visible,v78.Thickness,v78.Transparency,v78.Outline,v78.OutlineColor=false,2.2 -1 ,0.8,true,Color3.new();local v84;v84=v2.RenderStepped:Connect(function() local v113=166 -(122 + 44) ;local v114;local v115;local v116;while true do if ((1 -0)==v113) then if (v114 and v115 and (v115.Health>0) and v116) then local v230=0;local v231;local v232;local v233;while true do if ((0 -0)==v230) then v231,v232=v3:WorldToViewportPoint(v116.Position);v233=(v77.Team and (v77.Team~=v4.Team) and v77.TeamColor.Color) or Color3.new(1 + 0 ,1 + 0 ,1 -0 ) ;v230=66 -(30 + 35) ;end if (v230==1) then if v232 then v78.From,v78.To,v78.Color,v78.Visible=Vector2.new(v3.ViewportSize.X/2 ,v3.ViewportSize.Y),Vector2.new(v231.X,v231.Y),v233,true;else v78.Visible=false;end break;end end else local v234=0 + 0 ;while true do if (v234==0) then v78.Visible=false;if  not v77.Parent then v84:Disconnect();end break;end end end break;end if (v113==0) then if  not getgenv().KTB then v78.Visible=false;v84:Disconnect();return;end v114,v115,v116=v77.Character,v77.Character and v77.Character:FindFirstChildOfClass("Humanoid") ,v77.Character and v77.Character:FindFirstChild("HumanoidRootPart") ;v113=1258 -(1043 + 214) ;end end end);end for v85,v86 in pairs(v1:GetPlayers()) do v35(v86);end local v36=v1.PlayerAdded:Connect(v35);getgenv().KTBC=function() local v87=0 -0 ;while true do if (v87==0) then v36:Disconnect();for v183,v184 in ipairs(v34) do pcall(function() v184:Remove();end);end break;end end end;end,OnDisable=function() local v38=1212 -(323 + 889) ;while true do if (v38==(0 -0)) then getgenv().KTB=false;if getgenv().KTBC then pcall(getgenv().KTBC);end break;end end end});v0:RegisterModule({Name="Proximity Line / เน€เธชเนเธเธเธญเธเธฃเธฐเธขเธฐเธเธฃเธฐเธเธดเธ”",Category="Visual",OnEnable=function() getgenv().KProx=true;local v40={};local function v41(v88) if (v88==v4) then return;end local v89,v90=Drawing.new("Line"),Drawing.new("Text");v89.Visible,v89.Thickness,v89.Transparency,v89.Outline,v89.OutlineColor=false,581.5 -(361 + 219) ,0.9,true,Color3.new();v90.Visible,v90.Size,v90.Center,v90.Outline,v90.OutlineColor=false,13,true,true,Color3.new();table.insert(v40,v89);table.insert(v40,v90);local v101;v101=v2.RenderStepped:Connect(function() local v117=0;local v118;local v119;local v120;while true do if (v117==(320 -(53 + 267))) then if  not getgenv().KProx then local v236=0 + 0 ;while true do if (v236==0) then v89.Visible,v90.Visible=false,false;v101:Disconnect();v236=414 -(15 + 398) ;end if (v236==(983 -(18 + 964))) then return;end end end v118,v119,v120=v4.Character and v4.Character:FindFirstChild("HumanoidRootPart") ,v88.Character and v88.Character:FindFirstChild("HumanoidRootPart") ,v88.Character and v88.Character:FindFirstChildOfClass("Humanoid") ;v117=3 -2 ;end if (v117==1) then if (v118 and v119 and v120 and (v120.Health>(0 + 0))) then local v237=(v119.Position-v118.Position).Magnitude;if (v237<=(32 + 18)) then local v249=0;local v250;local v251;local v252;local v253;local v254;while true do if (v249==0) then v250,v251=v3:WorldToViewportPoint(v118.Position);v252,v253=v3:WorldToViewportPoint(v119.Position);v249=1;end if (v249==(851 -(20 + 830))) then v254=(v88.Team and (v88.Team~=v4.Team) and v88.TeamColor.Color) or Color3.new(1 + 0 ,127 -(116 + 10) ,1 + 0 ) ;if (v251 or v253) then local v286=738 -(542 + 196) ;local v287;local v288;while true do if (v286==(0 -0)) then v287,v288=Vector2.new(v250.X,v250.Y),Vector2.new(v252.X,v252.Y);v89.From,v89.To,v89.Color,v89.Visible=v287,v288,v254,true;v286=1 + 0 ;end if (v286==(1 + 0)) then v90.Position,v90.Text,v90.Color,v90.Visible=Vector2.new((v287.X + v288.X)/(1 + 1) ,(v287.Y + v288.Y)/(4 -2) ),math.floor(v237 * 0.28 )   .. "m" ,v254,true;break;end end else v89.Visible,v90.Visible=false,false;end break;end end else v89.Visible,v90.Visible=false,false;end else v89.Visible,v90.Visible=false,false;if  not v88.Parent then v101:Disconnect();end end break;end end end);end for v102,v103 in pairs(v1:GetPlayers()) do v41(v103);end local v42=v1.PlayerAdded:Connect(v41);getgenv().KProxC=function() v42:Disconnect();for v121,v122 in ipairs(v40) do pcall(function() v122:Remove();end);end end;end,OnDisable=function() local v44=0;while true do if (0==v44) then getgenv().KProx=false;if getgenv().KProxC then pcall(getgenv().KProxC);end break;end end end});
+if not _G.KrizHubCore then return end
+local Core, P, RS, Cam, LP = _G.KrizHubCore, game:GetService("Players"), game:GetService("RunService"), workspace.CurrentCamera, game:GetService("Players").LocalPlayer
+-- 1. ESP / มองทะลุ
+Core:RegisterModule({Name="ESP / มองทะลุ", Category="Visual", OnEnable=function()
+    getgenv().KEsp = true local d = {}
+    local function M(p)
+        if p == LP then return end
+        local o = {T=Drawing.new("Line"),B=Drawing.new("Line"),L=Drawing.new("Line"),R=Drawing.new("Line"),H=Drawing.new("Line"),N=Drawing.new("Text"),D=Drawing.new("Text")}
+        for _,v in pairs(o) do table.insert(d,v) v.Visible,v.Center,v.Outline,v.OutlineColor,v.Transparency,v.Size = false,true,true,Color3.new(),1,13 end
+        local cn; cn = RS.RenderStepped:Connect(function()
+            if not getgenv().KEsp then for _,v in pairs(o) do v.Visible=false end cn:Disconnect() return end
+            local c,hum,hrp = p.Character, p.Character and p.Character:FindFirstChildOfClass("Humanoid"), p.Character and p.Character:FindFirstChild("HumanoidRootPart")
+            if hrp and hum and hum.Health>0 then
+                local pos,vis = Cam:WorldToViewportPoint(hrp.Position)
+                if vis then
+                    local dist = (hrp.Position-Cam.CFrame.Position).Magnitude
+                    local h = math.abs(Cam:WorldToViewportPoint(c.Head.Position+Vector3.new(0,.5,0)).Y - Cam:WorldToViewportPoint(hrp.Position-Vector3.new(0,3,0)).Y)
+                    local w,t,tr = h/1.5, math.clamp(1.2*(40/dist),.5,1.2), math.clamp(70/dist,.4,.9)
+                    local clr = (p.Team and p.Team ~= LP.Team) and p.TeamColor.Color or Color3.new(1,1,1)
+                    o.T.From,o.T.To,o.B.From,o.B.To = Vector2.new(pos.X-w/2,pos.Y-h/2),Vector2.new(pos.X+w/2,pos.Y-h/2),Vector2.new(pos.X-w/2,pos.Y+h/2),Vector2.new(pos.X+w/2,pos.Y+h/2)
+                    o.L.From,o.L.To,o.R.From,o.R.To = Vector2.new(pos.X-w/2,pos.Y-h/2),Vector2.new(pos.X-w/2,pos.Y+h/2),Vector2.new(pos.X+w/2,pos.Y-h/2),Vector2.new(pos.X+w/2,pos.Y+h/2)
+                    for _,l in pairs({o.T,o.B,o.L,o.R}) do l.Thickness,l.Transparency,l.Color,l.Visible = t,tr,clr,true end
+                    local bX = pos.X-w/2-5
+                    o.H.From,o.H.To,o.H.Thickness,o.H.Color,o.H.Transparency,o.H.Visible = Vector2.new(bX,pos.Y+h/2),Vector2.new(bX,pos.Y+h/2-(h*(hum.Health/hum.MaxHealth))),math.clamp(3*(40/dist),1.5,2.5),Color3.fromHSV(hum.Health/hum.MaxHealth*.3,1,1),tr,true
+                    o.N.Position,o.N.Text,o.N.Color,o.N.Visible = Vector2.new(pos.X,pos.Y-h/2-16),p.Name,clr,true
+                    o.D.Position,o.D.Text,o.D.Color,o.D.Visible = Vector2.new(pos.X,pos.Y+h/2+2),math.floor(dist).."m",Color3.new(1,1,1),true
+                else for _,v in pairs(o) do v.Visible=false end end
+            else for _,v in pairs(o) do v.Visible=false end if not p.Parent then cn:Disconnect() end end
+        end)
+    end
+    for _,p in pairs(P:GetPlayers()) do M(p) end local a = P.PlayerAdded:Connect(M)
+    getgenv().KCE = function() a:Disconnect() for _,v in ipairs(d) do pcall(function() v:Remove() end) end end
+end, OnDisable=function() getgenv().KEsp=false if getgenv().KCE then pcall(getgenv().KCE) end end})
+-- 2. ESP Tracer / เส้นบน
+Core:RegisterModule({Name="ESP Tracer / เส้นบน", Category="Visual", OnEnable=function()
+    getgenv().KTT = true local tr, pc = {}, {}
+    local function S(p)
+        if p == LP then return end
+        local l = Drawing.new("Line") l.Visible,l.Thickness,l.Transparency=false,1.5,.8 tr[p]=l
+        pc[p] = p.CharacterAdded:Connect(function() tr[p]=l end)
+    end
+    for _,p in pairs(P:GetPlayers()) do S(p) end
+    local a,r = P.PlayerAdded:Connect(S), P.PlayerRemoving:Connect(function(p) if tr[p] then tr[p]:Remove() tr[p]=nil end end)
+    local u = RS.RenderStepped:Connect(function()
+        if not getgenv().KTT then return end local orig = Vector2.new(Cam.ViewportSize.X/2, 0)
+        for p,l in pairs(tr) do
+            local hrp,hum = p.Character and p.Character:FindFirstChild("HumanoidRootPart"), p.Character and p.Character:FindFirstChildOfClass("Humanoid")
+            if hrp and hum and hum.Health>0 then
+                local pos, vis = Cam:WorldToViewportPoint(hrp.Position)
+                local clr = (p.Team and p.Team ~= LP.Team) and p.TeamColor.Color or Color3.new(1,1,1)
+                if vis then l.From,l.To,l.Color,l.Visible = orig,Vector2.new(pos.X,pos.Y),clr,true else l.Visible=false end
+            else l.Visible=false end
+        end
+    end)
+    getgenv().KTTC = function() u:Disconnect() a:Disconnect() r:Disconnect() for _,l in pairs(tr) do l:Remove() end end
+end, OnDisable=function() getgenv().KTT=false if getgenv().KTTC then pcall(getgenv().KTTC) end end})
+-- 3. ESP NPC Highlight / ไฮไลท์ NPC
+Core:RegisterModule({Name="ESP NPC Highlight / ไฮไลท์ NPC", Category="Visual", OnEnable=function()
+    getgenv().KNPC = true local hl, tag = {}, {}
+    local function SN(m)
+        if not m:IsA("Model") or P:GetPlayerFromCharacter(m) or hl[m] then return end
+        local hum, head = m:FindFirstChildOfClass("Humanoid"), m:FindFirstChild("Head")
+        if not hum or not head then return end
+        local h = Instance.new("Highlight") h.Adornee,h.FillColor,h.OutlineColor,h.FillTransparency,h.Parent = m,Color3.fromRGB(0,255,0),Color3.fromRGB(0,255,0),.5,m hl[m]=h
+        local b = Instance.new("BillboardGui") b.Adornee,b.Size,b.StudsOffset,b.AlwaysOnTop = head,UDim2.new(0,150,0,30),Vector3.new(0,2.5,0),true
+        local t = Instance.new("TextLabel",b) t.Size,t.BackgroundTransparency,t.Text,t.TextColor3,t.TextSize,t.Font = UDim2.new(1,0,1,0),1,"NPC : "..(m.Name~="" and m.Name or "Unknown"),Color3.fromRGB(0,255,0),13,Enum.Font.GothamBold b.Parent=m tag[m]=b
+    end
+    for _,o in ipairs(workspace:GetDescendants()) do if o:IsA("Model") then SN(o) end end
+    local a = workspace.DescendantAdded:Connect(function(o) if o:IsA("Model") and getgenv().KNPC then task.delay(.2,function() SN(o) end) end end)
+    getgenv().KNPCC = function() a:Disconnect() for m,_ in pairs(hl) do if hl[m] then hl[m]:Destroy() end if tag[m] then tag[m]:Destroy() end end hl,tag={},{} end
+end, OnDisable=function() getgenv().KNPC=false if getgenv().KNPCC then pcall(getgenv().KNPCC) end end})
+-- 4. ESP Skeleton / โครงกระดูก
+Core:RegisterModule({Name="ESP Skeleton / โครงกระดูก", Category="Visual", OnEnable=function()
+    getgenv().KSkel = true local dList = {}
+    local function C(p)
+        if p == LP then return end
+        local ln = {Spine=Drawing.new("Line"),Chest=Drawing.new("Line"),LA1=Drawing.new("Line"),LA2=Drawing.new("Line"),RA1=Drawing.new("Line"),RA2=Drawing.new("Line"),LL1=Drawing.new("Line"),LL2=Drawing.new("Line"),RL1=Drawing.new("Line"),RL2=Drawing.new("Line")}
+        for _,l in pairs(ln) do table.insert(dList,l) l.Visible,l.Thickness,l.Transparency,l.Outline,l.OutlineColor=false,1.2,.8,true,Color3.new() end
+        local cn; cn = RS.RenderStepped:Connect(function()
+            if not getgenv().KSkel then for _,l in pairs(ln) do l.Visible=false end cn:Disconnect() return end
+            local c,hum,hrp = p.Character, p.Character and p.Character:FindFirstChildOfClass("Humanoid"), p.Character and p.Character:FindFirstChild("HumanoidRootPart")
+            if c and hum and hum.Health>0 and hrp then
+                local head = c:FindFirstChild("Head")
+                if head then
+                    local pH,vH = Cam:WorldToViewportPoint(head.Position)
+                    local clr = (p.Team and p.Team ~= LP.Team) and p.TeamColor.Color or Color3.new(1,1,1)
+                    if vH then
+                        if hum.RigType == Enum.HumanoidRigType.R6 then
+                            local torso = c:FindFirstChild("Torso")
+                            if torso then
+                                local pT,vT = Cam:WorldToViewportPoint(torso.Position) local tP = Vector2.new(pT.X,pT.Y)
+                                ln.Chest.Visible,ln.LA2.Visible,ln.RA2.Visible,ln.LL2.Visible,ln.RL2.Visible=false,false,false,false,false
+                                if vT then
+                                    ln.Spine.From,ln.Spine.To,ln.Spine.Color,ln.Spine.Visible=Vector2.new(pH.X,pH.Y),tP,clr,true
+                                    local function s6(l,n) local pt = c:FindFirstChild(n) if pt then local ps,vs=Cam:WorldToViewportPoint(pt.Position) if vs then l.From,l.To,l.Color,l.Visible=tP,Vector2.new(ps.X,ps.Y),clr,true else l.Visible=false end else l.Visible=false end end
+                                    s6(ln.LA1,"Left Arm") s6(ln.RA1,"Right Arm") s6(ln.LL1,"Left Leg") s6(ln.RL1,"Right Leg")
+                                else for _,l in pairs(ln) do l.Visible=false end end
+                            end
+                        elseif hum.RigType == Enum.HumanoidRigType.R15 then
+                            local uT,lT = c:FindFirstChild("UpperTorso"),c:FindFirstChild("LowerTorso")
+                            if uT and lT then
+                                local pU,vU = Cam:WorldToViewportPoint(uT.Position) local pL,vL = Cam:WorldToViewportPoint(lT.Position)
+                                local uP,lP = Vector2.new(pU.X,pU.Y), Vector2.new(pL.X,pL.Y)
+                                if vU or vL then
+                                    ln.Spine.From,ln.Spine.To,ln.Spine.Color,ln.Spine.Visible=Vector2.new(pH.X,pH.Y),uP,clr,true
+                                    ln.Chest.From,ln.Chest.To,ln.Chest.Color,ln.Chest.Visible=uP,lP,clr,true
+                                    local function s15(l1,l2,pA,pB,fP)
+                                        if pA and pB then
+                                            local s1,v1 = Cam:WorldToViewportPoint(pA.Position) local s2,v2 = Cam:WorldToViewportPoint(pB.Position)
+                                            if v1 then l1.From,l1.To,l1.Color,l1.Visible=fP,Vector2.new(s1.X,s1.Y),clr,true else l1.Visible=false end
+                                            if v1 and v2 then l2.From,l2.To,l2.Color,l2.Visible=Vector2.new(s1.X,s1.Y),Vector2.new(s2.X,s2.Y),clr,true else l2.Visible=false end
+                                        else l1.Visible,l2.Visible=false,false end
+                                    end
+                                    s15(ln.LA1,ln.LA2,c:FindFirstChild("LeftUpperArm"),c:FindFirstChild("LeftLowerArm"),uP)
+                                    s15(ln.RA1,ln.RA2,c:FindFirstChild("RightUpperArm"),c:FindFirstChild("RightLowerArm"),uP)
+                                    s15(ln.LL1,ln.LL2,c:FindFirstChild("LeftUpperLeg"),c:FindFirstChild("LeftLowerLeg"),lP)
+                                    s15(ln.RL1,ln.RL2,c:FindFirstChild("RightUpperLeg"),c:FindFirstChild("RightLowerLeg") or c:FindFirstChild("RightFoot"),lP)
+                                else for _,l in pairs(ln) do l.Visible=false end end
+                            end
+                        end
+                    else for _,l in pairs(ln) do l.Visible=false end end
+                else for _,l in pairs(ln) do l.Visible=false end end
+            else for _,l in pairs(ln) do l.Visible=false end if not p.Parent then cn:Disconnect() end end
+        end)
+    end
+    for _,p in pairs(P:GetPlayers()) do C(p) end local a = P.PlayerAdded:Connect(C)
+    getgenv().KSkelC = function() a:Disconnect() for _,o in ipairs(dList) do pcall(function() o:Remove() end) end end
+end, OnDisable=function() getgenv().KSkel=false if getgenv().KSkelC then pcall(getgenv().KSkelC) end end})
+-- 5. ESP Tracer / เส้นล่าง
+Core:RegisterModule({Name="ESP Tracer / เส้นล่าง", Category="Visual", OnEnable=function()
+    getgenv().KTB = true local dList = {}
+    local function C(p)
+        if p == LP then return end
+        local l = Drawing.new("Line") table.insert(dList,l) l.Visible,l.Thickness,l.Transparency,l.Outline,l.OutlineColor=false,1.2,.8,true,Color3.new()
+        local cn; cn = RS.RenderStepped:Connect(function()
+            if not getgenv().KTB then l.Visible=false cn:Disconnect() return end
+            local c,hum,hrp = p.Character, p.Character and p.Character:FindFirstChildOfClass("Humanoid"), p.Character and p.Character:FindFirstChild("HumanoidRootPart")
+            if c and hum and hum.Health>0 and hrp then
+                local pos,vis = Cam:WorldToViewportPoint(hrp.Position)
+                local clr = (p.Team and p.Team ~= LP.Team) and p.TeamColor.Color or Color3.new(1,1,1)
+                if vis then l.From,l.To,l.Color,l.Visible = Vector2.new(Cam.ViewportSize.X/2,Cam.ViewportSize.Y),Vector2.new(pos.X,pos.Y),clr,true else l.Visible=false end
+            else l.Visible=false if not p.Parent then cn:Disconnect() end end
+        end)
+    end
+    for _,p in pairs(P:GetPlayers()) do C(p) end local a = P.PlayerAdded:Connect(C)
+    getgenv().KTBC = function() a:Disconnect() for _,o in ipairs(dList) do pcall(function() o:Remove() end) end end
+end, OnDisable=function() getgenv().KTB=false if getgenv().KTBC then pcall(getgenv().KTBC) end end})
+-- 6. Proximity Line / เส้นบอกระยะประชิด
+Core:RegisterModule({Name="Proximity Line / เส้นบอกระยะประชิด", Category="Visual", OnEnable=function()
+    getgenv().KProx = true local dList = {}
+    local function C(p)
+        if p == LP then return end
+        local l, t = Drawing.new("Line"), Drawing.new("Text")
+        l.Visible,l.Thickness,l.Transparency,l.Outline,l.OutlineColor=false,1.5,.9,true,Color3.new()
+        t.Visible,t.Size,t.Center,t.Outline,t.OutlineColor=false,13,true,true,Color3.new()
+        table.insert(dList,l) table.insert(dList,t)
+        local cn; cn = RS.RenderStepped:Connect(function()
+            if not getgenv().KProx then l.Visible,t.Visible=false,false cn:Disconnect() return end
+            local mH, tH, tHu = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart"), p.Character and p.Character:FindFirstChild("HumanoidRootPart"), p.Character and p.Character:FindFirstChildOfClass("Humanoid")
+            if mH and tH and tHu and tHu.Health>0 then
+                local dist = (tH.Position-mH.Position).Magnitude
+                if dist <= 50 then
+                    local s1,v1 = Cam:WorldToViewportPoint(mH.Position) local s2,v2 = Cam:WorldToViewportPoint(tH.Position)
+                    local clr = (p.Team and p.Team ~= LP.Team) and p.TeamColor.Color or Color3.new(1,1,1)
+                    if v1 or v2 then
+                        local p1,p2 = Vector2.new(s1.X,s1.Y), Vector2.new(s2.X,s2.Y)
+                        l.From,l.To,l.Color,l.Visible = p1,p2,clr,true
+                        t.Position,t.Text,t.Color,t.Visible = Vector2.new((p1.X+p2.X)/2,(p1.Y+p2.Y)/2), math.floor(dist*.28).."m", clr, true
+                    else l.Visible,t.Visible=false,false end
+                else l.Visible,t.Visible=false,false end
+            else l.Visible,t.Visible=false,false if not p.Parent then cn:Disconnect() end end
+        end)
+    end
+    for _,p in pairs(P:GetPlayers()) do C(p) end local a = P.PlayerAdded:Connect(C)
+    getgenv().KProxC = function() a:Disconnect() for _,o in ipairs(dList) do pcall(function() o:Remove() end) end end
+end, OnDisable=function() getgenv().KProx=false if getgenv().KProxC then pcall(getgenv().KProxC) end end})
 
 
-if  not _G.KrizHubCore then return;end local v0,v1,v2,v3=_G.KrizHubCore,game:GetService("Players"),game:GetService("RunService"),game:GetService("Players").LocalPlayer;local v4=function(v15,v16) local v17=0 -0 ;local v18;while true do if (v17==1) then return v18;end if (v17==(0 -0)) then v18=Instance.new("UICorner",v15);v18.CornerRadius=v16 or UDim.new(442 -(416 + 26) ,9 -6 ) ;v17=1;end end end;local v5=function(v19,v20) local v21=Instance.new("UIStroke",v19);v21.Color,v21.Thickness=v20 or Color3.fromRGB(99 + 131 ,50,88 -38 ) ,439 -(145 + 293) ;return v21;end;local v6=function(v24) local v25=430 -(44 + 386) ;local v26;local v27;local v28;while true do if (v25==(1488 -(998 + 488))) then v28=v24:FindFirstChild("Backpack");if v28 then for v122,v123 in ipairs(v28:GetChildren()) do v27(v123);end end v25=3;end if (v25==(1 + 0)) then function v27(v96) if v96:IsA("Tool") then local v124=0 + 0 ;local v125;while true do if (v124==0) then v125=(v96.TextureId and (v96.TextureId~="") and v96.TextureId) or (v96:FindFirstChildOfClass("Decal") and v96:FindFirstChildOfClass("Decal").Texture) or "" ;table.insert(v26,{Name=v96.Name,Image=v125});break;end end end end if v24.Character then for v126,v127 in ipairs(v24.Character:GetChildren()) do v27(v127);end end v25=774 -(201 + 571) ;end if (v25==3) then return v26;end if (v25==(1138 -(116 + 1022))) then v26={};v27=nil;v25=1;end end end;v0:RegisterModule({Name="ESP Inventory / เนเธญเน€เธ—เธกเธเธนเนเน€เธฅเนเธ",Category="Visual",OnEnable=function() local v29=0 -0 ;local v30;local v31;local v32;local v33;local v34;local v35;while true do if (v29==4) then v35=v2.RenderStepped:Connect(function() if  not getgenv().KInv then return;end for v116,v117 in pairs(v30) do local v118,v119=v116.Character and v116.Character:FindFirstChild("HumanoidRootPart") ,v116.Character and v116.Character:FindFirstChildOfClass("Humanoid") ;if (v118 and v119 and (v119.Health>0)) then v117.Gui.Adornee,v117.Gui.Enabled=v118,true;local v152,v153=v6(v116),"";for v171,v172 in ipairs(v152) do v153=v153   .. v172.Name   .. "_" ;end if (v117.CacheKey~=v153) then local v177=0 + 0 ;while true do if (v177==(0 -0)) then v117.CacheKey=v153;for v179,v180 in ipairs(v117.Holder:GetChildren()) do if  not v180:IsA("UIListLayout") then v180:Destroy();end end v177=1;end if (v177==1) then for v181,v182 in ipairs(v152) do local v183=0;local v184;while true do if (v183==(7 -5)) then if (v182.Image~="") then local v188=859 -(814 + 45) ;local v189;while true do if (v188==(0 -0)) then v189=Instance.new("ImageLabel",v184);v189.Size,v189.Position,v189.BackgroundTransparency,v189.Image=UDim2.new(1 + 0 , -(1 + 1),886 -(261 + 624) , -2),UDim2.new(0 -0 ,1081 -(1020 + 60) ,1423 -(630 + 793) ,3 -2 ),4 -3 ,v182.Image;break;end end else local v190=0 + 0 ;local v191;while true do if (v190==(0 -0)) then v191=Instance.new("TextLabel",v184);v191.Size,v191.Position,v191.BackgroundTransparency,v191.Text,v191.TextColor3,v191.TextSize,v191.Font,v191.TextScaled=UDim2.new(1748 -(760 + 987) , -2,1914 -(1789 + 124) , -(768 -(745 + 21))),UDim2.new(0 + 0 ,2 -1 ,0 -0 ,1 + 0 ),1 + 0 ,string.sub(v182.Name,1056 -(87 + 968) ,3),Color3.new(1,4 -3 ,1),8 + 0 ,Enum.Font.GothamBold,true;break;end end end break;end if (v183==(0 -0)) then v184=Instance.new("Frame",v117.Holder);v184.Size,v184.BackgroundColor3,v184.BackgroundTransparency=UDim2.new(0,1435 -(447 + 966) ,0 -0 ,1839 -(1703 + 114) ),Color3.new(),701.5 -(376 + 325) ;v183=1 -0 ;end if (v183==(2 -1)) then v4(v184);v5(v184);v183=2;end end end break;end end end else v117.Gui.Enabled=false;end end end);getgenv().KInvC=function() local v97=0 + 0 ;while true do if (v97==0) then v33:Disconnect();v34:Disconnect();v97=2 -1 ;end if (v97==(15 -(9 + 5))) then v35:Disconnect();for v173,v174 in pairs(v30) do v32(v173);end break;end end end;break;end if (v29==(377 -(85 + 291))) then v31=nil;function v31(v98) local v99=1265 -(243 + 1022) ;local v100;local v101;local v102;while true do if (1==v99) then v100.Name,v100.Size,v100.StudsOffset,v100.AlwaysOnTop="KInv_"   .. v98.Name ,UDim2.new(0,150,0,98 -72 ),Vector3.new(0, -(3.2 + 0),1180 -(1123 + 57) ),true;v101=Instance.new("Frame",v100);v99=2 + 0 ;end if (v99==(257 -(163 + 91))) then v102.FillDirection,v102.HorizontalAlignment,v102.VerticalAlignment,v102.Padding=Enum.FillDirection.Horizontal,Enum.HorizontalAlignment.Center,Enum.VerticalAlignment.Center,UDim.new(1930 -(1869 + 61) ,1 + 1 );v100.Parent=game:GetService("CoreGui");v99=4;end if ((6 -4)==v99) then v101.Size,v101.BackgroundTransparency=UDim2.new(1 -0 ,0 + 0 ,1 -0 ,0 + 0 ),1475 -(1329 + 145) ;v102=Instance.new("UIListLayout",v101);v99=974 -(140 + 831) ;end if (v99==0) then if ((v98==v3) or v30[v98]) then return;end v100=Instance.new("BillboardGui");v99=1851 -(1409 + 441) ;end if (v99==4) then v30[v98]={Gui=v100,Holder=v101,CacheKey=""};break;end end end v29=720 -(15 + 703) ;end if (v29==2) then v32=nil;function v32(v103) if v30[v103] then pcall(function() v30[v103].Gui:Destroy();end);v30[v103]=nil;end end v29=2 + 1 ;end if (v29==(441 -(262 + 176))) then for v104,v105 in pairs(v1:GetPlayers()) do v31(v105);end v33,v34=v1.PlayerAdded:Connect(v31),v1.PlayerRemoving:Connect(v32);v29=1725 -(345 + 1376) ;end if (v29==(688 -(198 + 490))) then getgenv().KInv=true;v30={};v29=1;end end end,OnDisable=function() local v36=0 -0 ;while true do if (v36==0) then getgenv().KInv=false;if getgenv().KInvC then pcall(getgenv().KInvC);end break;end end end});if  not _G.KrizHubCore then return;end local v0,v2,v7,v3=_G.KrizHubCore,game:GetService("RunService"),workspace.CurrentCamera,game:GetService("Players").LocalPlayer;v0:RegisterModule({Name="ESP Item / เธชเธดเนเธเธเธญเธเธ—เธตเนเน€เธเนเธเนเธ”เน",Category="Visual",OnEnable=function() getgenv().KItem=true;local v38={};local v39={"M9","Glock","Desert Eagle","Revolver","USP","Five-seven","P226","Remington 870","Shotgun","Double Barrel","SPAS-12","Benelli","AK-47","M4A1","Scar-H","FAL","AUG","P90","MP5","UMP45","Vector","Thompson","Sniper","AWM","Barrett","Scout","Intervention","Remington 700","RPG","Rocket Launcher","Minigun","Grenade","C4","Dynamite","Flashbang","Smoke","Knife","Sword","Katana","Machete","Combat Knife","Bat","Crowbar","Hammer","Pipe","Axe","Keycard","Key","Gun","Armor","Medkit","Bandage"};local function v40(v58) for v71,v72 in ipairs(v39) do if string.find(string.lower(v58),string.lower(v72)) then return true;end end return false;end local function v41(v59) pcall(function() local v73=0 -0 ;while true do if (v73==(1824 -(1195 + 629))) then v59.H:Destroy();v59.T:Remove();break;end end end);end local function v42(v60) local v61=0;local v62;while true do if (v61==(0 -0)) then if (v38[v60] or  not (v60:IsA("Model") or v60:IsA("BasePart")) or v60:IsDescendantOf(game:GetService("Players")) or  not v40(v60.Name)) then return;end v62=(v60:IsA("BasePart") and v60) or v60:FindFirstChildOfClass("BasePart") or v60.PrimaryPart ;v61=242 -(187 + 54) ;end if (v61==(781 -(162 + 618))) then if v62 then local v129=Instance.new("Highlight",game:GetService("CoreGui"));v129.FillColor,v129.OutlineColor,v129.FillTransparency,v129.Adornee=Color3.fromRGB(120 + 50 ,50,170 + 85 ),Color3.fromRGB(490 -260 ,336 -136 ,20 + 235 ),0.5,v60;local v134=Drawing.new("Text");v134.Size,v134.Center,v134.Outline,v134.OutlineColor,v134.Color=1649 -(1373 + 263) ,true,true,Color3.new(1000 -(451 + 549) ,0 + 0 ,0 -0 ),Color3.fromRGB(134 -54 ,1639 -(746 + 638) ,120);v38[v60]={Part=v62,H=v129,T=v134,Name=v60.Name};end break;end end end local v43=workspace.DescendantAdded:Connect(function(v63) if getgenv().KItem then task.defer(function() v42(v63);end);end end);task.spawn(function() for v74,v75 in ipairs(workspace:GetDescendants()) do if  not getgenv().KItem then break;end v42(v75);end end);local v44=v2.RenderStepped:Connect(function() if  not getgenv().KItem then return;end local v64=v3.Character and v3.Character:FindFirstChild("HumanoidRootPart") ;if  not v64 then return;end local v65={};for v76,v77 in pairs(v38) do if (v76 and v76.Parent and v76:IsDescendantOf(workspace) and v77.Part and v77.Part.Parent) then local v106=(v77.Part.Position-v64.Position).Magnitude;if (v106<=300) then table.insert(v65,{Dist=v106,Data=v77});else v77.T.Visible=false;end else local v107=0;while true do if (v107==(0 + 0)) then v41(v77);v38[v76]=nil;break;end end end end table.sort(v65,function(v78,v79) return v78.Dist<v79.Dist ;end);for v80,v81 in ipairs(v65) do local v82=v81.Data;if (v80<=10) then local v108,v109=v7:WorldToViewportPoint(v82.Part.Position);v82.T.Position,v82.T.Text,v82.T.Visible=Vector2.new(v108.X,v108.Y),"["   .. v82.Name   .. "] "   .. math.floor(v81.Dist * (0.28 -0) )   .. "m" ,v109;else v82.T.Visible=false;end end end);getgenv().KItemC=function() v43:Disconnect();v44:Disconnect();for v83,v84 in pairs(v38) do v41(v84);end v38={};end;end,OnDisable=function() local v46=341 -(218 + 123) ;while true do if (v46==0) then getgenv().KItem=false;if getgenv().KItemC then pcall(getgenv().KItemC);end break;end end end});if  not _G.KrizHubCore then return warn("[KRIZ HUB] เธฃเธฑเธ Core UI เธเนเธญเธ!");end if _G.KrizHub_ESP_CleanUp then pcall(_G.KrizHub_ESP_CleanUp);end local v1,v8,v3,v9,v10=game:GetService("Players"),game:GetService("RunService"),game:GetService("Players").LocalPlayer,false,{};local function v11(v47) if (v47.Team and v3.Team and (v47.Team==v3.Team)) then return Color3.fromRGB(1581 -(1535 + 46) ,254 + 1 ,0 + 0 );end local v48,v49=v47.Character,v47:FindFirstChildOfClass("Backpack");local function v50(v66) for v85,v86 in ipairs({v48,v49}) do if v86 then for v120,v121 in ipairs(v86:GetChildren()) do if v121:IsA("Tool") then for v175,v176 in ipairs(v66) do if string.find(string.lower(v121.Name),v176) then return true;end end end end end end end if v50({"knife","blade","sword","dagger","murderer"}) then return Color3.fromRGB(255,0 + 0 ,0 -0 );end if v50({"gun","pistol","rifle","revolver","sheriff","cop","police"}) then return Color3.fromRGB(811 -(569 + 242) ,288 -188 ,15 + 240 );end local v51,v52=(v47.Team and string.lower(v47.Team.Name)) or "" ,((v47:FindFirstChild("Role") or (v48 and v48:FindFirstChild("Role"))) and string.lower(tostring((v47:FindFirstChild("Role") or v48.Role).Value))) or "" ;if (string.find(v51,"police") or string.find(v51,"cop") or string.find(v52,"sheriff")) then return Color3.fromRGB(0,100,1279 -(706 + 318) );end if (string.find(v51,"thief") or string.find(v51,"robber") or string.find(v51,"criminal") or string.find(v52,"murderer")) then return Color3.fromRGB(1506 -(721 + 530) ,0,0);end return (v47.Team and v47.TeamColor.Color) or Color3.fromRGB(1526 -(945 + 326) ,637 -382 ,227 + 28 ) ;end local function v12() for v67,v68 in ipairs(v1:GetPlayers()) do if (v68.Character and v68.Character:FindFirstChild("KrizESP")) then v68.Character.KrizESP:Destroy();end end end local function v13() if  not v9 then return;end for v69,v70 in ipairs(v1:GetPlayers()) do if ((v70~=v3) and v70.Character) then local v93=700 -(271 + 429) ;local v94;local v95;while true do if (v93==0) then v94=v11(v70);v95=v70.Character:FindFirstChild("KrizESP") or Instance.new("Highlight") ;v93=1;end if (v93==(1 + 0)) then v95.Name,v95.Adornee,v95.FillColor,v95.OutlineColor,v95.FillTransparency,v95.OutlineTransparency,v95.Parent="KrizESP",v70.Character,v94,v94,0.5,0,v70.Character;break;end end end end end local v14=1500 -(1408 + 92) ;table.insert(v10,v8.Heartbeat:Connect(function() if (v9 and ((tick() -v14)>(1086.2 -(461 + 625)))) then local v87=1288 -(993 + 295) ;while true do if (v87==0) then v14=tick();v13();break;end end end end));_G.KrizHub_ESP_CleanUp=function() local v53=0;while true do if (v53==(1 + 0)) then for v114,v115 in ipairs(v10) do if v115.Connected then v115:Disconnect();end end v10={};break;end if (v53==0) then v9=false;v12();v53=1172 -(418 + 753) ;end end end;_G.KrizHubCore:RegisterModule({Name="ESP Highlight / เนเธฎเนเธฅเธ—เน",Category="Visual",OnEnable=function() local v54=0 + 0 ;while true do if (v54==0) then v9=true;v13();break;end end end,OnDisable=function() local v55=0 + 0 ;while true do if (v55==0) then v9=false;v12();break;end end end});table.insert(_G.KrizHubCore.Connections,{Connected=true,Disconnect=function(v56) v56.Connected=false;pcall(_G.KrizHub_ESP_CleanUp);end});print("[KRIZ HUB] ESP Loaded!");
+--esp 2--
+
+if not _G.KrizHubCore then return end
+local Core, P, RS, LP = _G.KrizHubCore, game:GetService("Players"), game:GetService("RunService"), game:GetService("Players").LocalPlayer
+local C = function(p, r) local c = Instance.new("UICorner", p) c.CornerRadius = r or UDim.new(0,3) return c end
+local S = function(p, col) local s = Instance.new("UIStroke", p) s.Color, s.Thickness = col or Color3.fromRGB(230,50,50), 1 return s end
+local GI = function(p)
+    local it = {}
+    local function AT(v)
+        if v:IsA("Tool") then
+            local img = (v.TextureId and v.TextureId ~= "") and v.TextureId or (v:FindFirstChildOfClass("Decal") and v:FindFirstChildOfClass("Decal").Texture or "")
+            table.insert(it, {Name = v.Name, Image = img})
+        end
+    end
+    if p.Character then for _, v in ipairs(p.Character:GetChildren()) do AT(v) end end
+    local b = p:FindFirstChild("Backpack")
+    if b then for _, v in ipairs(b:GetChildren()) do AT(v) end end
+    return it
+end
+-- ESP Inventory / ไอเทมผู้เล่น (หมวดหมู่ใหม่)
+Core:RegisterModule({Name="ESP Inventory / ไอเทมผู้เล่น", Category="Visual", OnEnable=function()
+    getgenv().KInv = true local guis = {}
+    local function Cr(p)
+        if p == LP or guis[p] then return end
+        local bg = Instance.new("BillboardGui") bg.Name,bg.Size,bg.StudsOffset,bg.AlwaysOnTop = "KInv_"..p.Name,UDim2.new(0,150,0,26),Vector3.new(0,-3.2,0),true
+        local h = Instance.new("Frame",bg) h.Size,h.BackgroundTransparency = UDim2.new(1,0,1,0),1
+        local l = Instance.new("UIListLayout",h) l.FillDirection,l.HorizontalAlignment,l.VerticalAlignment,l.Padding = Enum.FillDirection.Horizontal,Enum.HorizontalAlignment.Center,Enum.VerticalAlignment.Center,UDim.new(0,2)
+        bg.Parent = game:GetService("CoreGui") guis[p] = {Gui=bg, Holder=h, CacheKey=""}
+    end
+    local function Rm(p) if guis[p] then pcall(function() guis[p].Gui:Destroy() end) guis[p]=nil end end
+    for _,p in pairs(P:GetPlayers()) do Cr(p) end
+    local a,r = P.PlayerAdded:Connect(Cr), P.PlayerRemoving:Connect(Rm)
+    local u = RS.RenderStepped:Connect(function()
+        if not getgenv().KInv then return end
+        for p,d in pairs(guis) do
+            local hrp,hum = p.Character and p.Character:FindFirstChild("HumanoidRootPart"), p.Character and p.Character:FindFirstChildOfClass("Humanoid")
+            if hrp and hum and hum.Health>0 then
+                d.Gui.Adornee,d.Gui.Enabled = hrp,true
+                local its, cKey = GI(p), ""
+                for _,it in ipairs(its) do cKey = cKey..it.Name.."_" end
+                if d.CacheKey ~= cKey then
+                    d.CacheKey = cKey
+                    for _,ch in ipairs(d.Holder:GetChildren()) do if not ch:IsA("UIListLayout") then ch:Destroy() end end
+                    for _,it in ipairs(its) do
+                        local s = Instance.new("Frame",d.Holder) s.Size,s.BackgroundColor3,s.BackgroundTransparency = UDim2.new(0,22,0,22),Color3.new(),0.5
+                        C(s) S(s)
+                        if it.Image ~= "" then
+                            local img = Instance.new("ImageLabel",s) img.Size,img.Position,img.BackgroundTransparency,img.Image = UDim2.new(1,-2,1,-2),UDim2.new(0,1,0,1),1,it.Image
+                        else
+                            local txt = Instance.new("TextLabel",s) txt.Size,txt.Position,txt.BackgroundTransparency,txt.Text,txt.TextColor3,txt.TextSize,txt.Font,txt.TextScaled = UDim2.new(1,-2,1,-2),UDim2.new(0,1,0,1),1,string.sub(it.Name,1,3),Color3.new(1,1,1),8,Enum.Font.GothamBold,true
+                        end
+                    end
+                end
+            else d.Gui.Enabled = false end
+        end
+    end)
+    getgenv().KInvC = function() a:Disconnect() r:Disconnect() u:Disconnect() for p,_ in pairs(guis) do Rm(p) end end
+end, OnDisable=function() getgenv().KInv=false if getgenv().KInvC then pcall(getgenv().KInvC) end end})
+
+if not _G.KrizHubCore then return end
+local Core, RS, Cam, LP = _G.KrizHubCore, game:GetService("RunService"), workspace.CurrentCamera, game:GetService("Players").LocalPlayer
+-- ESP Item / สิ่งของที่เก็บได้
+Core:RegisterModule({Name="ESP Item / สิ่งของที่เก็บได้", Category="Visual", OnEnable=function()
+    getgenv().KItem = true local items = {}
+    local Names = {"M9", "Glock", "Desert Eagle", "Revolver", "USP", "Five-seven", "P226", "Remington 870", "Shotgun", "Double Barrel", "SPAS-12", "Benelli", "AK-47", "M4A1", "Scar-H", "FAL", "AUG", "P90", "MP5", "UMP45", "Vector", "Thompson", "Sniper", "AWM", "Barrett", "Scout", "Intervention", "Remington 700", "RPG", "Rocket Launcher", "Minigun", "Grenade", "C4", "Dynamite", "Flashbang", "Smoke", "Knife", "Sword", "Katana", "Machete", "Combat Knife", "Bat", "Crowbar", "Hammer", "Pipe", "Axe", "Keycard", "Key", "Gun", "Armor", "Medkit", "Bandage"}
+    local function Check(n)
+        for _, t in ipairs(Names) do if string.find(string.lower(n), string.lower(t)) then return true end end
+        return false
+    end
+    local function Clr(d) pcall(function() d.H:Destroy() d.T:Remove() end) end
+    local function Add(o)
+        if items[o] or not (o:IsA("Model") or o:IsA("BasePart")) or o:IsDescendantOf(game:GetService("Players")) or not Check(o.Name) then return end
+        local pt = o:IsA("BasePart") and o or o:FindFirstChildOfClass("BasePart") or o.PrimaryPart
+        if pt then
+            local h = Instance.new("Highlight", game:GetService("CoreGui"))
+            h.FillColor, h.OutlineColor, h.FillTransparency, h.Adornee = Color3.fromRGB(170,50,255), Color3.fromRGB(230,200,255), 0.5, o
+            local t = Drawing.new("Text")
+            t.Size, t.Center, t.Outline, t.OutlineColor, t.Color = 13, true, true, Color3.new(0,0,0), Color3.fromRGB(80,255,120)
+            items[o] = {Part=pt, H=h, T=t, Name=o.Name}
+        end
+    end
+    local conn = workspace.DescendantAdded:Connect(function(o) if getgenv().KItem then task.defer(function() Add(o) end) end end)
+    task.spawn(function() for _, o in ipairs(workspace:GetDescendants()) do if not getgenv().KItem then break end Add(o) end end)
+    local u = RS.RenderStepped:Connect(function()
+        if not getgenv().KItem then return end
+        local mH = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+        if not mH then return end
+        local list = {}
+        for o, d in pairs(items) do
+            if o and o.Parent and o:IsDescendantOf(workspace) and d.Part and d.Part.Parent then
+                local dist = (d.Part.Position - mH.Position).Magnitude
+                if dist <= 300 then table.insert(list, {Dist = dist, Data = d}) else d.T.Visible = false end
+            else Clr(d) items[o] = nil end
+        end
+        table.sort(list, function(a, b) return a.Dist < b.Dist end)
+        for i, item in ipairs(list) do
+            local d = item.Data
+            if i <= 10 then
+                local pos, vis = Cam:WorldToViewportPoint(d.Part.Position)
+                d.T.Position, d.T.Text, d.T.Visible = Vector2.new(pos.X, pos.Y), "["..d.Name.."] "..math.floor(item.Dist*.28).."m", vis
+            else d.T.Visible = false end
+        end
+    end)
+    getgenv().KItemC = function() conn:Disconnect() u:Disconnect() for _,d in pairs(items) do Clr(d) end items = {} end
+end, OnDisable=function()
+    getgenv().KItem = false
+    if getgenv().KItemC then pcall(getgenv().KItemC) end
+end})
+
+if not _G.KrizHubCore then return warn("[KRIZ HUB] รัน Core UI ก่อน!") end
+if _G.KrizHub_ESP_CleanUp then pcall(_G.KrizHub_ESP_CleanUp) end
+local P, R, LP, ESP, Conns = game:GetService("Players"), game:GetService("RunService"), game:GetService("Players").LocalPlayer, false, {}
+local function getCol(p)
+    if p.Team and LP.Team and p.Team == LP.Team then return Color3.fromRGB(0, 255, 0) end
+    local c, b = p.Character, p:FindFirstChildOfClass("Backpack")
+    local function check(kws)
+        for _, cnt in ipairs({c, b}) do
+            if cnt then for _, i in ipairs(cnt:GetChildren()) do
+                if i:IsA("Tool") then for _, k in ipairs(kws) do if string.find(string.lower(i.Name), k) then return true end end end
+            end end
+        end
+    end
+    if check({"knife","blade","sword","dagger","murderer"}) then return Color3.fromRGB(255, 0, 0) end
+    if check({"gun","pistol","rifle","revolver","sheriff","cop","police"}) then return Color3.fromRGB(0, 100, 255) end
+    local tm, rl = p.Team and string.lower(p.Team.Name) or "", (p:FindFirstChild("Role") or (c and c:FindFirstChild("Role"))) and string.lower(tostring((p:FindFirstChild("Role") or c.Role).Value)) or ""
+    if string.find(tm, "police") or string.find(tm, "cop") or string.find(rl, "sheriff") then return Color3.fromRGB(0, 100, 255) end
+    if string.find(tm, "thief") or string.find(tm, "robber") or string.find(tm, "criminal") or string.find(rl, "murderer") then return Color3.fromRGB(255, 0, 0) end
+    return p.Team and p.TeamColor.Color or Color3.fromRGB(255, 255, 255)
+end
+local function clear()
+    for _, p in ipairs(P:GetPlayers()) do
+        if p.Character and p.Character:FindFirstChild("KrizESP") then p.Character.KrizESP:Destroy() end
+    end
+end
+local function upd()
+    if not ESP then return end
+    for _, p in ipairs(P:GetPlayers()) do
+        if p ~= LP and p.Character then
+            local col = getCol(p)
+            local hl = p.Character:FindFirstChild("KrizESP") or Instance.new("Highlight")
+            hl.Name, hl.Adornee, hl.FillColor, hl.OutlineColor, hl.FillTransparency, hl.OutlineTransparency, hl.Parent = "KrizESP", p.Character, col, col, 0.5, 0, p.Character
+        end
+    end
+end
+local t = 0
+table.insert(Conns, R.Heartbeat:Connect(function() if ESP and (tick()-t) > 0.2 then t = tick() upd() end end))
+_G.KrizHub_ESP_CleanUp = function() ESP = false clear() for _, c in ipairs(Conns) do if c.Connected then c:Disconnect() end end Conns = {} end
+-- ESP Highlight / ไฮไลท์
+_G.KrizHubCore:RegisterModule({
+    Name = "ESP Highlight / ไฮไลท์", Category = "Visual",
+    OnEnable = function() ESP = true upd() end,
+    OnDisable = function() ESP = false clear() end
+})
+table.insert(_G.KrizHubCore.Connections, {Connected = true, Disconnect = function(self) self.Connected = false pcall(_G.KrizHub_ESP_CleanUp) end})
+print("[KRIZ HUB] ESP Loaded!")
 
 
 
