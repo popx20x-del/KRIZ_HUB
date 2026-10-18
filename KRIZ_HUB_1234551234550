@@ -79,15 +79,16 @@ function Core:Destroy()
 end
 print("[KRIZ HUB] Core UI loaded.")
 
+
 --แจ้งเตือน--
 
 -- Register Module: Waraabbachuu Maqaa Chaanaal Haaraa
 _G.KrizHubCore:RegisterModule({
-    Name = "⚠️ ช่องใหม่ @eeeee-d8x กดคัดลอก ⚠️",
+    Name = "⚠️ discord / ดิสคอร์ดกดคัดลอก ⚠️",
     Category = "General",
     OnEnable = function()
-        -- Magaalaa/Maqaa chaanaal waraabbamu
-        local channelHandle = "@eeeee-d8x"
+        -- ลิงก์เชิญ Discord ที่ต้องการคัดลอก
+        local channelHandle = "https://discord.gg/hNT2ggngh"
         
         -- Fayyadamuu setclipboard waraabbachuuf
         local success, err = pcall(function()
@@ -126,6 +127,8 @@ _G.KrizHubCore:RegisterModule({
         -- Homaa gochuu hin barbaachisu
     end
 })
+
+
 
 
 --1--
