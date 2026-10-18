@@ -80,17 +80,62 @@ end
 print("[KRIZ HUB] Core UI loaded.")
 
 
+
+
 --แจ้งเตือน--
 
--- Register Module: Waraabbachuu Maqaa Chaanaal Haaraa
+-- ============================================
+-- 1. โมดูลคัดลอกลิงก์ Discord
+-- ============================================
 _G.KrizHubCore:RegisterModule({
-    Name = "⚠️ discord / ดิสคอร์ดกดคัดลอก ⚠️",
+    Name = "⚠️ คัดลอกลิงก์ Discord ⚠️",
     Category = "General",
     OnEnable = function()
-        -- ลิงก์เชิญ Discord ที่ต้องการคัดลอก
-        local channelHandle = "https://discord.gg/hNT2ggngh"
+        local discordLink = "https://discord.gg/hNT2ggngh"
         
-        -- Fayyadamuu setclipboard waraabbachuuf
+        local success, err = pcall(function()
+            if setclipboard then
+                setclipboard(discordLink)
+            elseif toclipboard then
+                toclipboard(discordLink)
+            else
+                error("Clipboard function not supported")
+            end
+        end)
+        
+        local StarterGui = game:GetService("StarterGui")
+        if success then
+            pcall(function()
+                StarterGui:SetCore("SendNotification", {
+                    Title = "KRIZ HUB",
+                    Text = "Waraabameera: " .. discordLink,
+                    Duration = 3
+                })
+            end)
+            print("[KRIZ HUB] Copied Discord link: " .. discordLink)
+        else
+            pcall(function()
+                StarterGui:SetCore("SendNotification", {
+                    Title = "KRIZ HUB",
+                    Text = "Waraabamu fashalaa'e!",
+                    Duration = 3
+                })
+            end)
+            warn("[KRIZ HUB] Failed to copy Discord link: ", err)
+        end
+    end,
+    OnDisable = function() end
+})
+
+-- ============================================
+-- 2. โมดูลคัดลอกชื่อช่อง @KrizHub
+-- ============================================
+_G.KrizHubCore:RegisterModule({
+    Name = "⚠️ ช่องใหม่ @KrizHub กดคัดลอก ⚠️",
+    Category = "General",
+    OnEnable = function()
+        local channelHandle = "@KrizHub"
+        
         local success, err = pcall(function()
             if setclipboard then
                 setclipboard(channelHandle)
@@ -101,7 +146,6 @@ _G.KrizHubCore:RegisterModule({
             end
         end)
         
-        -- Beeksisa (Notification) agarsiisuu
         local StarterGui = game:GetService("StarterGui")
         if success then
             pcall(function()
@@ -120,13 +164,12 @@ _G.KrizHubCore:RegisterModule({
                     Duration = 3
                 })
             end)
-            warn("[KRIZ HUB] Failed to copy: ", err)
+            warn("[KRIZ HUB] Failed to copy channel handle: ", err)
         end
     end,
-    OnDisable = function()
-        -- Homaa gochuu hin barbaachisu
-    end
+    OnDisable = function() end
 })
+
 
 
 
