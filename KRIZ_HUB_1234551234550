@@ -127,50 +127,6 @@ _G.KrizHubCore:RegisterModule({
     OnDisable = function() end
 })
 
--- ============================================
--- 2. โมดูลคัดลอกชื่อช่อง @KrizHub
--- ============================================
-_G.KrizHubCore:RegisterModule({
-    Name = "⚠️ ช่องใหม่ @KrizHub กดคัดลอก ⚠️",
-    Category = "General",
-    OnEnable = function()
-        local channelHandle = "@KrizHub"
-        
-        local success, err = pcall(function()
-            if setclipboard then
-                setclipboard(channelHandle)
-            elseif toclipboard then
-                toclipboard(channelHandle)
-            else
-                error("Clipboard function not supported")
-            end
-        end)
-        
-        local StarterGui = game:GetService("StarterGui")
-        if success then
-            pcall(function()
-                StarterGui:SetCore("SendNotification", {
-                    Title = "KRIZ HUB",
-                    Text = "Waraabameera: " .. channelHandle,
-                    Duration = 3
-                })
-            end)
-            print("[KRIZ HUB] Copied channel handle: " .. channelHandle)
-        else
-            pcall(function()
-                StarterGui:SetCore("SendNotification", {
-                    Title = "KRIZ HUB",
-                    Text = "Waraabamu fashalaa'e!",
-                    Duration = 3
-                })
-            end)
-            warn("[KRIZ HUB] Failed to copy channel handle: ", err)
-        end
-    end,
-    OnDisable = function() end
-})
-
-
 
 
 
